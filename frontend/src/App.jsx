@@ -1,48 +1,49 @@
-// import { useState } from 'react'
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-// import './App.css'
-
-// function App() {
-//   const [count, setCount] = useState(0)
-
-//   return (
-//     <>
-//       <div>
-//         <a href="https://vite.dev" target="_blank">
-//           <img src={viteLogo} className="logo" alt="Vite logo" />
-//         </a>
-//         <a href="https://react.dev" target="_blank">
-//           <img src={reactLogo} className="logo react" alt="React logo" />
-//         </a>
-//       </div>
-//       <h1>Vite + React</h1>
-//       <div className="card">
-//         <button onClick={() => setCount((count) => count + 1)}>
-//           count is {count}
-//         </button>
-//         <p>
-//           Edit <code>src/App.jsx</code> and save to test HMR
-//         </p>
-//       </div>
-//       <p className="read-the-docs">
-//         Click on the Vite and React logos to learn more
-//       </p>
-//     </>
-//   )
-// }
-
-// export default App
-
 import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/users/Home';
+import BookClubList from './pages/users/BookClubList';
+import AddBookClub from './pages/users/AddBookClub';
+import EditBookClub from './pages/users/EditBookClub';
+import BookClubDetails from './pages/users/BookClubDetails';
+import BookList from './pages/users/BookList';
+import BookDetails from './pages/users/BookDetails';
+import AddBook from './pages/users/AddBook';
+import EditBook from './pages/users/EditBook';
+import MyBooks from './pages/users/MyBooks';
+import LogIn from './pages/users/LogIn';
+import ScheduleMeeting from './pages/users/ScheduleMeeting';
+import Dashboard from './pages/admin/Dashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminBook from './pages/admin/AdminBook';
+import AdminScheduleMeetings from './pages/admin/AdminScheduleMeetings';
+import AdminBookClubs from './pages/admin/AdminBookClubs';
 
 const App = () => {
   return (
-    <div>
-      
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/log-in' element={<LogIn />} />
+        <Route path='/' element={<Home />} />
+        <Route path='/bookclubs' element={<BookClubList />} />
+        <Route path='/add-bookclub' element={<AddBookClub />} />
+        <Route path='/edit-bookclub/:id' element={<EditBookClub />} />
+        <Route path='/bookclub/:id' element={<BookClubDetails />} />
+        <Route path='/bookclub/:id/schedule-meeting' element={<ScheduleMeeting />} />
+        <Route path='/books' element={<BookList />} />
+        <Route path='/book/:id' element={<BookDetails />} />
+        <Route path='/add-book' element={<AddBook />} />
+        <Route path='/edit-book' element={<EditBook />} />
+        <Route path='/my-books' element={<MyBooks />} />
+
+        
+        <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/users' element={<AdminUsers />} />
+        <Route path='/admin-books' element={<AdminBook />} />
+        <Route path='/meetings' element={<AdminScheduleMeetings />} />
+        <Route path='/admin-book-clubs' element={<AdminBookClubs />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
 export default App
-
