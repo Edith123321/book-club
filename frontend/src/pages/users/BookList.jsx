@@ -1,9 +1,12 @@
 import React from 'react'
+import Navbar from '../../components/Navbar'
 
 const BookList = () => {
   return (
     <div>
-      List of all the books
+      <Navbar />
+      <p>List of all the books</p>
+      
     </div>
   )
 }

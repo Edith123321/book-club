@@ -99,6 +99,7 @@
     background: linear-gradient(135deg, #9C27B0, #6A1B9A);
     color: white;
     border: none;
+    font-size: 1rem;
     padding: 0.6rem 1.5rem;
     border-radius: 24px;
     font-weight: 600;
@@ -117,7 +118,6 @@
     color: #fff;
   }
   
-  /* Responsive adjustments */
   @media (max-width: 768px) {
     .navbar {
       padding: 1rem;

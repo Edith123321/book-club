@@ -1,0 +1,194 @@
+const bookClubsData = [
+  {
+    id: 1,
+    bookClubName: "The Classic Readers",
+    description: "A group dedicated to exploring timeless literature and discussing its relevance today.",
+    meetingFrequency: "Bi-weekly on Sundays",
+    currentBook: {
+      title: "Pride and Prejudice",
+      author: "Jane Austen",
+      cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500"
+    },
+    genres: ["Classics", "Literary Fiction", "Historical"],
+    clubCover: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=500",
+    meetingFormat: "In-person at local cafes with rotating locations",
+    members: [
+      { name: "Sarah Johnson", avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
+      { name: "Michael Chen", avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
+      { name: "Emily Wilson", avatar: "https://randomuser.me/api/portraits/women/2.jpg" }
+    ]
+  },
+  {
+    id: 2,
+    bookClubName: "Sci-Fi Enthusiasts",
+    description: "For fans of science fiction exploring futuristic concepts and alien worlds.",
+    meetingFrequency: "Monthly on 3rd Wednesday",
+    currentBook: {
+      title: "Dune",
+      author: "Frank Herbert",
+      cover: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=500"
+    },
+    genres: ["Science Fiction", "Fantasy", "Dystopian"],
+    clubCover: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=500",
+    meetingFormat: "Virtual meetings via Zoom",
+    members: [
+      { name: "David Kim", avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
+      { name: "Lisa Park", avatar: "https://randomuser.me/api/portraits/women/3.jpg" },
+      { name: "Robert Smith", avatar: "https://randomuser.me/api/portraits/men/3.jpg" }
+    ]
+  },
+  {
+    id: 3,
+    bookClubName: "Mystery Solvers",
+    description: "We read and discuss mystery novels, trying to solve the cases before the big reveal!",
+    meetingFrequency: "Weekly on Thursdays",
+    currentBook: {
+      title: "Gone Girl",
+      author: "Gillian Flynn",
+      cover: "https://images.unsplash.com/photo-1584824486539-53bb4646bdbc?w=500"
+    },
+    genres: ["Mystery", "Thriller", "Crime"],
+    clubCover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500",
+    meetingFormat: "Hybrid (in-person with Zoom option)",
+    members: [
+      { name: "Olivia Martinez", avatar: "https://randomuser.me/api/portraits/women/4.jpg" },
+      { name: "James Wilson", avatar: "https://randomuser.me/api/portraits/men/4.jpg" },
+      { name: "Sophia Garcia", avatar: "https://randomuser.me/api/portraits/women/5.jpg" }
+    ]
+  },
+  {
+    id: 4,
+    bookClubName: "Non-Fiction Network",
+    description: "Exploring thought-provoking non-fiction across various topics from science to memoirs.",
+    meetingFrequency: "Twice a month on Tuesdays",
+    currentBook: {
+      title: "Sapiens: A Brief History of Humankind",
+      author: "Yuval Noah Harari",
+      cover: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=500"
+    },
+    genres: ["Non-Fiction", "History", "Science", "Biography"],
+    clubCover: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500",
+    meetingFormat: "Virtual with occasional in-person meetups",
+    members: [
+      { name: "Daniel Brown", avatar: "https://randomuser.me/api/portraits/men/5.jpg" },
+      { name: "Emma Davis", avatar: "https://randomuser.me/api/portraits/women/6.jpg" },
+      { name: "William Taylor", avatar: "https://randomuser.me/api/portraits/men/6.jpg" }
+    ]
+  },
+  {
+    id: 5,
+    bookClubName: "Contemporary Fiction Fans",
+    description: "Discussing modern literature and its reflection of today's society.",
+    meetingFrequency: "Monthly on 2nd Saturday",
+    currentBook: {
+      title: "Normal People",
+      author: "Sally Rooney",
+      cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500"
+    },
+    genres: ["Contemporary", "Literary Fiction", "Drama"],
+    clubCover: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=500",
+    meetingFormat: "In-person at members' homes (rotating)",
+    members: [
+      { name: "Sophie Anderson", avatar: "https://randomuser.me/api/portraits/women/7.jpg" },
+      { name: "Christopher Lee", avatar: "https://randomuser.me/api/portraits/men/7.jpg" },
+      { name: "Ava Hernandez", avatar: "https://randomuser.me/api/portraits/women/8.jpg" }
+    ]
+  },
+  {
+    id: 6,
+    bookClubName: "Fantasy Realm Readers",
+    description: "For lovers of epic fantasy worlds, magic systems, and heroic journeys.",
+    meetingFrequency: "Every 3 weeks on Fridays",
+    currentBook: {
+      title: "The Name of the Wind",
+      author: "Patrick Rothfuss",
+      cover: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=500"
+    },
+    genres: ["Fantasy", "Adventure", "Magic"],
+    clubCover: "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=500",
+    meetingFormat: "Virtual with themed discussions",
+    members: [
+      { name: "Ethan Moore", avatar: "https://randomuser.me/api/portraits/men/8.jpg" },
+      { name: "Mia Jackson", avatar: "https://randomuser.me/api/portraits/women/9.jpg" },
+      { name: "Alexander White", avatar: "https://randomuser.me/api/portraits/men/9.jpg" }
+    ]
+  },
+  {
+    id: 7,
+    bookClubName: "BIPOC Authors Collective",
+    description: "Focusing on works by Black, Indigenous, and People of Color authors.",
+    meetingFrequency: "Monthly on 1st Sunday",
+    currentBook: {
+      title: "The Hate U Give",
+      author: "Angie Thomas",
+      cover: "https://images.unsplash.com/photo-1622675363311-3e1904dc1885?w=500"
+    },
+    genres: ["Contemporary", "Social Justice", "Diverse Voices"],
+    clubCover: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=500",
+    meetingFormat: "Hybrid format with rotating facilitators",
+    members: [
+      { name: "Jasmine Williams", avatar: "https://randomuser.me/api/portraits/women/10.jpg" },
+      { name: "Tyler Johnson", avatar: "https://randomuser.me/api/portraits/men/10.jpg" },
+      { name: "Nia Rodriguez", avatar: "https://randomuser.me/api/portraits/women/11.jpg" }
+    ]
+  },
+  {
+    id: 8,
+    bookClubName: "Historical Fiction Society",
+    description: "Exploring different time periods through well-researched historical fiction.",
+    meetingFrequency: "Every 6 weeks on Saturdays",
+    currentBook: {
+      title: "The Pillars of the Earth",
+      author: "Ken Follett",
+      cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=500"
+    },
+    genres: ["Historical Fiction", "Drama", "Epic"],
+    clubCover: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=500",
+    meetingFormat: "In-person at historical sites when possible",
+    members: [
+      { name: "Benjamin Martin", avatar: "https://randomuser.me/api/portraits/men/11.jpg" },
+      { name: "Charlotte Thompson", avatar: "https://randomuser.me/api/portraits/women/12.jpg" },
+      { name: "Henry Adams", avatar: "https://randomuser.me/api/portraits/men/12.jpg" }
+    ]
+  },
+  {
+    id: 9,
+    bookClubName: "Romance Readers Circle",
+    description: "For those who love love! Discussing all subgenres of romance novels.",
+    meetingFrequency: "Twice a month on Wednesdays",
+    currentBook: {
+      title: "Beach Read",
+      author: "Emily Henry",
+      cover: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=500"
+    },
+    genres: ["Romance", "Contemporary", "Chick Lit"],
+    clubCover: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500",
+    meetingFormat: "Virtual with fun themed meetings",
+    members: [
+      { name: "Lily Scott", avatar: "https://randomuser.me/api/portraits/women/13.jpg" },
+      { name: "Noah Green", avatar: "https://randomuser.me/api/portraits/men/13.jpg" },
+      { name: "Chloe Baker", avatar: "https://randomuser.me/api/portraits/women/14.jpg" }
+    ]
+  },
+  {
+    id: 10,
+    bookClubName: "Young Adult Explorers",
+    description: "Reading and discussing the best of young adult literature, both classic and contemporary.",
+    meetingFrequency: "Monthly on last Friday",
+    currentBook: {
+      title: "The Fault in Our Stars",
+      author: "John Green",
+      cover: "https://images.unsplash.com/photo-1584824486539-53bb4646bdbc?w=500"
+    },
+    genres: ["Young Adult", "Coming of Age", "Contemporary"],
+    clubCover: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=500",
+    meetingFormat: "Hybrid with active online discussion forum",
+    members: [
+      { name: "Zoe Carter", avatar: "https://randomuser.me/api/portraits/women/15.jpg" },
+      { name: "Jacob Murphy", avatar: "https://randomuser.me/api/portraits/men/14.jpg" },
+      { name: "Hannah Evans", avatar: "https://randomuser.me/api/portraits/women/16.jpg" }
+    ]
+  }
+];
+
+export default bookClubsData;
