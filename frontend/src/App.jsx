@@ -16,32 +16,32 @@ import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminBook from './pages/admin/AdminBook';
 import AdminScheduleMeetings from './pages/admin/AdminScheduleMeetings';
-import AdminBookClubs from './pages/admin/AdminBookClubs';
+
 
 const App = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path='/log-in' element={<LogIn />} />
-        <Route path='/' element={<Home />} />
-        <Route path='/bookclubs' element={<BookClubList />} />
-        <Route path='/add-bookclub' element={<AddBookClub />} />
-        <Route path='/edit-bookclub/:id' element={<EditBookClub />} />
-        <Route path='/bookclub/:id' element={<BookClubDetails />} />
-        <Route path='/bookclub/:id/schedule-meeting' element={<ScheduleMeeting />} />
-        <Route path='/books' element={<BookList />} />
-        <Route path='/book/:id' element={<BookDetails />} />
-        <Route path='/add-book' element={<AddBook />} />
-        <Route path='/edit-book' element={<EditBook />} />
-        <Route path='/my-books' element={<MyBooks />} />
+       <Routes>
+         <Route path='/log-in' element ={<LogIn />} />
+         <Route path='/' element = {<Home />} />
+         <Route path='/bookclubs' element= {<BookClubList />} />
+         <Route path='/add-bookclub' element = {<AddBookClub />}/>
+         <Route path='/edit-bookclub/:id' element ={<EditBookClub />} />
+         <Route path='/bookclub/:id' element ={<BookClubDetails />} />
+         <Route path='/bookclub/:id/schedule-meeting' element = {<ScheduleMeeting />} />
+         <Route path='/books' element ={<BookList />} />
+         <Route path='/book/:id' element ={<BookDetails />}/>
+         <Route path='/add-book' element={<AddBook />} />
+         <Route path='/edit-book' element = {<EditBook />}/>
+         <Route path='/my-books' element = {<MyBooks />} />
 
-        
-        <Route path='/dashboard' element={<Dashboard />} />
-        <Route path='/users' element={<AdminUsers />} />
-        <Route path='/admin-books' element={<AdminBook />} />
-        <Route path='/meetings' element={<AdminScheduleMeetings />} />
-        <Route path='/admin-book-clubs' element={<AdminBookClubs />} />
-      </Routes>
+         
+          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/users' element = {<AdminUsers />} />
+          <Route path='/books' element = {<AdminBook />} />
+          <Route path='/meetings' element ={<AdminScheduleMeetings />} />
+         
+       </Routes>
     </BrowserRouter>
   )
 }
