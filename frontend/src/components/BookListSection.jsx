@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/BookListSection.css';
 import bookClubsData from './bookClubsData';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const BookListSection = () => {
     const navigate = useNavigate()
@@ -28,6 +28,7 @@ const BookListSection = () => {
 
             <div className="book-clubs-container">
                 {bookClubsData.slice(0, 3).map((club) => (
+                    <Link to = '/bookclub/:id' className='book-club-card-link'>
                     <div key={club.id} className="book-club-card">
                         <div className="club-header">
                             <h2 className="club-name">{club.bookClubName}</h2>
@@ -62,6 +63,7 @@ const BookListSection = () => {
 
 
                     </div>
+                    </Link>
                 ))}
             </div>
             <div className="view-all-container">

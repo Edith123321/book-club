@@ -3,7 +3,7 @@ const booksData = [
       id: 1,
       title: "The Midnight Library",
       author: "Matt Haig",
-      cover: "https://images-na.ssl-images-amazon.com/images/I/81h2gWPTYJL.jpg",
+      cover: "https://i.pinimg.com/474x/ea/87/e5/ea87e5dd6bd36ccea9299fc024f08c09.jpg",
       rating: 4.02,
       genres: ["Fiction", "Fantasy", "Self-Help"]
     },
@@ -11,7 +11,7 @@ const booksData = [
       id: 2,
       title: "Dune",
       author: "Frank Herbert",
-      cover: "https://images-na.ssl-images-amazon.com/images/I/91u5rE8QURL.jpg",
+      cover: "https://i.pinimg.com/474x/14/a7/48/14a74879788212584f4b59c22c5e6d99.jpg",
       rating: 4.25,
       genres: ["Science Fiction", "Classic", "Adventure"]
     },
@@ -19,7 +19,7 @@ const booksData = [
       id: 3,
       title: "Where the Crawdads Sing",
       author: "Delia Owens",
-      cover: "https://images-na.ssl-images-amazon.com/images/I/91Szm8FpdfL.jpg",
+      cover: "https://i.pinimg.com/474x/70/27/ca/7027ca56ac260a52ff0a88700123d6f9.jpg",
       rating: 4.46,
       genres: ["Fiction", "Mystery", "Literary Fiction"]
     },

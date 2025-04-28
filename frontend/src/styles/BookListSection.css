@@ -11,6 +11,9 @@
     color: #333;
     font-weight: 800;
 }
+.book-club-card-link{
+    text-decoration:  none;
+}
 
 .bookclubs-title p {
     font-size: 1.1rem;
