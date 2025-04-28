@@ -1,0 +1,145 @@
+/* Navbar.css */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #fff;
+    font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .navbar-logo {
+    font-size: 2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .logo-yellow {
+    color: #FFC107;
+    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.3);
+  }
+  
+  .logo-purple {
+    color: #6A1B9A; 
+   }
+   .navbar-links{
+    display: flex;
+    gap:40px;
+   }
+  
+.nav-item {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #424242;
+  font-weight: 500;
+  font-size: 1.2em;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #4B0082;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link:focus,
+.nav-link.active {
+  color: #6A1B9A;
+}
+
+.nav-link:hover::after,
+.nav-link:focus::after,
+.nav-link.active::after {
+  width: 100%;
+}
+  
+  .navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .navbar-search {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 24px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    width: 180px;
+  }
+  
+  .navbar-search:focus,
+  .navbar-search:hover {
+    border-color: #9C27B0;
+    box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+    outline: none;
+    width: 220px;
+  }
+  
+  .navbar-login {
+    background: linear-gradient(135deg, #9C27B0, #6A1B9A);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(106, 27, 154, 0.3);
+  }
+  
+  .navbar-login:hover {
+    background: linear-gradient(135deg, #6A1B9A, #9C27B0);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(106, 27, 154, 0.4);
+  }
+  .navbar-login-link{
+    text-decoration: none;
+    color: #fff;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .navbar {
+      padding: 1rem;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .navbar-logo {
+      margin-bottom: 1rem;
+    }
+    
+    .navbar-links {
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .navbar-actions {
+      justify-content: center;
+    }
+    
+    .navbar-search {
+      width: 100%;
+    }
+  }
