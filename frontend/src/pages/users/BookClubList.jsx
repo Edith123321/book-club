@@ -1,9 +1,11 @@
 import React from 'react'
+import { FaTrash } from "react-icons/fa";
+
 
 const BookClubList = () => {
   return (
     <div>
-      Book Club List
+      <FaTrash />
     </div>
   )
 }
