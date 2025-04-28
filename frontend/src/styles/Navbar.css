@@ -112,6 +112,10 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(106, 27, 154, 0.4);
   }
+  .navbar-login-link{
+    text-decoration: none;
+    color: #fff;
+  }
   
   /* Responsive adjustments */
   @media (max-width: 768px) {
