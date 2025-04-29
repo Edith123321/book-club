@@ -1,0 +1,227 @@
+/* Book List Section Styles */
+.bookclubs-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 2rem;
+}
+
+.bookclubs-title h1 {
+    font-size: 2.5rem;
+    margin-top: 40px;
+    color: #333;
+    font-weight: 800;
+}
+.book-club-card-link{
+    text-decoration:  none;
+}
+
+.bookclubs-title p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.book-clubs-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: center;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.book-club-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(106, 27, 154, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.book-club-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(106, 27, 154, 0.15);
+}
+
+.club-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.club-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #6A1B9A;
+    margin: 0;
+}
+
+.member-count {
+    font-size: 0.9rem;
+    color: #111;
+    background: #c391cb;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+}
+
+.club-description {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.book-and-button-container {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.current-book {
+    flex: 1;
+    background-color: #f9f9f9;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.current-book h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #444;
+    font-weight: 600;
+}
+
+.book-info {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.book-cover {
+    width: 50px;
+    height: 75px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.book-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.book-author {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0.2rem 0 0 0;
+}
+
+.join-club-button {
+    width: 100px;
+    padding: 0.3rem 1.1rem;
+    background-color: #6A1B9A;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    height: fit-content;
+    align-self: center;
+}
+
+.join-club-button:hover {
+    background-color: #5800b0;
+    transform: translateY(-2px);
+}
+
+.join-club-button.joined {
+    background-color: #4CAF50;
+    width: 110px;
+}
+
+.join-club-button.joined:hover {
+    background-color: #3d8b40;
+}
+
+.genres-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.genre-tag {
+    background: #F3E5F5;
+    color: #6A1B9A;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}/* View All Button Styles */
+.view-all-container {
+    display: flex;
+    justify-content: center;
+    margin: 3rem 0;
+    padding: 0 2rem;
+  }
+  
+  .view-all-button {
+    background: linear-gradient(135deg, #FF8C00, #FFD700); /* Orange to yellow gradient */
+    color: white;
+    border: none;
+    padding: 0.8rem 2.5rem;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .view-all-button:hover {
+    background: linear-gradient(135deg, #FFD700, #FFC107); /* Darker orange to brighter yellow */
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 165, 0, 0.4);
+  }
+  
+  .view-all-button:active {
+    transform: translateY(1px);
+  }
+  
+/* Responsive Design */
+@media (max-width: 768px) {
+    .book-and-button-container {
+        flex-direction: column;
+    }
+    .view-all-button {
+        padding: 0.7rem 2rem;
+        font-size: 1rem;
+      }
+    
+    .join-club-button {
+        width: 100%;
+        padding: 0.6rem;
+    }
+    
+    .join-club-button.joined {
+        width: 100%;
+    }
+}

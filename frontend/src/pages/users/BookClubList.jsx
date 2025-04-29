@@ -1,11 +1,10 @@
 import React from 'react'
-import { FaTrash } from "react-icons/fa";
-
+import Navbar from '../../components/Navbar'
 
 const BookClubList = () => {
   return (
     <div>
-      <FaTrash />
+    <Navbar />
     </div>
   )
 }
