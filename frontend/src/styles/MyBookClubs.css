@@ -1,0 +1,337 @@
+/* Main container styles */
+.book-clubs-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+  }
+  
+  /* Header styles */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+  }
+  
+  .header-content h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #333;
+  }
+  
+  .header-content p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 16px;
+  }
+  
+  .create-club-btn {
+    background-color: #7c4dff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    box-shadow: 0 2px 5px rgba(124, 77, 255, 0.3);
+  }
+  
+  .create-club-btn:hover {
+    background-color: #6a40e3;
+  }
+  
+  /* Tabs styles */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+  }
+  
+  .tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+  }
+  
+  .tab.active {
+    color: #7c4dff;
+  }
+  
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #7c4dff;
+  }
+  
+  .count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+    color: #6b7280;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+    margin-left: 6px;
+  }
+  
+  /* Filters styles */
+  .filters {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    gap: 16px;
+  }
+  
+  .search {
+    flex: 1;
+    max-width: 400px;
+    position: relative;
+  }
+  
+  .search input {
+    width: 100%;
+    padding: 12px 16px;
+    padding-left: 40px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 15px;
+    background-color: white;
+  }
+  
+  .filter-options {
+    display: flex;
+    gap: 16px;
+  }
+  
+  .filter-options select {
+    padding: 10px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 15px;
+    background-color: white;
+    min-width: 160px;
+    color: #4b5563;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    padding-right: 40px;
+  }
+  
+  /* Book clubs grid */
+  .clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+  }
+  
+  /* Individual club card */
+  .club-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background-color: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #f0f0f0;
+  }
+  
+  .club-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
+  
+  .club-header {
+    height: 80px;
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px;
+  }
+  
+  .club-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .edit-btn, .delete-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .edit-btn:hover, .delete-btn:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  .club-content {
+    padding: 0 20px 20px;
+    position: relative;
+  }
+  
+  .club-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    position: absolute;
+    top: -32px;
+    left: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .club-name {
+    margin-top: 40px;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+  }
+  
+  .club-categories {
+    color: #6b7280;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  
+  .club-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  
+  .detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #4b5563;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .detail svg {
+    color: #6b7280;
+    min-width: 16px;
+  }
+  
+  .club-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+  }
+  
+  .status {
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .status.active {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .status.pending {
+    background-color: #fff8e1;
+    color: #f57c00;
+  }
+  
+  .view-details-btn {
+    background: none;
+    border: none;
+    color: #7c4dff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 5px;
+  }
+  
+  .view-details-btn:hover {
+    color: #6a40e3;
+    text-decoration: underline;
+  }
+  
+  /* Color variants for club headers and avatars */
+  .purple {
+    background-color: #7c4dff;
+  }
+  
+  .blue {
+    background-color: #2196f3;
+  }
+  
+  .orange {
+    background-color: #ff9800;
+  }
+  
+  .green {
+    background-color: #4caf50;
+  }
+  
+  .red {
+    background-color: #f44336;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    
+    .filters {
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .search {
+      max-width: 100%;
+    }
+    
+    .filter-options {
+      width: 100%;
+      flex-direction: column;
+    }
+    
+    .clubs-grid {
+      grid-template-columns: 1fr;
+    }
+  }

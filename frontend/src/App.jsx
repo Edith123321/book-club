@@ -16,6 +16,8 @@ import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminBook from './pages/admin/AdminBook';
 import AdminScheduleMeetings from './pages/admin/AdminScheduleMeetings';
+import MyBookClubs from './pages/users/MyBookClubs'; // Import the MyBookClubs component
+
 
 
 const App = () => {
@@ -34,6 +36,7 @@ const App = () => {
          <Route path='/add-book' element={<AddBook />} />
          <Route path='/edit-book' element = {<EditBook />}/>
          <Route path='/my-books' element = {<MyBooks />} />
+         <Route path='/my-bookclubs' element={<MyBookClubs />} />
 
          
           <Route path='/dashboard' element={<Dashboard />} />

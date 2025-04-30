@@ -1,34 +1,20 @@
 import React, { useState } from 'react';
 import '../../styles/login.css';
 
-import {
-  FaGoogle,
-  FaFacebook,
-  FaApple,
-  FaEnvelope,
-  FaLock,
-  FaEye,
-  FaEyeSlash,
-  FaUser,
-} from 'react-icons/fa';
-import {
-  BsPeople,
-  BsBook,
-  BsCalendarEvent,
-  BsChatSquareText,
-} from 'react-icons/bs';
+import { FaGoogle, FaFacebook, FaApple, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
+import { BsPeople, BsBook, BsCalendarEvent, BsChatSquareText } from 'react-icons/bs';
 
 const Login = () => {
   const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  
   // Sign In form fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-
+  
   // Create Account form fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -36,145 +22,153 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-
+  
   // Form validation
   const [errors, setErrors] = useState({});
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
+  
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    // Reset errors when switching tabs
     setErrors({});
   };
-
+  
   const validateSignInForm = () => {
     const newErrors = {};
-    if (!email.trim()) newErrors.email = 'Email is required';
-    if (!password) newErrors.password = 'Password is required';
+    
+    if (!email.trim()) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
+    
     return newErrors;
   };
-
+  
   const validateCreateAccountForm = () => {
     const newErrors = {};
-    if (!firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!newEmail.trim()) newErrors.newEmail = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(newEmail)) newErrors.newEmail = 'Email is invalid';
-    if (!newPassword) newErrors.newPassword = 'Password is required';
-    else if (newPassword.length < 8) newErrors.newPassword = 'Password must be at least 8 characters';
-    if (!confirmPassword) newErrors.confirmPassword = 'Confirm your password';
+    
+    if (!firstName.trim()) newErrors.firstName = "First name is required";
+    if (!lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!newEmail.trim()) newErrors.newEmail = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(newEmail)) newErrors.newEmail = "Email is invalid";
+    
+    if (!newPassword) newErrors.newPassword = "Password is required";
+    else if (newPassword.length < 8) newErrors.newPassword = "Password must be at least 8 characters";
+    
+    if (!confirmPassword) newErrors.confirmPassword = "Confirm your password";
     else if (newPassword !== confirmPassword) newErrors.confirmPassword = "Passwords don't match";
-    if (!agreeToTerms) newErrors.agreeToTerms = 'You must agree to the terms';
+    
+    if (!agreeToTerms) newErrors.agreeToTerms = "You must agree to the terms";
+    
     return newErrors;
   };
 
-  const handleSignInSubmit = async (e) => {
+  const handleSignInSubmit = (e) => {
     e.preventDefault();
     const formErrors = validateSignInForm();
+    
     if (Object.keys(formErrors).length === 0) {
       setIsLoading(true);
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        });
-        const data = await response.json();
-        if (data.success) {
-          console.log('Login successful:', data);
-          // Redirect to dashboard or home page
-        } else {
-          setErrors({ general: data.message || 'Login failed' });
-        }
-      } catch (error) {
-        setErrors({ general: 'An error occurred. Please try again.' });
-      } finally {
+      // Simulate API call
+      setTimeout(() => {
+        console.log('Login submitted with:', { email, password, rememberMe });
         setIsLoading(false);
-      }
+        // Redirect would happen here in a real app
+      }, 1500);
     } else {
       setErrors(formErrors);
     }
   };
-
-  const handleCreateAccountSubmit = async (e) => {
+  
+  const handleCreateAccountSubmit = (e) => {
     e.preventDefault();
     const formErrors = validateCreateAccountForm();
+    
     if (Object.keys(formErrors).length === 0) {
       setIsLoading(true);
-      try {
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            email: newEmail,
-            password: newPassword,
-          }),
+      // Simulate API call
+      setTimeout(() => {
+        console.log('Create account submitted with:', { 
+          firstName, 
+          lastName, 
+          email: newEmail, 
+          password: newPassword,
+          agreeToTerms
         });
-        const data = await response.json();
-        if (data.success) {
-          console.log('Account created:', data);
-          // Redirect to login or dashboard
-        } else {
-          setErrors({ general: data.message || 'Registration failed' });
-        }
-      } catch (error) {
-        setErrors({ general: 'An error occurred. Please try again.' });
-      } finally {
         setIsLoading(false);
-      }
+        // Redirect would happen here in a real app
+      }, 1500);
     } else {
       setErrors(formErrors);
     }
   };
-
-  const handleSocialLogin = async (provider) => {
+  
+  // Social login handlers
+  const handleGoogleSignIn = () => {
     setIsLoading(true);
-    try {
-      const authUrl = `/api/auth/${provider}`;
-      window.location.href = authUrl; // Redirect to OAuth provider
-    } catch (error) {
-      console.error(`Error initiating ${provider} login:`, error);
+    console.log('Initiating Google Sign In');
+    
+    // This would normally redirect to Google OAuth
+    // For demonstration, we'll simulate the process
+    setTimeout(() => {
+      console.log('Google authentication completed');
       setIsLoading(false);
-    }
+      // Redirect would happen here in a real app
+    }, 1500);
+  };
+  
+  const handleFacebookSignIn = () => {
+    setIsLoading(true);
+    console.log('Initiating Facebook Sign In');
+    
+    // This would normally redirect to Facebook OAuth
+    setTimeout(() => {
+      console.log('Facebook authentication completed');
+      setIsLoading(false);
+      // Redirect would happen here in a real app
+    }, 1500);
+  };
+  
+  const handleAppleSignIn = () => {
+    setIsLoading(true);
+    console.log('Initiating Apple Sign In');
+    
+    // This would normally redirect to Apple OAuth
+    setTimeout(() => {
+      console.log('Apple authentication completed');
+      setIsLoading(false);
+      // Redirect would happen here in a real app
+    }, 1500);
   };
 
   return (
     <div className="login-container">
-      {/* Left Section: Login Form */}
       <div className="login-card">
-        {/* Header */}
         <div className="login-header">
           <h2>Welcome to BookClub</h2>
         </div>
-
-        {/* Tabs */}
         <div className="login-tabs">
-          <button
+          <button 
             className={`tab-button ${activeTab === 'signin' ? 'active' : ''}`}
             onClick={() => handleTabChange('signin')}
           >
             Sign In
           </button>
-          <button
+          <button 
             className={`tab-button ${activeTab === 'create' ? 'active' : ''}`}
             onClick={() => handleTabChange('create')}
           >
             Create Account
           </button>
         </div>
-
-        {/* Sign In Form */}
+        
         {activeTab === 'signin' ? (
           <form onSubmit={handleSignInSubmit}>
-            {/* Email Input */}
             <div className="form-group">
               <label htmlFor="email">Email Address</label>
               <div className="input-container">
@@ -190,14 +184,10 @@ const Login = () => {
               </div>
               {errors.email && <div className="error-message">{errors.email}</div>}
             </div>
-
-            {/* Password Input */}
             <div className="form-group">
               <div className="password-label-container">
                 <label htmlFor="password">Password</label>
-                <a href="#" className="forgot-password">
-                  Forgot password?
-                </a>
+                <a href="#" className="forgot-password">Forgot password?</a>
               </div>
               <div className="input-container">
                 <input
@@ -209,9 +199,9 @@ const Login = () => {
                   className={errors.password ? 'error' : ''}
                 />
                 <FaLock className="input-icon" />
-                <button
-                  type="button"
-                  className="toggle-password"
+                <button 
+                  type="button" 
+                  className="toggle-password" 
                   onClick={togglePasswordVisibility}
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -219,8 +209,6 @@ const Login = () => {
               </div>
               {errors.password && <div className="error-message">{errors.password}</div>}
             </div>
-
-            {/* Remember Me Checkbox */}
             <div className="remember-me">
               <input
                 type="checkbox"
@@ -230,37 +218,33 @@ const Login = () => {
               />
               <label htmlFor="remember">Remember me</label>
             </div>
-
-            {/* Submit Button */}
             <button type="submit" className="submit-button" disabled={isLoading}>
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
-
-            {/* Social Login */}
             <div className="or-divider">
               <span>Or continue with</span>
             </div>
             <div className="social-login">
-              <button
-                type="button"
+              <button 
+                type="button" 
                 className="social-button google"
-                onClick={() => handleSocialLogin('google')}
+                onClick={handleGoogleSignIn}
                 disabled={isLoading}
               >
                 <FaGoogle />
               </button>
-              <button
-                type="button"
+              <button 
+                type="button" 
                 className="social-button facebook"
-                onClick={() => handleSocialLogin('facebook')}
+                onClick={handleFacebookSignIn}
                 disabled={isLoading}
               >
                 <FaFacebook />
               </button>
-              <button
-                type="button"
+              <button 
+                type="button" 
                 className="social-button apple"
-                onClick={() => handleSocialLogin('apple')}
+                onClick={handleAppleSignIn}
                 disabled={isLoading}
               >
                 <FaApple />
@@ -269,7 +253,6 @@ const Login = () => {
           </form>
         ) : (
           <form onSubmit={handleCreateAccountSubmit}>
-            {/* First Name and Last Name Inputs */}
             <div className="name-row">
               <div className="form-group half">
                 <label htmlFor="firstName">First Name</label>
@@ -302,8 +285,6 @@ const Login = () => {
                 {errors.lastName && <div className="error-message">{errors.lastName}</div>}
               </div>
             </div>
-
-            {/* Email Input */}
             <div className="form-group">
               <label htmlFor="newEmail">Email Address</label>
               <div className="input-container">
@@ -319,8 +300,6 @@ const Login = () => {
               </div>
               {errors.newEmail && <div className="error-message">{errors.newEmail}</div>}
             </div>
-
-            {/* Password Input */}
             <div className="form-group">
               <label htmlFor="newPassword">Password</label>
               <div className="input-container">
@@ -333,9 +312,9 @@ const Login = () => {
                   className={errors.newPassword ? 'error' : ''}
                 />
                 <FaLock className="input-icon" />
-                <button
-                  type="button"
-                  className="toggle-password"
+                <button 
+                  type="button" 
+                  className="toggle-password" 
                   onClick={togglePasswordVisibility}
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -343,22 +322,10 @@ const Login = () => {
               </div>
               {errors.newPassword && <div className="error-message">{errors.newPassword}</div>}
               <div className="password-strength">
-                <div
-                  className={`strength-meter ${
-                    newPassword.length > 0 ? (newPassword.length >= 8 ? 'strong' : 'weak') : ''
-                  }`}
-                ></div>
-                <span className="strength-text">
-                  {newPassword.length > 0
-                    ? newPassword.length >= 8
-                      ? 'Strong password'
-                      : 'Password is too weak'
-                    : ''}
-                </span>
+                <div className={`strength-meter ${newPassword.length > 0 ? (newPassword.length >= 8 ? 'strong' : 'weak') : ''}`}></div>
+                <span className="strength-text">{newPassword.length > 0 ? (newPassword.length >= 8 ? 'Strong password' : 'Password is too weak') : ''}</span>
               </div>
             </div>
-
-            {/* Confirm Password Input */}
             <div className="form-group">
               <label htmlFor="confirmPassword">Confirm Password</label>
               <div className="input-container">
@@ -371,9 +338,9 @@ const Login = () => {
                   className={errors.confirmPassword ? 'error' : ''}
                 />
                 <FaLock className="input-icon" />
-                <button
-                  type="button"
-                  className="toggle-password"
+                <button 
+                  type="button" 
+                  className="toggle-password" 
                   onClick={toggleConfirmPasswordVisibility}
                 >
                   {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
@@ -381,8 +348,6 @@ const Login = () => {
               </div>
               {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
             </div>
-
-            {/* Terms Checkbox */}
             <div className="terms-checkbox">
               <input
                 type="checkbox"
@@ -391,48 +356,37 @@ const Login = () => {
                 onChange={() => setAgreeToTerms(!agreeToTerms)}
               />
               <label htmlFor="agreeToTerms">
-                I agree to the{' '}
-                <a href="/terms" className="terms-link">
-                  Terms of Service
-                </a>{' '}
-                and{' '}
-                <a href="/privacy" className="terms-link">
-                  Privacy Policy
-                </a>
+                I agree to the <a href="#" className="terms-link">Terms of Service</a> and <a href="#" className="terms-link">Privacy Policy</a>
               </label>
             </div>
             {errors.agreeToTerms && <div className="error-message terms-error">{errors.agreeToTerms}</div>}
-
-            {/* Submit Button */}
             <button type="submit" className="submit-button" disabled={isLoading}>
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </button>
-
-            {/* Social Login */}
             <div className="or-divider">
               <span>Or continue with</span>
             </div>
             <div className="social-login">
-              <button
-                type="button"
+              <button 
+                type="button" 
                 className="social-button google"
-                onClick={() => handleSocialLogin('google')}
+                onClick={handleGoogleSignIn}
                 disabled={isLoading}
               >
                 <FaGoogle />
               </button>
-              <button
-                type="button"
+              <button 
+                type="button" 
                 className="social-button facebook"
-                onClick={() => handleSocialLogin('facebook')}
+                onClick={handleFacebookSignIn}
                 disabled={isLoading}
               >
                 <FaFacebook />
               </button>
-              <button
-                type="button"
+              <button 
+                type="button" 
                 className="social-button apple"
-                onClick={() => handleSocialLogin('apple')}
+                onClick={handleAppleSignIn}
                 disabled={isLoading}
               >
                 <FaApple />
@@ -441,17 +395,15 @@ const Login = () => {
           </form>
         )}
       </div>
-
-      {/* Right Section: Features */}
+      
       <div className="features-card">
         <div className="features-content">
           <div className="book-icon">
             <BsBook />
           </div>
           <h2>Join Our Reading Community</h2>
-          <p>
-            Connect with fellow book lovers, discover new titles, and engage in meaningful discussions.
-          </p>
+          <p>Connect with fellow book lovers, discover new titles, and engage in meaningful discussions.</p>
+          
           <div className="features-list">
             <div className="feature-item">
               <BsPeople className="feature-icon" />
