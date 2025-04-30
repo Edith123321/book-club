@@ -1,15 +1,23 @@
 from app import db
-from datetime import datetime
 
 class Summary(db.Model):
     __tablename__ = 'summaries'
 
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    content = db.Column(db.String(500))
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id', ondelete='CASCADE'))  # Ensure ondelete='CASCADE'
+    book = db.relationship('Book', back_populates='summaries')
 
-    # Foreign key to Book
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+    def __init__(self, content, book_id):
+        self.content = content
+        self.book_id = book_id
 
     def __repr__(self):
-        return f"<Summary for Book ID {self.book_id}>"
+        return f'<Summary for Book {self.book_id}>'
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "book_id": self.book_id
+        }

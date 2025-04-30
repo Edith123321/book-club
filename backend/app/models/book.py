@@ -10,6 +10,9 @@ class Book(db.Model):
     description = db.Column(db.String(500), nullable=True)
     year = db.Column(db.Integer, nullable=False)
 
+    # Add the relationship to Summary and include cascade='all, delete-orphan'
+    summaries = db.relationship('Summary', back_populates='book', cascade='all, delete-orphan')
+
     def __init__(self, title, author, genre, description, year):
         self.title = title
         self.author = author

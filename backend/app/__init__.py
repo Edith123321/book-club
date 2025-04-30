@@ -30,4 +30,8 @@ def create_app():
     app.register_blueprint(book_bp)
     app.register_blueprint(summary_bp)
 
+    from app.routes.review_routes import review_bp
+    app.register_blueprint(review_bp)
+
+
     return app

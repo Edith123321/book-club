@@ -1,16 +1,18 @@
 from app import create_app, db
 from app.models.book import Book
 from app.models.summary import Summary
+from app.models.review import Review  # ✅ Import Review model
 from datetime import datetime
 
 app = create_app()
 
 with app.app_context():
-    # Clear any existing records (optional, to avoid duplicates)
-    Summary.query.delete()  # Delete summaries first to avoid foreign key constraint issues
-    Book.query.delete()     # Now delete books after summaries
+    # Clear existing records in proper order
+    Review.query.delete()     # ✅ Delete reviews first due to FK constraints
+    Summary.query.delete()
+    Book.query.delete()
 
-    # Step 1: Seed Books
+    #  Seed Books
     books = [
         Book(
             title="1984",
@@ -34,31 +36,29 @@ with app.app_context():
             description="A story of wealth, love, and the American dream."
         )
     ]
-
-    # Add books to the session
     db.session.add_all(books)
-    
-    # Step 2: Commit the Books to the Database
-    db.session.commit()  # This saves the books and assigns them IDs
+    db.session.commit()
 
-    # Step 3: Check if books have been committed (optional debugging)
     print("Books committed:")
     for book in books:
         print(f"Book {book.title} has ID {book.id}")
 
-    # Step 4: Seed Summaries
+    #  Seed Summaries
     summaries = [
         Summary(content="An insightful warning about totalitarianism.", book_id=books[0].id),
         Summary(content="A touching story about racial injustice.", book_id=books[1].id),
         Summary(content="An examination of the American Dream gone wrong.", book_id=books[2].id)
     ]
-
-    # Add summaries to the session
     db.session.add_all(summaries)
-
-    # Step 5: Commit the Summaries to the Database
     db.session.commit()
 
-    print("📚 Database seeded successfully with book and summary data.")
+    # ✅ Seed Reviews
+    reviews = [
+        Review(content="Loved the deep themes and writing style!", rating=5, user_id=1, book_id=books[0].id),
+        Review(content="Powerful and emotional narrative.", rating=4, user_id=1, book_id=books[1].id),
+        Review(content="Didn’t connect much with the characters.", rating=3, user_id=1, book_id=books[2].id)
+    ]
+    db.session.add_all(reviews)
+    db.session.commit()
 
-
+    print("✅ Database seeded with books, summaries, and reviews.")
