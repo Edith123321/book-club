@@ -1,0 +1,185 @@
+/* Hero Section Styles */
+.hero {
+    background: linear-gradient(135deg, #6A1B9A, #8E24AA);
+    color: white;
+    padding: 5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .hero-content {
+    max-width: 600px;
+    z-index: 2;
+    padding-left: 5%;
+  }
+  
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    max-width: 90%;
+  }
+  
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .btn {
+    padding: 0.8rem 2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+  
+  .btn-primary {
+    background-color: #FFC107;
+    color: #fff;
+    border: 2px solid #FFC107;
+  }
+  
+  .btn-primary:hover {
+    background-color: #FFD54F;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  
+  .btn-secondary {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+  }
+  
+  .btn-secondary:hover {
+    background-color: rgba(255,255,255,0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  
+  /* Book Stack Styles - Updated for top-right attachment */
+  .book-stack {
+    position: absolute;
+    top: 140px;
+    right: 180px;
+    width: 250px;
+    height: 320px;
+    z-index: 1;
+  }
+  
+  .book {
+    position: absolute;
+    width: 180px;
+    height: 240px;
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #8E24AA;
+    transition: all 0.4s ease;
+    box-shadow: -5px 5px 15px rgba(0,0,0,0.2);
+    cursor: pointer;
+    border-left: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .book-1 {
+    background: white;
+    transform: rotate(10deg) translateX(10px);
+    top: 0;
+    right: 0;
+    z-index: 3;
+  }
+  
+  .book-2 {
+    background: #D8BFD8; 
+    transform: rotate(5deg) translateX(5px);
+    top: 15px;
+    right: 15px;
+    z-index: 2;
+  }
+  
+  .book-3 {
+    background: #FFD700; 
+    transform: rotate(0deg);
+    top: 30px;
+    right: 30px;
+    z-index: 1;
+  }
+  
+  .book:hover {
+    transform: rotate(0deg) translateX(0) !important;
+    z-index: 10 !important;
+    box-shadow: -2px 2px 20px rgba(0,0,0,0.3);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 992px) {
+    .hero {
+      flex-direction: column;
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+  
+    .hero-content {
+      padding-left: 0;
+      margin-bottom: 3rem;
+      margin-top: 180px; /* Give space for the book stack */
+    }
+  
+    .hero p {
+      max-width: 100%;
+    }
+  
+    .hero-buttons {
+      justify-content: center;
+    }
+  
+    .book-stack {
+      top: 20px;
+      right: 50%;
+      transform: translateX(50%);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .hero h1 {
+      font-size: 2rem;
+    }
+  
+    .hero p {
+      font-size: 1rem;
+    }
+  
+    .hero-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .book-stack {
+      width: 200px;
+      height: 260px;
+    }
+  
+    .book {
+      width: 140px;
+      height: 180px;
+      font-size: 1rem;
+    }
+  }
