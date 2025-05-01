@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import booksData from '../../components/booksData';
 import styles from '../../styles/BookClubDetails.module.css';
@@ -6,10 +6,23 @@ import styles from '../../styles/BookClubDetails.module.css';
 const BookDetails = () => {
   const { id } = useParams();
   const bookId = parseInt(id, 10);
-  const book = booksData.find((b) => b.id === bookId);
+  const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data fetching delay
+    setLoading(true);
+    const foundBook = booksData.find((b) => b.id === bookId);
+    setBook(foundBook);
+    setLoading(false);
+  }, [bookId]);
+
+  if (loading) {
+    return <div>Loading book details...</div>;
+  }
 
   if (!book) {
-    return <div>Book not found</div>;
+    return <div>Sorry, the book you are looking for was not found.</div>;
   }
 
   return (
