@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import styles from '../../styles/BookClubDetails.module.css';
+import commonStyles from '../../styles/common.module.css';
 import booksData from '../../components/booksData';
 import { FaShareAlt, FaBookReader } from 'react-icons/fa';
 import { MdJoinRight } from 'react-icons/md';
 import { MdOutlineEditNote } from "react-icons/md";
+import Footer from '../../components/Footer';
 
 const mockClubsData = [
 
@@ -45,9 +47,11 @@ const mockClubsData = [
 const BookClubDetails = () => {
   
   const { id } = useParams();
+  const navigate = useNavigate();
   const [club, setClub] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [isJoined, setIsJoined] = useState(false);
 
   useEffect(() => {
     // Fetch club details by id from mock data
@@ -55,6 +59,7 @@ const BookClubDetails = () => {
     setClub(foundClub);
     setComments([]); // Reset comments when club changes (could be fetched from backend)
     setNewComment('');
+    setIsJoined(false); // Reset join state when club changes
   }, [id]);
 
   // Select a book for the "Currently Reading" section
@@ -72,13 +77,25 @@ const BookClubDetails = () => {
   return (
     <>
       <Navbar />
+      <button
+        className={commonStyles.blueButton}
+        onClick={() => navigate('/bookclubs')}
+        aria-label="Back to Book Club List"
+      >
+        Back to Book Club List
+      </button>
       <div className={styles.container}>
         <header className={styles.header}>
         <h1><FaBookReader className={styles.iconBlue} /> </h1>
           <h1 className={styles.clubName}>{club.name}</h1>
           <div className={styles.actionButtons}>
-            <button className={styles.subscribeButton} title="join club">
-              <MdJoinRight className={styles.subscribeIcon} /> Join Club
+            <button
+              className={`${styles.subscribeButton} ${isJoined ? styles.joinedButton : ''}`}
+              title="join club"
+              onClick={() => setIsJoined(true)}
+              disabled={isJoined}
+            >
+              <MdJoinRight className={styles.subscribeIcon} /> {isJoined ? 'Joined' : 'Join Club'}
             </button>
             <button className={styles.shareButton} title="Share">
               <FaShareAlt className={styles.shareIcon} /> Share
@@ -91,8 +108,10 @@ const BookClubDetails = () => {
               <MdOutlineEditNote className={styles.editIcon} />
             </button>
           </div>
+          {isJoined && (
+            <p className={styles.joinMessage}>Welcome to the Club</p>
+          )}
         </header>
-
         <div className={styles.infoSection}>
           <p><FaBookReader className={styles.iconBlue} /> <strong>Founder:</strong> {club.founder}</p>
           <p><FaBookReader className={styles.iconBlue} /> <strong>Year Founded:</strong> {club.yearFounded}</p>
@@ -166,6 +185,7 @@ const BookClubDetails = () => {
           </section>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

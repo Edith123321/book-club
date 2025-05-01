@@ -18,8 +18,8 @@ const BooksSection = () => {
             </div>
             <div className="book-list">
                 {booksData.slice(0, 3).map(book => (
-                    <Link to='/bookclub/:id' className='book-list-link' key={book.id}>
-                        <div className="book-card">
+                    <div className="book-card" key={book.id}>
+                        <Link to={`/book/${book.id}`} className='book-list-link'>
                             <div className="book-cover-container">
                                 <img src={book.cover} alt={book.title} className="book-cover" />
                             </div>
@@ -35,8 +35,8 @@ const BooksSection = () => {
                                     )}
                                 </div>
                             </div>
-                        </div>
-                    </Link>
+                        </Link>
+                    </div>
                 ))}
             </div>
             <button onClick={handleMoreBooks} className="view-all-btn">View All Trending Books</button>

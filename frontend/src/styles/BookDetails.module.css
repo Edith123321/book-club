@@ -1,0 +1,131 @@
+.bookDetailsContainer {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #150916; /* Dark color for text */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.topMiddle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.mainContent {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.leftSide {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.bookCover {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.middleSide {
+  flex: 2;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.rightSidetop {
+  flex: 1;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  color: #2b27ee; /* Blue color for rating */
+}
+
+.bottomSection {
+  background-color: #d1d1d1;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  color: #333;
+}
+
+.ratingBottomCenter {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 20px;
+  padding: 10px 0;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  color: #2b27ee; /* Blue color for rating */
+}
+
+.ratingBottomLeft {
+  display: flex;
+  justify-content: flex-start;
+  gap: 40px;
+  margin-top: 20px;
+  padding: 10px 0;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  color: #2b27ee; /* Blue color for rating */
+}
+
+.section h2 {
+  margin-top: 0;
+  color: #150916;
+}
+
+.section p {
+  font-size: 1rem;
+  color: #333;
+}
+
+.bookTitle {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+  color: #150916;
+}
+
+.bookFounder {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #555;
+  margin: 0;
+}
+
+.blueButton {
+  background-color: #2b27ee;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin: 10px 0;
+  transition: background-color 0.3s ease;
+}
+
+.blueButton:hover {
+  background-color: #1a1a99;
+}
