@@ -2,191 +2,397 @@ const bookClubsData = [
   {
     id: 1,
     bookClubName: "The Classic Readers",
-    description: "A group dedicated to exploring timeless literature and discussing its relevance today.",
+    description: "A group dedicated to exploring timeless literature from Jane Austen to Tolstoy. We analyze themes, historical context, and why these works remain relevant. New members welcome!",
     meetingFrequency: "Bi-weekly on Sundays",
     currentBook: {
       title: "Pride and Prejudice",
       author: "Jane Austen",
-      cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500"
+      description: "A romantic comedy of manners about Elizabeth Bennet and the proud Mr. Darcy, exploring class, reputation, and love in 19th-century England.",
+      cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500",
+      progress: "Volume 2 completed (21/50 chapters)",
+      pagesRead: "210 of 432",
     },
-    genres: ["Classics", "Literary Fiction", "Historical"],
+    nextMeeting: {
+      date: "June 12, 2023",
+      time: "2:00 PM",
+      location: "The Reading Nook Café",
+      agenda: "Discuss Elizabeth’s refusal of Mr. Collins & economic pressures on women"
+    },
+    discussions: [
+      {
+        user: "Sarah Johnson",
+        comment: "Austen’s wit is unmatched! The way she skewers Mrs. Bennet is hilarious.",
+        timestamp: "2 days ago",
+        likes: 5
+      }
+    ],
+    genres: ["Classics", "Romance"],
     clubCover: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=500",
-    meetingFormat: "In-person at local cafes with rotating locations",
     members: [
-      { name: "Sarah Johnson", avatar: "https://randomuser.me/api/portraits/women/1.jpg" },
-      { name: "Michael Chen", avatar: "https://randomuser.me/api/portraits/men/1.jpg" },
-    //   { name: "Emily Wilson", avatar: "https://randomuser.me/api/portraits/women/2.jpg" }
+      { name: "Sarah Johnson", avatar: "https://randomuser.me/api/portraits/women/1.jpg" }
     ]
   },
   {
     id: 2,
     bookClubName: "Sci-Fi Enthusiasts",
-    description: "For fans of science fiction exploring futuristic concepts and alien worlds.",
+    description: "We explore futuristic worlds, AI ethics, and space operas. From Asimov to modern sci-fi, we debate how fiction predicts reality.",
     meetingFrequency: "Monthly on 3rd Wednesday",
     currentBook: {
       title: "Dune",
       author: "Frank Herbert",
-      cover: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=500"
+      description: "A political epic set on the desert planet Arrakis, where control of the spice melange means control of the universe.",
+      cover: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=500",
+      progress: "Book 1 completed (8/22 chapters)",
+      pagesRead: "188 of 412",
     },
-    genres: ["Science Fiction", "Fantasy", "Dystopian"],
+    nextMeeting: {
+      date: "June 15, 2023",
+      time: "7:30 PM",
+      location: "Zoom",
+      agenda: "Analyze the Bene Gesserit’s influence"
+    },
+    discussions: [
+      {
+        user: "David Kim",
+        comment: "The sandworms are iconic, but the politics are what really hook me.",
+        timestamp: "5 days ago",
+        likes: 8
+      }
+    ],
+    genres: ["Science Fiction", "Dystopian"],
     clubCover: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=500",
-    meetingFormat: "Virtual meetings via Zoom",
     members: [
-      { name: "David Kim", avatar: "https://randomuser.me/api/portraits/men/2.jpg" },
-      { name: "Lisa Park", avatar: "https://randomuser.me/api/portraits/women/3.jpg" },
-      { name: "Robert Smith", avatar: "https://randomuser.me/api/portraits/men/3.jpg" }
+      { name: "David Kim", avatar: "https://randomuser.me/api/portraits/men/2.jpg" }
     ]
   },
   {
     id: 3,
     bookClubName: "Mystery Solvers",
-    description: "We read and discuss mystery novels, trying to solve the cases before the big reveal!",
+    description: "True crime fans and puzzle lovers unite! We dissect clues, debate red herrings, and guess whodunit before the reveal.",
     meetingFrequency: "Weekly on Thursdays",
     currentBook: {
       title: "Gone Girl",
       author: "Gillian Flynn",
-      cover: "https://images.unsplash.com/photo-1584824486539-53bb4646bdbc?w=500"
+      description: "A psychological thriller about a woman’s disappearance and the dark secrets in her marriage.",
+      cover: "https://images.unsplash.com/photo-1584824486539-53bb4646bdbc?w=500",
+      progress: "Part 1 completed (15/32 chapters)",
+      pagesRead: "120 of 415",
     },
-    genres: ["Mystery", "Thriller", "Crime"],
+    nextMeeting: {
+      date: "June 9, 2023",
+      time: "6:30 PM",
+      location: "Mystery Lovers Bookstore",
+      agenda: "Debate: Is Nick guilty?"
+    },
+    discussions: [
+      {
+        user: "Olivia Martinez",
+        comment: "Amy’s diary entries are chilling. Flynn writes unreliable narrators so well!",
+        timestamp: "1 day ago",
+        likes: 7
+      }
+    ],
+    genres: ["Thriller", "Crime"],
     clubCover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500",
-    meetingFormat: "Hybrid (in-person with Zoom option)",
     members: [
-      { name: "Olivia Martinez", avatar: "https://randomuser.me/api/portraits/women/4.jpg" },
-      { name: "James Wilson", avatar: "https://randomuser.me/api/portraits/men/4.jpg" },
-      { name: "Sophia Garcia", avatar: "https://randomuser.me/api/portraits/women/5.jpg" }
+      { name: "Olivia Martinez", avatar: "https://randomuser.me/api/portraits/women/4.jpg" }
     ]
   },
   {
     id: 4,
     bookClubName: "Non-Fiction Network",
-    description: "Exploring thought-provoking non-fiction across various topics from science to memoirs.",
+    description: "For readers who love facts! We cover history, science, memoirs, and investigative journalism.",
     meetingFrequency: "Twice a month on Tuesdays",
     currentBook: {
-      title: "Sapiens: A Brief History of Humankind",
+      title: "Sapiens",
       author: "Yuval Noah Harari",
-      cover: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=500"
+      description: "A sweeping history of humankind, from evolution to the rise of empires.",
+      cover: "https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=500",
+      progress: "Ch. 5 completed (5/20 chapters)",
+      pagesRead: "150 of 443",
     },
-    genres: ["Non-Fiction", "History", "Science", "Biography"],
+    nextMeeting: {
+      date: "June 7, 2023",
+      time: "6:00 PM",
+      location: "Virtual",
+      agenda: "Discuss the Agricultural Revolution’s impact"
+    },
+    discussions: [
+      {
+        user: "Daniel Brown",
+        comment: "Harari’s take on how wheat ‘domesticated’ humans blew my mind.",
+        timestamp: "3 days ago",
+        likes: 4
+      }
+    ],
+    genres: ["History", "Science"],
     clubCover: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500",
-    meetingFormat: "Virtual with occasional in-person meetups",
     members: [
-      { name: "Daniel Brown", avatar: "https://randomuser.me/api/portraits/men/5.jpg" },
-      { name: "Emma Davis", avatar: "https://randomuser.me/api/portraits/women/6.jpg" },
-      { name: "William Taylor", avatar: "https://randomuser.me/api/portraits/men/6.jpg" }
+      { name: "Daniel Brown", avatar: "https://randomuser.me/api/portraits/men/5.jpg" }
     ]
   },
   {
     id: 5,
-    bookClubName: "Contemporary Fiction Fans",
-    description: "Discussing modern literature and its reflection of today's society.",
-    meetingFrequency: "Monthly on 2nd Saturday",
-    currentBook: {
-      title: "Normal People",
-      author: "Sally Rooney",
-      cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500"
-    },
-    genres: ["Contemporary", "Literary Fiction", "Drama"],
-    clubCover: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=500",
-    meetingFormat: "In-person at members' homes (rotating)",
-    members: [
-      { name: "Sophie Anderson", avatar: "https://randomuser.me/api/portraits/women/7.jpg" },
-      { name: "Christopher Lee", avatar: "https://randomuser.me/api/portraits/men/7.jpg" },
-      { name: "Ava Hernandez", avatar: "https://randomuser.me/api/portraits/women/8.jpg" }
-    ]
-  },
-  {
-    id: 6,
     bookClubName: "Fantasy Realm Readers",
-    description: "For lovers of epic fantasy worlds, magic systems, and heroic journeys.",
+    description: "Dragons, magic, and epic quests! We dive deep into world-building and mythical lore.",
     meetingFrequency: "Every 3 weeks on Fridays",
     currentBook: {
       title: "The Name of the Wind",
       author: "Patrick Rothfuss",
-      cover: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=500"
+      description: "A bard’s retelling of his life as a legendary wizard, full of music and mystery.",
+      cover: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=500",
+      progress: "Ch. 30 completed (30/92 chapters)",
+      pagesRead: "300 of 662",
     },
-    genres: ["Fantasy", "Adventure", "Magic"],
+    nextMeeting: {
+      date: "June 10, 2023",
+      time: "7:00 PM",
+      location: "The Enchanted Teapot (theme café)",
+      agenda: "Kvothe’s time at the University"
+    },
+    discussions: [
+      {
+        user: "Ethan Moore",
+        comment: "The magic system based on sympathy is so original!",
+        timestamp: "1 week ago",
+        likes: 6
+      }
+    ],
+    genres: ["Fantasy", "Adventure"],
     clubCover: "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=500",
-    meetingFormat: "Virtual with themed discussions",
     members: [
-      { name: "Ethan Moore", avatar: "https://randomuser.me/api/portraits/men/8.jpg" },
-      { name: "Mia Jackson", avatar: "https://randomuser.me/api/portraits/women/9.jpg" },
-      { name: "Alexander White", avatar: "https://randomuser.me/api/portraits/men/9.jpg" }
+      { name: "Ethan Moore", avatar: "https://randomuser.me/api/portraits/men/8.jpg" }
     ]
   },
   {
-    id: 7,
+    id: 6,
     bookClubName: "BIPOC Authors Collective",
-    description: "Focusing on works by Black, Indigenous, and People of Color authors.",
+    description: "Celebrating works by Black, Indigenous, and People of Color authors across genres.",
     meetingFrequency: "Monthly on 1st Sunday",
     currentBook: {
       title: "The Hate U Give",
       author: "Angie Thomas",
-      cover: "https://images.unsplash.com/photo-1622675363311-3e1904dc1885?w=500"
+      description: "A teen grapples with police brutality and activism after witnessing her friend’s death.",
+      cover: "https://images.unsplash.com/photo-1622675363311-3e1904dc1885?w=500",
+      progress: "Ch. 12 completed (12/26 chapters)",
+      pagesRead: "180 of 444",
     },
-    genres: ["Contemporary", "Social Justice", "Diverse Voices"],
+    nextMeeting: {
+      date: "June 5, 2023",
+      time: "4:00 PM",
+      location: "Community Center",
+      agenda: "Discuss Starr’s code-switching"
+    },
+    discussions: [
+      {
+        user: "Jasmine Williams",
+        comment: "This book should be required reading. It’s heartbreaking but necessary.",
+        timestamp: "4 days ago",
+        likes: 10
+      }
+    ],
+    genres: ["Contemporary", "Social Justice"],
     clubCover: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=500",
-    meetingFormat: "Hybrid format with rotating facilitators",
     members: [
-      { name: "Jasmine Williams", avatar: "https://randomuser.me/api/portraits/women/10.jpg" },
-      { name: "Tyler Johnson", avatar: "https://randomuser.me/api/portraits/men/10.jpg" },
-      { name: "Nia Rodriguez", avatar: "https://randomuser.me/api/portraits/women/11.jpg" }
+      { name: "Jasmine Williams", avatar: "https://randomuser.me/api/portraits/women/10.jpg" }
     ]
   },
   {
-    id: 8,
+    id: 7,
     bookClubName: "Historical Fiction Society",
-    description: "Exploring different time periods through well-researched historical fiction.",
+    description: "We time-travel through novels set in vivid historical periods, from ancient Rome to WWII.",
     meetingFrequency: "Every 6 weeks on Saturdays",
     currentBook: {
       title: "The Pillars of the Earth",
       author: "Ken Follett",
-      cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=500"
+      description: "A 12th-century epic about the building of a cathedral and the lives it intertwines.",
+      cover: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=500",
+      progress: "Part 3 completed (45/110 chapters)",
+      pagesRead: "400 of 973",
     },
-    genres: ["Historical Fiction", "Drama", "Epic"],
+    nextMeeting: {
+      date: "June 18, 2023",
+      time: "3:00 PM",
+      location: "St. Mary’s Cathedral (for ambiance!)",
+      agenda: "Medieval architecture & power struggles"
+    },
+    discussions: [
+      {
+        user: "Benjamin Martin",
+        comment: "Follett makes stone masonry dramatic—how?!",
+        timestamp: "2 weeks ago",
+        likes: 3
+      }
+    ],
+    genres: ["Historical Fiction", "Epic"],
     clubCover: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=500",
-    meetingFormat: "In-person at historical sites when possible",
     members: [
-      { name: "Benjamin Martin", avatar: "https://randomuser.me/api/portraits/men/11.jpg" },
-      { name: "Charlotte Thompson", avatar: "https://randomuser.me/api/portraits/women/12.jpg" },
-      { name: "Henry Adams", avatar: "https://randomuser.me/api/portraits/men/12.jpg" }
+      { name: "Benjamin Martin", avatar: "https://randomuser.me/api/portraits/men/11.jpg" }
     ]
   },
   {
-    id: 9,
+    id: 8,
     bookClubName: "Romance Readers Circle",
-    description: "For those who love love! Discussing all subgenres of romance novels.",
+    description: "For those who believe in HEAs (happily ever afters)! We read everything from sweet to steamy.",
     meetingFrequency: "Twice a month on Wednesdays",
     currentBook: {
       title: "Beach Read",
       author: "Emily Henry",
-      cover: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=500"
+      description: "Two rival authors swap genres and unexpectedly fall in love.",
+      cover: "https://images.unsplash.com/photo-1589998059171-988d887df646?w=500",
+      progress: "Ch. 10 completed (10/24 chapters)",
+      pagesRead: "150 of 384",
     },
-    genres: ["Romance", "Contemporary", "Chick Lit"],
+    nextMeeting: {
+      date: "June 8, 2023",
+      time: "7:00 PM",
+      location: "Virtual (Pajamas encouraged!)",
+      agenda: "January & Gus’s love-hate dynamic"
+    },
+    discussions: [
+      {
+        user: "Lily Scott",
+        comment: "The banter is *chef’s kiss*. Henry writes chemistry so well!",
+        timestamp: "2 days ago",
+        likes: 9
+      }
+    ],
+    genres: ["Romance", "Contemporary"],
     clubCover: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500",
-    meetingFormat: "Virtual with fun themed meetings",
     members: [
-      { name: "Lily Scott", avatar: "https://randomuser.me/api/portraits/women/13.jpg" },
-      { name: "Noah Green", avatar: "https://randomuser.me/api/portraits/men/13.jpg" },
-      { name: "Chloe Baker", avatar: "https://randomuser.me/api/portraits/women/14.jpg" }
+      { name: "Lily Scott", avatar: "https://randomuser.me/api/portraits/women/13.jpg" }
+    ]
+  },
+  {
+    id: 9,
+    bookClubName: "Horror Book Club",
+    description: "We read spine-chilling tales—from Gothic classics to modern psychological horror.",
+    meetingFrequency: "Monthly on full moons",
+    currentBook: {
+      title: "The Haunting of Hill House",
+      author: "Shirley Jackson",
+      description: "A group investigates paranormal activity in a notoriously haunted mansion.",
+      cover: "https://images.unsplash.com/photo-1600189261867-8e2c085aaf1d?w=500",
+      progress: "Ch. 5 completed (5/9 chapters)",
+      pagesRead: "80 of 246",
+    },
+    nextMeeting: {
+      date: "June 4, 2023 (Full Moon)",
+      time: "9:00 PM",
+      location: "Candlelit Zoom",
+      agenda: "Is the house haunted, or is Eleanor unstable?"
+    },
+    discussions: [
+      {
+        user: "Nathan Drake",
+        comment: "That opening paragraph is the best in horror literature. Change my mind.",
+        timestamp: "6 days ago",
+        likes: 7
+      }
+    ],
+    genres: ["Horror", "Gothic"],
+    clubCover: "https://images.unsplash.com/photo-1518709766630-a6a1f151e8b3?w=500",
+    members: [
+      { name: "Nathan Drake", avatar: "https://randomuser.me/api/portraits/men/15.jpg" }
     ]
   },
   {
     id: 10,
+    bookClubName: "Poetry & Prose",
+    description: "We analyze verse, short stories, and lyrical novels. All about the beauty of language!",
+    meetingFrequency: "Weekly on Mondays",
+    currentBook: {
+      title: "Milk and Honey",
+      author: "Rupi Kaur",
+      description: "A collection of poetry about survival, love, and healing.",
+      cover: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500",
+      progress: "‘The hurting’ section completed",
+      pagesRead: "60 of 208",
+    },
+    nextMeeting: {
+      date: "June 6, 2023",
+      time: "5:00 PM",
+      location: "Park picnic (weather permitting)",
+      agenda: "Discuss trauma & recovery themes"
+    },
+    discussions: [
+      {
+        user: "Sophie Lee",
+        comment: "Kaur’s minimalist style packs such emotional punch.",
+        timestamp: "1 day ago",
+        likes: 5
+      }
+    ],
+    genres: ["Poetry", "Literary"],
+    clubCover: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=500",
+    members: [
+      { name: "Sophie Lee", avatar: "https://randomuser.me/api/portraits/women/17.jpg" }
+    ]
+  },
+  {
+    id: 11,
     bookClubName: "Young Adult Explorers",
-    description: "Reading and discussing the best of young adult literature, both classic and contemporary.",
+    description: "We read YA across genres—fantasy, contemporary, dystopian—and discuss coming-of-age themes.",
     meetingFrequency: "Monthly on last Friday",
     currentBook: {
       title: "The Fault in Our Stars",
       author: "John Green",
-      cover: "https://images.unsplash.com/photo-1584824486539-53bb4646bdbc?w=500"
+      description: "Two teens with cancer fall in love while grappling with mortality.",
+      cover: "https://images.unsplash.com/photo-1584824486539-53bb4646bdbc?w=500",
+      progress: "Ch. 7 completed (7/25 chapters)",
+      pagesRead: "120 of 313",
     },
-    genres: ["Young Adult", "Coming of Age", "Contemporary"],
+    nextMeeting: {
+      date: "June 30, 2023",
+      time: "6:00 PM",
+      location: "Virtual",
+      agenda: "Hazel & Augustus’s Amsterdam trip"
+    },
+    discussions: [
+      {
+        user: "Zoe Carter",
+        comment: "I’ve cried three times already. How is Green this good at writing teens?",
+        timestamp: "3 days ago",
+        likes: 8
+      }
+    ],
+    genres: ["YA", "Contemporary"],
     clubCover: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=500",
-    meetingFormat: "Hybrid with active online discussion forum",
     members: [
-      { name: "Zoe Carter", avatar: "https://randomuser.me/api/portraits/women/15.jpg" },
-      { name: "Jacob Murphy", avatar: "https://randomuser.me/api/portraits/men/14.jpg" },
-      { name: "Hannah Evans", avatar: "https://randomuser.me/api/portraits/women/16.jpg" }
+      { name: "Zoe Carter", avatar: "https://randomuser.me/api/portraits/women/15.jpg" }
+    ]
+  },
+  {
+    id: 12,
+    bookClubName: "Graphic Novel Guild",
+    description: "We celebrate visual storytelling! From manga to memoirs, we analyze art and narrative together.",
+    meetingFrequency: "Monthly on 2nd Saturday",
+    currentBook: {
+      title: "Persepolis",
+      author: "Marjane Satrapi",
+      description: "A memoir of growing up during the Iranian Revolution, told in bold black-and-white art.",
+      cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500",
+      progress: "Part 1 completed",
+      pagesRead: "80 of 153",
+    },
+    nextMeeting: {
+      date: "June 11, 2023",
+      time: "1:00 PM",
+      location: "Comic Book Store",
+      agenda: "Discuss Satrapi’s artistic style"
+    },
+    discussions: [
+      {
+        user: "Alex Wong",
+        comment: "The simplicity of the art makes the heavy themes hit even harder.",
+        timestamp: "1 week ago",
+        likes: 6
+      }
+    ],
+    genres: ["Graphic Novel", "Memoir"],
+    clubCover: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=500",
+    members: [
+      { name: "Alex Wong", avatar: "https://randomuser.me/api/portraits/men/16.jpg" }
     ]
   }
 ];
