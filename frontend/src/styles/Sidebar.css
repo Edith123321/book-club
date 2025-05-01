@@ -1,0 +1,42 @@
+.sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #6A1B9A, #8E24AA);
+    padding: 20px;
+    color: white;
+    position: relative; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar-title {
+    font-size: 24px;
+    margin-bottom: 30px;
+    font-weight: bold;
+    text-align: center;
+    color: #f3e8ff; 
+  }
+  
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebar-link {
+    color: #e9d5ff; /* Soft purple */
+    text-decoration: none;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background 0.3s, color 0.3s;
+  }
+  
+  .sidebar-link:hover {
+    background-color: #6b21a8; /* Medium purple */
+    color: #ffffff;
+  }
+  
+  .sidebar-link.active {
+    background-color: #7e22ce; /* Lighter active purple */
+    color: #ffffff;
+  }
+  

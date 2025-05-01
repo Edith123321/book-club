@@ -28,9 +28,12 @@ const BookListSection = () => {
 
             <div className="book-clubs-container">
                 {bookClubsData.slice(0, 3).map((club) => (
-                    <Link to = '/bookclub/:id' className='book-club-card-link'>
-                    <div key={club.id} className="book-club-card">
-                        <div className="club-header">
+                    <div
+                        key={club.id}
+                        className="book-club-card"
+                        onClick={() => navigate(`/bookclub/${club.id}`)}
+                        style={{ cursor: 'pointer' }}
+                    >                        <div className="club-header">
                             <h2 className="club-name">{club.bookClubName}</h2>
                             <span className="member-count">{club.members.length} members</span>
                         </div>
@@ -63,14 +66,14 @@ const BookListSection = () => {
 
 
                     </div>
-                    </Link>
+
                 ))}
             </div>
             <div className="view-all-container">
                 <button onClick={handleViewAllBookClubs} className="view-all-button">View All Bookclubs</button>
             </div>
 
-        </div>
+        </div >
     );
 };
 
