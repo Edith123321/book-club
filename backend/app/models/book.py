@@ -1,4 +1,7 @@
+from datetime import datetime
 from app import db
+from sqlalchemy.dialects.postgresql import ARRAY
+from .review import Review
 
 class Book(db.Model):
     __tablename__ = 'books'
@@ -6,29 +9,35 @@ class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     author = db.Column(db.String(100), nullable=False)
-    genre = db.Column(db.String(50), nullable=False)
-    description = db.Column(db.String(500), nullable=True)
-    year = db.Column(db.Integer, nullable=False)
+    genres = db.Column(db.JSON, nullable=True)
+    synopsis = db.Column(db.Text, nullable=True)
+    date_published = db.Column(db.DateTime, nullable=False)
+    cover_image_url = db.Column(db.String, nullable=True)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    rating = db.Column(db.Float, nullable=True)
+    language = db.Column(db.String(50), nullable=True)
+    pages = db.Column(db.Integer, nullable=True)
 
-    # Add the relationship to Summary and include cascade='all, delete-orphan'
+    # Define relationships here after both classes have been defined
     summaries = db.relationship('Summary', back_populates='book', cascade='all, delete-orphan')
 
-    def __init__(self, title, author, genre, description, year):
-        self.title = title
-        self.author = author
-        self.genre = genre
-        self.description = description
-        self.year = year
-
-    def __repr__(self):
-        return f'<Book {self.title} by {self.author}>'
+    # Use a string reference to the 'Review' class to avoid circular imports
+    reviews = db.relationship('Review', back_populates='book', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
             "id": self.id,
             "title": self.title,
             "author": self.author,
-            "genre": self.genre,
-            "description": self.description,
-            "year": self.year
+            "genres": self.genres,
+            "synopsis": self.synopsis,
+            "date_published": self.date_published.isoformat() if self.date_published else None,
+            "cover_image_url": self.cover_image_url,
+            "date_added": self.date_added.isoformat() if self.date_added else None,
+            "rating": self.rating,
+            "language": self.language,
+            "pages": self.pages
         }
+
+    def __repr__(self):
+        return f'<Book {self.title} by {self.author}>'

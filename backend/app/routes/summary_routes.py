@@ -9,18 +9,32 @@ summary_bp = Blueprint('summary_bp', __name__, url_prefix='/summaries')
 @summary_bp.route('/', methods=['POST'])
 def create_summary():
     data = request.get_json()
+    
+    # Validate all required foreign keys exist
+    if not all(key in data for key in ['content', 'book_id', 'user_id', 'book_club_id']):
+        return jsonify({'error': 'Missing required fields'}), 400
+        
+    # Verify references exist
+    if not Book.query.get(data['book_id']):
+        return jsonify({'error': 'Book not found'}), 404
+    if not User.query.get(data['user_id']):
+        return jsonify({'error': 'User not found'}), 404
+    if not BookClub.query.get(data['book_club_id']):
+        return jsonify({'error': 'Book club not found'}), 404
+        
     try:
-        new_summary = Summary(
+        summary = Summary(
             content=data['content'],
-            book_id=data['book_id']
+            book_id=data['book_id'],
+            user_id=data['user_id'],
+            book_club_id=data['book_club_id']
         )
-        db.session.add(new_summary)
+        db.session.add(summary)
         db.session.commit()
-        return summary_schema.jsonify(new_summary), 201
-    except KeyError as e:
-        return jsonify({"error": f"Missing field: {e}"}), 400
+        return jsonify(summary.to_dict()), 201
     except Exception as e:
-        return jsonify({"error": "Failed to create summary", "details": str(e)}), 500
+        db.session.rollback()
+        return jsonify({'error':str(e)}), 500
 
 # GET all summaries
 @summary_bp.route('/', methods=['GET'])

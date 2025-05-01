@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from datetime import datetime
 from app import db
 from app.models.book import Book
 
@@ -29,18 +30,26 @@ def get_book(id):
 def create_book():
     data = request.get_json()
     try:
+        required_fields = ['title', 'author']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+
         new_book = Book(
             title=data['title'],
             author=data['author'],
-            genre=data.get('genre', 'Unknown'),
-            description=data.get('description'),
-            year=data.get('year', 0)
+            genres=data.get('genres', []),
+            synopsis=data.get('synopsis'),
+            rating=data.get('rating'),
+            language=data.get('language'),
+            pages=data.get('pages'),
+            date_published=datetime.strptime(data['date_published'], "%Y-%m-%d") if data.get('date_published') else None,
+            cover_image_url=data.get('cover_image_url'),
+            date_added=datetime.strptime(data['date_added'], "%Y-%m-%d") if data.get('date_added') else datetime.utcnow()
         )
         db.session.add(new_book)
         db.session.commit()
         return jsonify(new_book.to_dict()), 201
-    except KeyError as e:
-        return jsonify({"error": f"Missing field: {e}"}), 400
     except Exception as e:
         return jsonify({"error": "Failed to create book", "details": str(e)}), 500
 
@@ -55,9 +64,16 @@ def update_book(id):
         data = request.get_json()
         book.title = data.get('title', book.title)
         book.author = data.get('author', book.author)
-        book.genre = data.get('genre', book.genre)
-        book.description = data.get('description', book.description)
-        book.year = data.get('year', book.year)
+        book.genres = data.get('genres', book.genres)
+        book.synopsis = data.get('synopsis', book.synopsis)
+        book.rating = data.get('rating', book.rating)
+        book.language = data.get('language', book.language)
+        book.pages = data.get('pages', book.pages)
+        book.cover_image_url = data.get('cover_image_url', book.cover_image_url)
+        if data.get('date_published'):
+            book.date_published = datetime.strptime(data['date_published'], "%Y-%m-%d")
+        if data.get('date_added'):
+            book.date_added = datetime.strptime(data['date_added'], "%Y-%m-%d")
 
         db.session.commit()
         return jsonify(book.to_dict()), 200

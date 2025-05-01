@@ -20,18 +20,20 @@ def create_app():
     CORS(app)
 
     # Import models to register them with SQLAlchemy
+    from app.models.user import User
     from app.models.book import Book
     from app.models.summary import Summary
+    from app.models.review import Review
+    from app.models.bookclub import BookClub
 
     # Import and register blueprints
     from app.routes.book_routes import book_bp
     from app.routes.summary_routes import summary_bp
+    from app.routes.review_routes import review_bp
+    from app.routes.bookclub_routes import bookclub_bp
 
     app.register_blueprint(book_bp)
     app.register_blueprint(summary_bp)
-
-    from app.routes.review_routes import review_bp
     app.register_blueprint(review_bp)
-
-
+    app.register_blueprint(bookclub_bp, url_prefix='/bookclubs')
     return app
