@@ -24,6 +24,7 @@ import AdminSchedules from './pages/admin/AdminSchedules';
 // Layout
 import Sidebar
  from './components/Sidebar';
+import BookClubDetails from './pages/users/BookClubDetails';
  const AdminLayout = ({ children }) => (
   <div style={{ display: 'flex' }}>
     <Sidebar />
@@ -44,6 +45,7 @@ const App = () => {
         <Route path="/bookclubs" element={<BookClubList />} />
         <Route path="/add-bookclub" element={<AddBookClub />} />
         <Route path="/edit-bookclub/:id" element={<EditBookClub />} />
+        <Route path ="/bookclub/:id" element={<BookClubDetails />} />
         <Route path="/bookclub/:id/schedule-meeting" element={<ScheduleMeeting />} />
         <Route path="/books" element={<BookList />} />
         <Route path="/book/:id" element={<BookDetails />} />

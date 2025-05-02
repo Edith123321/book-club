@@ -13,6 +13,235 @@
     margin-bottom: 20px;
   }
   
+  /* Dashboard Section Styles */
+.dashboard-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.section-header h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  color: #6A1B9A;
+}
+
+.section-header h3 svg {
+  margin-right: 8px;
+}
+
+.view-all {
+  color: #6A1B9A;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.view-all:hover {
+  text-decoration: underline;
+}
+
+/* Book Summaries Styles */
+.summaries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.summary-card {
+  background: #f9f9f9;
+  border-radius: 6px;
+  padding: 15px;
+  border-left: 3px solid #6A1B9A;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.summary-header h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.club-tag {
+  background: #F3E5F5;
+  color: #6A1B9A;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.summary-text {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #555;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.summary-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.rating .stars {
+  color: #FFC107;
+  margin-right: 5px;
+}
+
+/* Book Analytics Styles */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.analytics-card {
+  background: #f9f9f9;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.analytics-card h4 {
+  margin: 0 0 15px;
+  font-size: 1rem;
+  color: #6A1B9A;
+}
+
+.book-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.book-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.book-list li:last-child {
+  border-bottom: none;
+}
+
+.book-title {
+  font-weight: 500;
+}
+
+.read-count {
+  color: #666;
+}
+
+.rating-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rating-list li {
+  margin-bottom: 10px;
+}
+
+.genre {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 3px;
+}
+
+.rating-bar {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  position: relative;
+}
+
+.rating-fill {
+  height: 100%;
+  background: #6A1B9A;
+  border-radius: 10px;
+}
+
+.rating-value {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: white;
+  font-size: 0.7rem;
+}
+
+.trend-chart {
+  margin-top: 15px;
+}
+
+.chart-placeholder {
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  gap: 10px;
+}
+
+.chart-bar {
+  background: #6A1B9A;
+  width: 30px;
+  transition: height 0.3s ease;
+  position: relative;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+.chart-labels span {
+  width: 30px;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.chart-legend {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .summaries-grid,
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
   .page-header h2 {
     margin: 0;
     color: #6A1B9A;
@@ -60,6 +289,7 @@ th {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    overflow-x: scroll;
   }
   
   .modal {
@@ -146,7 +376,7 @@ th {
     border-radius: 4px;
     cursor: pointer;
   }
-  
+  .add-member-btn,
   .submit-btn {
     background: #6A1B9A;
     color: white;

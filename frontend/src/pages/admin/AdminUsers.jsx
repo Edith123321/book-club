@@ -5,10 +5,10 @@ import '../../styles/AdminPages.css';
 const AdminUsers = () => {
   // Sample data
   const initialUsers = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Member', status: 'Active', created: '2023-01-15', lastLogin: '2023-06-20' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Moderator', status: 'Active', created: '2023-02-10', lastLogin: '2023-06-18' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Member', status: 'Inactive', created: '2023-03-05', lastLogin: '2023-05-15' },
-    { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'Admin', status: 'Active', created: '2023-06-01', lastLogin: '2023-06-19' },
+    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Member', status: 'Active', created: '2025-01-15', lastLogin: '2025-03-20' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Member', status: 'Active', created: '2025-02-10', lastLogin: '2025-04-18' },
+    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Member', status: 'Inactive', created: '2025-03-05', lastLogin: '2025-05-01' },
+    { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'Admin', status: 'Active', created: '2025-02-01', lastLogin: '2025-04-19' },
   ];
 
   const [users, setUsers] = useState(initialUsers);

@@ -116,7 +116,7 @@ const BookClubList = () => {
                 <span className="member-count">{club.members.length} members</span>
               </div>
 
-              <p className="club-description">{club.description}</p>
+              <p className="club-description">{club.description.slice(0,100)}...</p>
 
               <div className="genres-container">
                 {club.genres.map((genre, index) => (

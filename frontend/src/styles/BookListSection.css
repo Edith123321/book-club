@@ -1,4 +1,5 @@
-/* Book List Section Styles */
+
+
 .bookclubs-title {
     text-align: center;
     color: #333;
@@ -9,10 +10,7 @@
     font-size: 2.5rem;
     margin-top: 40px;
     color: #333;
-    font-weight: 800;
-}
-.book-club-card-link{
-    text-decoration:  none;
+    font-weight: 700;
 }
 
 .bookclubs-title p {
@@ -20,6 +18,11 @@
     color: #666;
     max-width: 600px;
     margin: 0 auto;
+}
+
+.book-club-card-link {
+    text-decoration: none;
+    color: inherit;
 }
 
 .book-clubs-container {
@@ -51,9 +54,10 @@
 
 .club-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: space-between; /* Ensures they are on the same line, pushed to edges */
+    align-items: center;            /* Vertically align center */
     margin-bottom: 1rem;
+    gap: 1rem;                      /* Optional: Adds space if needed */
 }
 
 .club-name {
@@ -61,6 +65,10 @@
     font-weight: 700;
     color: #6A1B9A;
     margin: 0;
+    flex-grow: 1; /* Allows the title to take available space */
+    white-space: nowrap; /* Prevent wrapping if not desired */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Truncate long names with "..." */
 }
 
 .member-count {
@@ -69,7 +77,9 @@
     background: #c391cb;
     padding: 0.3rem 0.6rem;
     border-radius: 12px;
+    white-space: nowrap;
 }
+
 
 .club-description {
     font-size: 0.95rem;
@@ -109,7 +119,7 @@
     height: 75px;
     object-fit: cover;
     border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .book-title {
@@ -157,6 +167,12 @@
     background-color: #3d8b40;
 }
 
+.join-club-button:focus,
+.view-all-button:focus {
+    outline: 2px solid #6A1B9A;
+    outline-offset: 2px;
+}
+
 .genres-container {
     display: flex;
     flex-wrap: wrap;
@@ -171,15 +187,17 @@
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 500;
-}/* View All Button Styles */
+}
+
+/* View All Button Styles */
 .view-all-container {
     display: flex;
     justify-content: center;
     margin: 3rem 0;
     padding: 0 2rem;
-  }
-  
-  .view-all-button {
+}
+
+.view-all-button {
     background: linear-gradient(135deg, #FF8C00, #FFD700); /* Orange to yellow gradient */
     color: white;
     border: none;
@@ -194,33 +212,34 @@
     letter-spacing: 0.5px;
     position: relative;
     overflow: hidden;
-  }
-  
-  .view-all-button:hover {
+}
+
+.view-all-button:hover {
     background: linear-gradient(135deg, #FFD700, #FFC107); /* Darker orange to brighter yellow */
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(255, 165, 0, 0.4);
-  }
-  
-  .view-all-button:active {
+}
+
+.view-all-button:active {
     transform: translateY(1px);
-  }
-  
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .book-and-button-container {
         flex-direction: column;
     }
+
     .view-all-button {
         padding: 0.7rem 2rem;
         font-size: 1rem;
-      }
-    
+    }
+
     .join-club-button {
         width: 100%;
         padding: 0.6rem;
     }
-    
+
     .join-club-button.joined {
         width: 100%;
     }

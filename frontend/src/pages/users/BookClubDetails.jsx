@@ -1,195 +1,185 @@
-
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../../components/Navbar';
-import styles from '../../styles/BookClubDetails.module.css';
-import commonStyles from '../../styles/common.module.css';
-import booksData from '../../components/booksData';
-import { FaShareAlt, FaBookReader } from 'react-icons/fa';
-import { MdJoinRight } from 'react-icons/md';
-import { MdOutlineEditNote } from "react-icons/md";
+import bookClubsData from '../../components/bookClubsData';
 import Footer from '../../components/Footer';
-
-const mockClubsData = [
-
-  {
-    id: '1',
-    name: 'Classic Literature Club',
-    founder: 'Jane Austen',
-    yearFounded: 'January 2024',
-    members: 42,
-    about: `Welcome to the Classic Literature Club! We're dedicated to exploring timeless literary works that have shaped our culture and understanding of the human experience.
-    From ancient epics to 20th-century masterpieces, we delve into the themes, characters, and historical contexts of these influential texts.
-    Join us for engaging discussions, thought-provoking analyses, and a shared love for the written word. Whether you're a seasoned reader or just starting your literary journey, there's a place for you here.
-    Our club meets monthly to discuss a selected book, and we also host special events such as author talks, film screenings, and writing workshops.
-    We believe in the power of literature to inspire, challenge, and connect us. Together, let's explore the beauty and complexity of classic literature.
-    We look forward to welcoming you to our next meeting!`,
-    nextMeeting: {
-      dateTime: 'February 15, 2024, 6:00 PM',
-      venue: 'Community Library, Room 3',
-    }
-  },
-  {
-    id: '2',
-    name: 'Modern Fiction Club',
-    founder: 'George Orwell',
-    yearFounded: 'March 2023',
-    members: 30,
-    about: `The Modern Fiction Club focuses on contemporary novels and stories that reflect current societal issues and trends.
-    We explore diverse voices and narratives that challenge traditional storytelling.
-    Join us for lively discussions and meetups.`,
-    nextMeeting: {
-      dateTime: 'March 10, 2024, 7:00 PM',
-      venue: 'Downtown Bookstore, Room 1',
-    }
-  }
-];
+import '../../styles/BookClubDetails.css'
 
 const BookClubDetails = () => {
-  
   const { id } = useParams();
   const navigate = useNavigate();
-  const [club, setClub] = useState(null);
-  const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
-  const [isJoined, setIsJoined] = useState(false);
+  const [discussions, setDiscussions] = useState([]);
 
-  useEffect(() => {
-    // Fetch club details by id from mock data
-    const foundClub = mockClubsData.find(c => c.id === id) || mockClubsData[0];
-    setClub(foundClub);
-    setComments([]); // Reset comments when club changes (could be fetched from backend)
-    setNewComment('');
-    setIsJoined(false); // Reset join state when club changes
-  }, [id]);
+  const club = bookClubsData.find((club) => club.id === parseInt(id));
 
-  // Select a book for the "Currently Reading" section
-  const currentBook = booksData.find(book => book.id === 1); // The Midnight Library
+  if (!club) {
+    return <div className="not-found">Book club not found</div>;
+  }
 
   const handleAddComment = (e) => {
     e.preventDefault();
-    if (newComment.trim() === '') return;
-    setComments(prev => [...prev, { id: Date.now(), text: newComment.trim() }]);
-    setNewComment('');
+    if (newComment.trim()) {
+      const comment = {
+        user: 'You',
+        comment: newComment,
+        timestamp: 'Just now',
+        likes: 0,
+      };
+      setDiscussions([...discussions, comment]);
+      setNewComment('');
+    }
   };
 
-  if (!club) return <div>Loading...</div>;
-
   return (
-    <>
-      <Navbar />
-      <button
-        className={commonStyles.blueButton}
-        onClick={() => navigate('/bookclubs')}
-        aria-label="Back to Book Club List"
-      >
-        Back to Book Club List
+    <div className="book-club-details">
+      {/* Back Button */}
+      <button className="back-button" onClick={() => navigate('/bookclubs')}>
+        ← Back to Book Clubs
       </button>
-      <div className={styles.container}>
-        <header className={styles.header}>
-        <h1><FaBookReader className={styles.iconBlue} /> </h1>
-          <h1 className={styles.clubName}>{club.name}</h1>
-          <div className={styles.actionButtons}>
-            <button
-              className={`${styles.subscribeButton} ${isJoined ? styles.joinedButton : ''}`}
-              title="join club"
-              onClick={() => setIsJoined(true)}
-              disabled={isJoined}
-            >
-              <MdJoinRight className={styles.subscribeIcon} /> {isJoined ? 'Joined' : 'Join Club'}
-            </button>
-            <button className={styles.shareButton} title="Share">
-              <FaShareAlt className={styles.shareIcon} /> Share
-            </button>
-            <button
-              className={styles.editButton}
-              title="Update Book Club"
-              onClick={() => window.location.href = `/Edit-bookclub/${club.id}`}
-            >
-              <MdOutlineEditNote className={styles.editIcon} />
-            </button>
+
+      <div className="club-header">
+        <div className="club-cover-container">
+          <img
+            src={club.clubCover}
+            alt={`${club.bookClubName} cover`}
+            className="club-cover"
+          />
+          <div className="club-meta">
+            <h1>{club.bookClubName}</h1>
+            <div className="genres">
+              {club.genres.map((genre, index) => (
+                <span key={index} className="genre-tag">
+                  {genre}
+                </span>
+              ))}
+            </div>
           </div>
-          {isJoined && (
-            <p className={styles.joinMessage}>Welcome to the Club</p>
-          )}
-        </header>
-        <div className={styles.infoSection}>
-          <p><FaBookReader className={styles.iconBlue} /> <strong>Founder:</strong> {club.founder}</p>
-          <p><FaBookReader className={styles.iconBlue} /> <strong>Year Founded:</strong> {club.yearFounded}</p>
-          <p><FaBookReader className={styles.iconBlue} /> <strong>Members:</strong> 👥 {club.members}</p>
         </div>
 
-        <section className={styles.aboutSection}>
-          <h2>About this club</h2>
-          <p>{club.about}</p>
-        </section>
+        <div className="club-description">
+          <p>{club.description}</p>
+          <div className="meeting-info">
+            <p>
+              <strong>Meets:</strong> {club.meetingFrequency}
+            </p>
+          </div>
+        </div>
+      </div>
 
-        <div className={styles.bottomSections}>
-          <section className={styles.currentlyReadingSection}>
-            <h2> Currently Reading</h2>
-            <div className={styles.bookCard}>
-              <img src={currentBook.cover} alt={currentBook.title} className={styles.bookCover} />
-              <div className={styles.bookInfo}>
-                <h3 className={styles.bookTitle}>{currentBook.title}</h3>
-                <p className={styles.bookAuthor}>by {currentBook.author}</p>
-                <p className={styles.bookRating}>⭐⭐⭐⭐: {currentBook.rating}</p>
-                <p className={styles.bookDescription}>
-                  A captivating novel about the infinite possibilities of life and the choices we make.
+      <div className="club-content-grid">
+        <div className="current-book-section">
+          <h2>Current Book</h2>
+          <div className="current-book-card">
+            <div className="book-cover-container">
+              <img
+                src={club.currentBook.cover}
+                alt={`${club.currentBook.title} cover`}
+              />
+            </div>
+            <div className="book-info">
+              <h3>{club.currentBook.title}</h3>
+              <p className="author">by {club.currentBook.author}</p>
+              <p className="description">{club.currentBook.description}</p>
+              <div className="progress">
+                <p>
+                  <strong>Progress:</strong> {club.currentBook.progress}
+                </p>
+                <p>
+                  <strong>Pages read:</strong> {club.currentBook.pagesRead}
                 </p>
               </div>
             </div>
-            <div className={styles.readingProgress}>
-              <h5>Club Reading Progress</h5>
-              <div className={styles.progressBarContainer}>
-                <div className={styles.progressBarLabel}></div>
-                  <span className={styles.progressLabel}>50%</span>
-                <div className={styles.progressBar}>
-                  <div className={styles.progressFill} style={{ width: '50%' }}></div>
-                </div>
-                <span className={styles.chapterText}>Chapter 15 of 30</span>
-              </div>
-            </div>
-          </section>
+          </div>
+        </div>
 
-          <section className={styles.nextMeetingSection}>
-            <h2>Next Meeting</h2>
-            <div className={styles.meetingDetails}>
-              <span className={styles.calendarEmoji}>📅</span>
-              <div className={styles.meetingInfo}>
-                <p><strong>Date & Time:</strong> {club.nextMeeting.dateTime}</p>
-                <p><strong>Venue:</strong> {club.nextMeeting.venue}</p>
-              </div>
-              <button className={styles.upcomingButton}>Upcoming</button>
+        <div className="next-meeting-section">
+          <h2>Next Meeting</h2>
+          <div className="meeting-card">
+            <div className="meeting-details">
+              <p>
+                <strong>Date:</strong> {club.nextMeeting.date}
+              </p>
+              <p>
+                <strong>Time:</strong> {club.nextMeeting.time}
+              </p>
+              <p>
+                <strong>Location:</strong> {club.nextMeeting.location}
+              </p>
+              <p>
+                <strong>Agenda:</strong> {club.nextMeeting.agenda}
+              </p>
             </div>
-          </section>
+            <button className="rsvp-button">RSVP</button>
+          </div>
 
-          <section className={styles.commentsSection}>
-            <h2>Rate us⭐⭐⭐</h2>
-            <form onSubmit={handleAddComment} className={styles.commentForm}>
-              <textarea
-                className={styles.commentInput}
-                placeholder="Add your review here..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={3}
-              />
-              <button type="submit" className={styles.commentSubmitButton}>Add Review</button>
-            </form>
-            <div className={styles.commentsList}>
-              {comments.length === 0 && <p>No comments yet.</p>}
-              {comments.map(comment => (
-                <div key={comment.id} className={styles.commentItem}>
-                  {comment.text}
+          <div className="members-section">
+            <h3>Members ({club.members.length})</h3>
+            <div className="members-grid">
+              {club.members.map((member, index) => (
+                <div key={index} className="member-card">
+                  <img
+                    src={member.avatar}
+                    alt={member.name}
+                    className="member-avatar"
+                  />
+                  <p className="member-name">{member.name}</p>
                 </div>
               ))}
+              <div className="join-card">
+                <button className="join-button">+ Join Club</button>
+              </div>
             </div>
-          </section>
+          </div>
         </div>
       </div>
+
+      <div className="discussions-section">
+        <h2>Discussions</h2>
+        {[...club.discussions, ...discussions].map((discussion, index) => (
+          <div key={index} className="discussion-card">
+            <div className="user-info">
+              <img
+                src={
+                  discussion.user === 'You'
+                    ? 'https://randomuser.me/api/portraits/lego/1.jpg'
+                    : club.members.find((m) => m.name === discussion.user)
+                        ?.avatar || 'https://randomuser.me/api/portraits/men/1.jpg'
+                }
+                alt={discussion.user}
+                className="user-avatar"
+              />
+              <div>
+                <p className="user-name">{discussion.user}</p>
+                <p className="timestamp">{discussion.timestamp}</p>
+              </div>
+            </div>
+            <p className="comment">{discussion.comment}</p>
+            <div className="comment-actions">
+              <button className="like-button">
+                ♡ {discussion.likes > 0 && <span>{discussion.likes}</span>}
+              </button>
+              <button className="reply-button">Reply</button>
+            </div>
+          </div>
+        ))}
+
+        <form onSubmit={handleAddComment} className="add-comment-form">
+          <textarea
+            placeholder="Share your thoughts about the current book..."
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            required
+          />
+          <button type="submit" className="submit-comment">
+            Post Comment
+          </button>
+        </form>
+      </div>
+
+      {/* Footer */}
       <Footer />
-    </>
+    </div>
   );
 };
 
 export default BookClubDetails;
-
