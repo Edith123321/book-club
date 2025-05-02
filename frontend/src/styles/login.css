@@ -1,0 +1,470 @@
+/* Login.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary-color: #7445ff;
+  --light-primary: #e4dbff;
+  --secondary-color: #6236ca;
+  --background-color: #f5f5f7;
+  --text-color: #333;
+  --light-text: #888;
+  --white: #fff;
+  --border-color: #e1e1e1;
+  --error-color: #ff3b30;
+  --success-color: #34c759;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.login-card,
+.features-card {
+  background-color: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-header h2 {
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 24px;
+}
+
+.login-tabs {
+  display: flex;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--light-text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.name-row {
+  display: flex;
+  gap: 16px;
+}
+
+.form-group.half {
+  flex: 1;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+.input-container {
+  position: relative;
+}
+
+.input-container input {
+  width: 100%;
+  padding: 12px 36px 12px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.input-container input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.input-container input.error {
+  border-color: var(--error-color);
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.password-strength {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.strength-meter {
+  height: 4px;
+  width: 100%;
+  background-color: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strength-meter.weak {
+  position: relative;
+}
+
+.strength-meter.weak::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 30%;
+  background-color: var(--error-color);
+}
+
+.strength-meter.medium {
+  position: relative;
+}
+
+.strength-meter.medium::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 60%;
+  background-color: orange;
+}
+
+.strength-meter.strong {
+  position: relative;
+}
+
+.strength-meter.strong::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-color: var(--success-color);
+}
+
+.strength-text {
+  font-size: 12px;
+  margin-top: 4px;
+  color: var(--light-text);
+}
+
+.input-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+}
+
+.password-label-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.forgot-password {
+  font-size: 14px;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.remember-me, .terms-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.remember-me input[type="checkbox"], .terms-checkbox input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: var(--primary-color);
+}
+
+.terms-link {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.terms-link:hover {
+  text-decoration: underline;
+}
+
+.terms-error {
+  margin-top: -16px;
+  margin-bottom: 16px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 14px;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: var(--secondary-color);
+}
+
+.submit-button:disabled {
+  background-color: #b8a4ff;
+  cursor: not-allowed;
+}
+
+.or-divider {
+  position: relative;
+  text-align: center;
+  margin: 24px 0;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+.or-divider::before {
+  left: 0;
+}
+
+.or-divider::after {
+  right: 0;
+}
+
+.or-divider span {
+  display: inline-block;
+  padding: 0 10px;
+  background-color: var(--white);
+  color: var(--light-text);
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.social-login {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.social-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 44px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.social-button:hover:not(:disabled) {
+  background-color: #f9f9f9;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.social-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.social-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.social-button.google {
+  color: #DB4437;
+}
+
+.social-button.facebook {
+  color: #4267B2;
+}
+
+.social-button.apple {
+  color: #000;
+}
+
+/* Features Card */
+.features-card {
+  background: linear-gradient(135deg, var(--light-primary), #f0e6ff);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.features-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.features-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, transparent 0%, var(--light-primary) 70%);
+  z-index: 1;
+}
+
+.book-icon {
+  font-size: 48px;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+.features-content h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-color);
+}
+
+.features-content p {
+  font-size: 16px;
+  color: var(--text-color);
+  opacity: 0.9;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+  padding: 0 20px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feature-icon {
+  color: var(--primary-color);
+  font-size: 22px;
+}
+
+.feature-item span {
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+/* Responsive styles */
+@media screen and (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    padding: 10px;
+  }
+  
+  .login-card,
+  .features-card {
+    max-width: 100%;
+    padding: 20px;
+  }
+  
+  .features-card {
+    margin-top: 20px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .login-header h2 {
+    font-size: 20px;
+  }
+  
+  .tab-button {
+    font-size: 14px;
+  }
+  
+  .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .submit-button {
+    padding: 12px;
+  }
+  
+  .name-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .form-group.half {
+    flex: none;
+  }
+}

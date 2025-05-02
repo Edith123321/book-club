@@ -1,0 +1,163 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+}
+
+.add-books-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.available-formats {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.format-options {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.format-options label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #fff;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+}
+
+.format-options input {
+  margin-right: 5px;
+}
+
+.reading-progress {
+  margin-bottom: 20px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.reading-progress h2 {
+  color: #333;
+}
+
+.reading-progress p {
+  color: #666;
+}
+
+.book-stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.book-stats div {
+  background-color: #eef;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.book-list {
+  margin-top: 20px;
+}
+
+.book-item {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.book-details {
+  flex: 1;
+}
+
+.book-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.no-books {
+  text-align: center;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.no-books svg {
+  margin-bottom: 20px;
+}
+
+.no-books p {
+  color: #666;
+}
+
+.no-books button {
+  margin-top: 20px;
+}
+
+.add-book-dropdown {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  border-radius: 8px;
+  width: 400px;
+}
+
+.add-book-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.add-book-form input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.add-book-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #6200ea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #3700b3;
+}
+
+.add-book-form h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
