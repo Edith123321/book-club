@@ -1,183 +1,202 @@
 import React, { useState } from 'react';
-import { FaBook } from 'react-icons/fa';
-import '../../styles/AddBooks.css';
+import '../../styles/AddBook.css';
 
-const AddBooks = () => {
-  const [books, setBooks] = useState([]);
-  const [showAddBook, setShowAddBook] = useState(false);
-  const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [totalPages, setTotalPages] = useState('');
-  const [currentPage, setCurrentPage] = useState('');
-  const [format, setFormat] = useState('Hardcover');
-  const [price, setPrice] = useState('');
-  const [editingIndex, setEditingIndex] = useState(null);
+const AddBook = () => {
+  const [bookData, setBookData] = useState({
+    title: '',
+    author: '',
+    cover: '',
+    rating: '',
+    genres: [],
+    synopsis: '',
+    datePublished: '',
+    language: '',
+    pages: ''
+  });
 
-  const handleAddBook = () => {
-    if (editingIndex !== null) {
-      const updatedBooks = books.map((book, index) =>
-        index === editingIndex ? { title, author, totalPages, currentPage, format, price } : book
-      );
-      setBooks(updatedBooks);
-      setEditingIndex(null);
-    } else {
-      setBooks([...books, { title, author, totalPages, currentPage, format, price }]);
-    }
-    setTitle('');
-    setAuthor('');
-    setTotalPages('');
-    setCurrentPage('');
-    setFormat('Hardcover');
-    setPrice('');
-    setShowAddBook(false);
+  const genreOptions = [
+    'Fiction', 'Fantasy', 'Self-Help', 'Science Fiction', 'Mystery',
+    'Romance', 'Thriller', 'Biography', 'History', 'Nonfiction'
+  ];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setBookData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleEditBook = (index) => {
-    const book = books[index];
-    setTitle(book.title);
-    setAuthor(book.author);
-    setTotalPages(book.totalPages);
-    setCurrentPage(book.currentPage);
-    setFormat(book.format);
-    setPrice(book.price);
-    setEditingIndex(index);
-    setShowAddBook(true);
+  const handleGenreChange = (genre) => {
+    setBookData(prev => {
+      if (prev.genres.includes(genre)) {
+        return {
+          ...prev,
+          genres: prev.genres.filter(g => g !== genre)
+        };
+      } else {
+        return {
+          ...prev,
+          genres: [...prev.genres, genre]
+        };
+      }
+    });
   };
 
-  const handleDeleteBook = (index) => {
-    setBooks(books.filter((_, i) => i !== index));
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Book submitted:', bookData);
+    // Here you would typically send the data to your backend
   };
 
   return (
-    <div className="add-books-container">
-      <div className="available-formats">
-        <h3>Available Formats</h3>
-        <div className="format-options">
-          <label>
-            <input
-              type="radio"
-              name="format"
-              value="Hardcover"
-              checked={format === 'Hardcover'}
-              onChange={(e) => setFormat(e.target.value)}
-            />
-            Hardcover $18.99
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="format"
-              value="Paperback"
-              checked={format === 'Paperback'}
-              onChange={(e) => setFormat(e.target.value)}
-            />
-            Paperback $12.99
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="format"
-              value="E-Book"
-              checked={format === 'E-Book'}
-              onChange={(e) => setFormat(e.target.value)}
-            />
-            E-Book $7.99
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="format"
-              value="Audiobook"
-              checked={format === 'Audiobook'}
-              onChange={(e) => setFormat(e.target.value)}
-            />
-            Audiobook $14.95
-          </label>
+    <div className="add-book-page">
+      
+      <div className="form-container">
+      <div className="form-header-container">
+        <div className="form-header">
+          <h1>Add a New Book</h1>
+          <p>Contribute to our growing library by adding your favorite reads</p>
         </div>
       </div>
 
-      <div className="reading-progress">
-        <h2>My Reading Progress</h2>
-        <p>Track your reading journey and celebrate your progress</p>
-        <div className="book-stats">
-          <div>Books Reading: {books.length}</div>
-          <div>Books Completed: 0</div>
-          <div>Total Books: {books.length}</div>
-        </div>
-        <button onClick={() => setShowAddBook(true)}>Add New Book</button>
-      </div>
-
-      <div className="book-list">
-        {books.length > 0 ? (
-          books.map((book, index) => (
-            <div key={index} className="book-item">
-              <div className="book-details">
-                <h3>{book.title}</h3>
-                <p>Author: {book.author}</p>
-                <p>Total Pages: {book.totalPages}</p>
-                <p>Current Page: {book.currentPage}</p>
-                <p>Format: {book.format}</p>
-                <p>Price: ${book.price}</p>
-              </div>
-              <div className="book-actions">
-                <button onClick={() => handleEditBook(index)}>Edit</button>
-                <button onClick={() => handleDeleteBook(index)}>Delete</button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="no-books">
-            <FaBook size={50} color="#616161" />
-            <p>No books added yet</p>
-            <p>Start tracking your reading progress by adding your first book</p>
-            <button onClick={() => setShowAddBook(true)}>Add Your First Book</button>
+        <form onSubmit={handleSubmit} className="book-form">
+          <div className="form-group">
+            <label htmlFor="title">Book Title*</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={bookData.title}
+              onChange={handleChange}
+              placeholder="The Midnight Library"
+              required
+            />
           </div>
-        )}
-      </div>
 
-      {showAddBook && (
-        <div className="add-book-dropdown">
-          <div className="add-book-form">
-            <h3>Add New Book</h3>
+          <div className="form-group">
+            <label htmlFor="author">Author*</label>
             <input
               type="text"
-              placeholder="Book Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              id="author"
+              name="author"
+              value={bookData.author}
+              onChange={handleChange}
+              placeholder="Matt Haig"
+              required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="cover">Cover Image URL*</label>
             <input
-              type="text"
-              placeholder="Author"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
+              type="url"
+              id="cover"
+              name="cover"
+              value={bookData.cover}
+              onChange={handleChange}
+              placeholder="https://example.com/book-cover.jpg"
+              required
             />
+            {bookData.cover && (
+              <div className="cover-preview">
+                <img src={bookData.cover} alt="Cover preview" />
+                <span>Cover Preview</span>
+              </div>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="rating">Rating (0-5)*</label>
             <input
               type="number"
-              placeholder="Total Pages"
-              value={totalPages}
-              onChange={(e) => setTotalPages(e.target.value)}
+              id="rating"
+              name="rating"
+              min="0"
+              max="5"
+              step="0.01"
+              value={bookData.rating}
+              onChange={handleChange}
+              placeholder="4.02"
+              required
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="datePublished">Publication Date</label>
             <input
-              type="number"
-              placeholder="Current Page"
-              value={currentPage}
-              onChange={(e) => setCurrentPage(e.target.value)}
+              type="date"
+              id="datePublished"
+              name="datePublished"
+              value={bookData.datePublished}
+              onChange={handleChange}
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="language">Language*</label>
             <input
               type="text"
-              placeholder="Price"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              id="language"
+              name="language"
+              value={bookData.language}
+              onChange={handleChange}
+              placeholder="English"
+              required
             />
-            <div className="add-book-actions">
-              <button onClick={() => setShowAddBook(false)}>Cancel</button>
-              <button onClick={handleAddBook}>Save Book</button>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="pages">Number of Pages</label>
+            <input
+              type="number"
+              id="pages"
+              name="pages"
+              value={bookData.pages}
+              onChange={handleChange}
+              placeholder="304"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Genres*</label>
+            <div className="genre-checkboxes">
+              {genreOptions.map(genre => (
+                <div key={genre} className="genre-option">
+                  <input
+                    type="checkbox"
+                    id={`genre-${genre}`}
+                    checked={bookData.genres.includes(genre)}
+                    onChange={() => handleGenreChange(genre)}
+                  />
+                  <label htmlFor={`genre-${genre}`}>{genre}</label>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+
+          <div className="form-group">
+            <label htmlFor="synopsis">Synopsis*</label>
+            <textarea
+              id="synopsis"
+              name="synopsis"
+              value={bookData.synopsis}
+              onChange={handleChange}
+              placeholder="Between life and death there is a library, and within that library, the shelves go on forever..."
+              rows="5"
+              required
+            />
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="submit-button">
+              Add Book
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default AddBooks;
+export default AddBook;
