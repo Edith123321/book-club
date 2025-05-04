@@ -52,7 +52,7 @@ const BookClubList = () => {
             <p>Find your perfect reading community and connect with fellow book lovers</p>
           </div>
           <div className="heading-button">
-            <button className="create-button">Create New Book Club</button>
+            <button className="create-button" onClick={() => navigate('/add-bookclub')}>Create New Book Club</button>
           </div>
         </div>
 
