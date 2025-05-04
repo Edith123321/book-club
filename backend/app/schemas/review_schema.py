@@ -1,5 +1,5 @@
 from app import ma
-from app.models.review import Review
+from app.models import Review
 
 class ReviewSchema(ma.SQLAlchemySchema):
     class Meta:

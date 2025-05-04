@@ -2,19 +2,21 @@ from datetime import datetime
 from app import db
 
 class BookClub(db.Model):
-    __tablename__ = 'book_clubs'
+    __tablename__ = 'bookclubs'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     synopsis = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
     # Relationships
     owner = db.relationship('User', back_populates='owned_clubs')
-    memberships = db.relationship('BookClubMember', back_populates='book_club', cascade='all, delete-orphan')
-    current_book = db.relationship('CurrentBook', back_populates='book_club', uselist=False, cascade='all, delete-orphan')
-    summaries = db.relationship('Summary', back_populates='book_club', cascade='all, delete-orphan')
+    memberships = db.relationship('Membership', back_populates='bookclub', cascade='all, delete-orphan')
+    currentbook = db.relationship('CurrentBook', back_populates='bookclub', uselist=False, cascade='all, delete-orphan')
+    summaries = db.relationship('Summary', back_populates='bookclub', cascade='all, delete-orphan')
+    meetings = db.relationship('Meeting', back_populates='bookclub', cascade='all, delete-orphan')
+    
 
     def to_dict(self):
         return {
@@ -24,52 +26,27 @@ class BookClub(db.Model):
             'created_at': self.created_at.isoformat(),
             'owner_id': self.owner_id,
             'member_count': len(self.memberships),
-            'current_book': self.current_book.to_dict() if self.current_book else None
+            'currentbook': self.currentbook.to_dict() if self.currentbook else None
         }
-
-
-
-class BookClubMember(db.Model):
-    __tablename__ = 'book_club_members'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    book_club_id = db.Column(db.Integer, db.ForeignKey('book_clubs.id'), nullable=False)
-    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    # Relationships
-    user = db.relationship('User', back_populates='memberships')
-    book_club = db.relationship('BookClub', back_populates='memberships')
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'book_club_id': self.book_club_id,
-            'joined_at': self.joined_at.isoformat(),
-            'user': self.user.to_dict() if self.user else None
-        }
-
-
 
 
 class CurrentBook(db.Model):
-    __tablename__ = 'current_books'
+    __tablename__ = 'current_books'  # ✅ Correct
 
     id = db.Column(db.Integer, primary_key=True)
-    book_club_id = db.Column(db.Integer, db.ForeignKey('book_clubs.id'), unique=True)
+    bookclub_id = db.Column(db.Integer, db.ForeignKey('bookclubs.id'), unique=True)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'))
     start_date = db.Column(db.DateTime, default=datetime.utcnow)
     end_date = db.Column(db.DateTime)
 
     # Relationships
-    book_club = db.relationship('BookClub', back_populates='current_book')
+    bookclub = db.relationship('BookClub', back_populates='currentbook')  # ✅ Match name used in BookClub
     book = db.relationship('Book')
 
     def to_dict(self):
         return {
             'id': self.id,
-            'book_club_id': self.book_club_id,
+            'bookclub_id': self.bookclub_id,
             'book_id': self.book_id,
             'start_date': self.start_date.isoformat(),
             'end_date': self.end_date.isoformat() if self.end_date else None,
