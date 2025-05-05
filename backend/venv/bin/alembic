@@ -1,4 +1,4 @@
-#!/home/syowai/Development/code/phase-5/Final-project/book-club/backend/venv/bin/python3
+#!/home/edith/phase_5/book-club/backend/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
