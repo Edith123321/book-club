@@ -11,7 +11,7 @@ migrate = Migrate()
 ma = Marshmallow()
 
 def create_app():
-    app = Flask(__name__)  # Fixed: double underscores
+    app = Flask(__name__)
     app.config.from_object(Config)
 
     # Initialize extensions with app
@@ -31,8 +31,6 @@ def create_app():
         from app.models.invite import Invite
         from app.models.membership import Membership
 
-        # Create tables
-        db.create_all()
 
     # Import and register blueprints
     from app.routes.book_routes import book_bp

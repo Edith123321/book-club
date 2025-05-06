@@ -13,13 +13,12 @@ class Summary(db.Model):
     bookclub_id = db.Column(db.Integer, db.ForeignKey('bookclubs.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    # Use string references to avoid circular imports
+    # Relationships
     book = db.relationship('Book', back_populates='summaries')
     user = db.relationship('User', back_populates='summaries')
     bookclub = db.relationship('BookClub', back_populates='summaries')
-    
 
-    def __init__(self, content, book_id, user_id, bookclub_id):
+    def __init__(self, content, book_id, user_id, bookclub_id=None):
         self.content = content
         self.book_id = book_id
         self.user_id = user_id
@@ -37,4 +36,4 @@ class Summary(db.Model):
             "bookclub_id": self.bookclub_id,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat()
-            }
+        }
