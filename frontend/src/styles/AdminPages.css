@@ -286,10 +286,12 @@ th {
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start; /* Align to top */
     justify-content: center;
+    padding: 40px 20px; /* Add space from top */
     z-index: 1000;
-    overflow-x: scroll;
+    overflow-y: auto; /* Allow vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
   }
   
   .modal {
@@ -299,7 +301,10 @@ th {
     width: 100%;
     max-width: 500px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    max-height: 90vh; /* Prevent modal from exceeding screen height */
+    overflow-y: auto; /* Make modal content scrollable */
   }
+  
   
   .stats-bar {
     display: flex;

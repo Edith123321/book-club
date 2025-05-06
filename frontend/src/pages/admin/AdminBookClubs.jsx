@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiSearch, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import '../../styles/AdminPages.css';
-import bookClubsData from '../../components/bookClubsData';
 
 const AdminBookClubs = () => {
-  const initialClubs = bookClubsData;
-
-  const [clubs, setClubs] = useState(initialClubs);
+  const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showAddForm, setShowAddForm] = useState(false);
@@ -32,11 +31,34 @@ const AdminBookClubs = () => {
     status: 'Active'
   });
 
+  // Fetch clubs from API
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/clubs');
+        if (!response.ok) {
+          throw new Error('Failed to fetch clubs');
+        }
+        const data = await response.json();
+        setClubs(data);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchClubs();
+  }, []);
+
   // Stats calculation
   const totalClubs = clubs.length;
   const activeClubs = clubs.filter(club => club.status === "Active").length;
   const upcomingClubs = clubs.filter(club => club.status === "Upcoming").length;
-  const averageMembers = Math.round(clubs.reduce((sum, club) => sum + club.members.length, 0) / clubs.length);
+  const averageMembers = clubs.length > 0 
+    ? Math.round(clubs.reduce((sum, club) => sum + club.members.length, 0) / clubs.length)
+    : 0;
+  
 
   // Sorting function
   const requestSort = (key) => {
@@ -81,47 +103,91 @@ const AdminBookClubs = () => {
   );
 
   // CRUD operations
-  const handleAddClub = () => {
-    const newId = Math.max(...clubs.map(club => club.id)) + 1;
-    setClubs([...clubs, { 
-      ...newClub, 
-      id: newId,
-      members: newClub.members.filter(m => m.name), // Remove empty members
-      genres: [],
-      discussions: [],
-      meetingFrequency: '',
-      description: ''
-    }]);
-    setShowAddForm(false);
-    setNewClub({
-      bookClubName: '',
-      members: [{ name: '', avatar: '' }],
-      currentBook: {
-        title: '',
-        author: '',
-        description: '',
-        cover: '',
-        progress: '',
-        pagesRead: ''
-      },
-      nextMeeting: {
-        date: '',
-        time: '',
-        location: '',
-        agenda: ''
-      },
-      status: 'Active'
-    });
+  const handleAddClub = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/clubs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newClub,
+          members: newClub.members.filter(m => m.name), // Remove empty members
+          genres: [],
+          discussions: [],
+          meetingFrequency: '',
+          description: ''
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add club');
+      }
+
+      const addedClub = await response.json();
+      setClubs([...clubs, addedClub]);
+      setShowAddForm(false);
+      setNewClub({
+        bookClubName: '',
+        members: [{ name: '', avatar: '' }],
+        currentBook: {
+          title: '',
+          author: '',
+          description: '',
+          cover: '',
+          progress: '',
+          pagesRead: ''
+        },
+        nextMeeting: {
+          date: '',
+          time: '',
+          location: '',
+          agenda: ''
+        },
+        status: 'Active'
+      });
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const handleEditClub = () => {
-    setClubs(clubs.map(club => club.id === currentClub.id ? currentClub : club));
-    setShowEditForm(false);
+  const handleEditClub = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/clubs/${currentClub.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(currentClub)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update club');
+      }
+
+      const updatedClub = await response.json();
+      setClubs(clubs.map(club => club.id === updatedClub.id ? updatedClub : club));
+      setShowEditForm(false);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
-  const handleDeleteClub = (id) => {
+  const handleDeleteClub = async (id) => {
     if (window.confirm('Are you sure you want to delete this book club?')) {
-      setClubs(clubs.filter(club => club.id !== id));
+      try {
+        const response = await fetch(`http://localhost:5000/clubs/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete club');
+        }
+
+        setClubs(clubs.filter(club => club.id !== id));
+      } catch (err) {
+        setError(err.message);
+      }
     }
   };
 
@@ -188,11 +254,14 @@ const AdminBookClubs = () => {
     }
   };
 
+  if (loading) return <div className="admin-page">Loading...</div>;
+  if (error) return <div className="admin-page">Error: {error}</div>;
+
   return (
     <div className="admin-page">
       <div className="page-header">
         <h2>Book Clubs Management</h2>
-        <button 
+        <button
           className="add-btn"
           onClick={() => setShowAddForm(true)}
         >
@@ -302,6 +371,7 @@ const AdminBookClubs = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Add New Book Club</h3>
+            {error && <div className="error-message">{error}</div>}
             <div className="form-group">
               <label>Club Name</label>
               <input
@@ -397,7 +467,10 @@ const AdminBookClubs = () => {
             <div className="modal-actions">
               <button 
                 className="cancel-btn"
-                onClick={() => setShowAddForm(false)}
+                onClick={() => {
+                  setShowAddForm(false);
+                  setError(null);
+                }}
               >
                 Cancel
               </button>
@@ -417,6 +490,7 @@ const AdminBookClubs = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Edit Book Club</h3>
+            {error && <div className="error-message">{error}</div>}
             <div className="form-group">
               <label>Club Name</label>
               <input
@@ -512,7 +586,10 @@ const AdminBookClubs = () => {
             <div className="modal-actions">
               <button 
                 className="cancel-btn"
-                onClick={() => setShowEditForm(false)}
+                onClick={() => {
+                  setShowEditForm(false);
+                  setError(null);
+                }}
               >
                 Cancel
               </button>
