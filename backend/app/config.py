@@ -1,11 +1,4 @@
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY")
-    # Used for JWT
-    JWT_ALGORITHM = 'HS256'  
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = 'postgresql://bookclub_user:syowai@localhost:5432/bookclub_db'  # Adjust for your DB
+    SQLALCHEMY_TRACK_MODIFICATIONS = False  # To disable the modification tracking
+    SECRET_KEY = 'your_secret_key_here'  # Your secret key for session management
