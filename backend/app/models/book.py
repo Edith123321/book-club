@@ -11,7 +11,7 @@ class Book(db.Model):
     author = db.Column(db.String(100), nullable=False)
     genres = db.Column(db.JSON, nullable=True)
     synopsis = db.Column(db.Text, nullable=True)
-    date_published = db.Column(db.DateTime, nullable=False)
+    date_published = db.Column(db.DateTime, nullable=True)
     cover_image_url = db.Column(db.String, nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     rating = db.Column(db.Float, nullable=True)

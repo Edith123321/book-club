@@ -53,7 +53,7 @@ def create_app():
     app.register_blueprint(bookclub_bp, url_prefix='/bookclubs')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(user_bp, url_prefix='/api/users')
-    app.register_blueprint(meeting_bp)
+    app.register_blueprint(meeting_bp, url_prefix='/meetings')
     app.register_blueprint(membership_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(invite_bp)
