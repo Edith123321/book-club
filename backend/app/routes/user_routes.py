@@ -1,164 +1,213 @@
 from flask import Blueprint, request, jsonify
-from app.models.user import User
-from app.models.following import follows
-from app.middleware import token_required
-from app.utils import validate_email, validate_password, validate_username
+from werkzeug.security import generate_password_hash
+from datetime import datetime
 from app import db
+from app.models.user import User
+from typing import Dict, Any
 
-user_bp = Blueprint('user', __name__, url_prefix='/api/users')  # Fixed __name__
+user_bp = Blueprint('users', __name__, url_prefix='/users')
 
-# --------------------------
-# User Profile Routes
-# --------------------------
+# Helper function for validation
+def validate_user_data(data: Dict[str, Any], is_update: bool = False) -> Dict[str, Any]:
+    errors = {}
+    
+    if not is_update or 'username' in data:
+        if not data.get('username'):
+            errors['username'] = 'Username is required'
+        elif len(data['username']) > 50:
+            errors['username'] = 'Username must be 50 characters or less'
+    
+    if not is_update or 'email' in data:
+        if not data.get('email'):
+            errors['email'] = 'Email is required'
+        elif '@' not in data['email']:
+            errors['email'] = 'Valid email is required'
+    
+    if not is_update or 'password' in data:
+        if not is_update and not data.get('password'):
+            errors['password'] = 'Password is required'
+        elif data.get('password') and len(data['password']) < 8:
+            errors['password'] = 'Password must be at least 8 characters'
+    
+    return errors
 
-@user_bp.route('/me', methods=['GET'])
-@token_required
-def get_current_user(current_user):
-    """Get authenticated user's profile"""
-    return jsonify({
-        'message': 'Profile retrieved',
-        'user': {
-            'id': current_user.id,
-            'username': current_user.username,
-            'email': current_user.email,
-            'created_at': current_user.created_at.isoformat()
-        }
-    }), 200
-
-@user_bp.route('/me', methods=['PUT'])
-@token_required
-def update_profile(current_user):
-    """Update user profile"""
-    data = request.get_json()
-    updates = {}
-
-    if 'username' in data:
-        if not validate_username(data['username']):
-            return jsonify({'error': 'Invalid username format'}), 400
-        if User.query.filter(User.username == data['username'], User.id != current_user.id).first():
-            return jsonify({'error': 'Username taken'}), 409
-        updates['username'] = data['username']
-
-    if 'email' in data:
-        if not validate_email(data['email']):
-            return jsonify({'error': 'Invalid email'}), 400
-        if User.query.filter(User.email == data['email'], User.id != current_user.id).first():
-            return jsonify({'error': 'Email exists'}), 409
-        updates['email'] = data['email']
-
-    try:
-        User.query.filter_by(id=current_user.id).update(updates)
-        db.session.commit()
-        return jsonify({'message': 'Profile updated'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-# --------------------------
-# Security Routes
-# --------------------------
-
-@user_bp.route('/me/password', methods=['PUT'])
-@token_required
-def change_password(current_user):
-    """Change user password"""
+# CREATE - Register new user
+@user_bp.route('/', methods=['POST'])
+def create_user():
     data = request.get_json()
     
-    if not all(k in data for k in ['current_password', 'new_password']):
-        return jsonify({'error': 'Missing password fields'}), 400
+    # Validate input
+    errors = validate_user_data(data)
+    if errors:
+        return jsonify({'error': 'Validation failed', 'details': errors}), 400
     
-    if not current_user.verify_password(data['current_password']):
-        return jsonify({'error': 'Current password incorrect'}), 401
+    # Check for existing user
+    if User.query.filter_by(username=data['username']).first():
+        return jsonify({'error': 'Username already exists'}), 409
+    if User.query.filter_by(email=data['email']).first():
+        return jsonify({'error': 'Email already exists'}), 409
     
-    if not validate_password(data['new_password']):
-        return jsonify({'error': 'Password must be 8+ chars with letters and numbers'}), 400
-
     try:
-        current_user.password = data['new_password']
-        db.session.commit()
-        return jsonify({'message': 'Password updated'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-# --------------------------
-# Social Features
-# --------------------------
-
-@user_bp.route('/<int:user_id>/follow', methods=['POST'])
-@token_required
-def follow_user(current_user, user_id):
-    """Follow another user"""
-    if current_user.id == user_id:
-        return jsonify({'error': 'Cannot follow yourself'}), 400
-
-    target = User.query.get_or_404(user_id)
-
-    if current_user.is_following(target):
-        return jsonify({'error': 'Already following'}), 400
-
-    try:
-        follow = Follow(follower_id=current_user.id, followed_id=target.id)
-        db.session.add(follow)
-        db.session.commit()
-        return jsonify({'message': f'Now following {target.username}'}), 201
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-@user_bp.route('/<int:user_id>/unfollow', methods=['POST'])
-@token_required
-def unfollow_user(current_user, user_id):
-    """Unfollow a user"""
-    target = User.query.get_or_404(user_id)
-
-    if not current_user.is_following(target):
-        return jsonify({'error': 'Not following this user'}), 400
-
-    try:
-        Follow.query.filter_by(
-            follower_id=current_user.id,
-            followed_id=target.id
-        ).delete()
-        db.session.commit()
-        return jsonify({'message': f'Unfollowed {target.username}'}), 200
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-
-
-@user_bp.route('/follow/<int:user_id>', methods=['POST'], endpoint='follow_user_alt')
-@token_required
-def follow_user_alt(user_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'token required'}), 401
+        new_user = User(
+            username=data['username'],
+            email=data['email'],
+            is_admin=data.get('is_admin', False),
+            is_active=data.get('is_active', True)
+        )
+        new_user.password = data['password']  # Uses the password setter
         
-    current_user = User.query.get(session['user_id'])
-    user_to_follow = User.query.get_or_404(user_id)
-    
-    if current_user.id == user_id:
-        return jsonify({'error': 'Cannot follow yourself'}), 400
-    
-    if current_user.follow(user_to_follow):
+        db.session.add(new_user)
         db.session.commit()
-        return jsonify({'message': f'Now following {user_to_follow.username}'}), 200
-    return jsonify({'error': 'Already following this user'}), 400
-
-@user_bp.route('/invites/<int:invite_id>/accept', methods=['POST'])
-@token_required
-def accept_invite(invite_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'Token required'}), 401
         
-    invite = Invite.query.filter_by(
-        id=invite_id,
-        recipient_id=session['user_id']
-    ).first_or_404()
-    
-    if invite.status != InviteStatus.PENDING:
-        return jsonify({'error': 'Invite already processed'}), 400
-    
-    invite.status = InviteStatus.ACCEPTED
-    db.session.commit()
-    
-    return jsonify({'message': 'Invite accepted'}), 200
+        return jsonify(new_user.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'User creation failed', 'details': str(e)}), 500
+
+# READ - Get all users (with pagination)
+@user_bp.route('/', methods=['GET'])
+def get_users():
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
+        users = User.query.paginate(page=page, per_page=per_page, error_out=False)
+        
+        return jsonify({
+            'users': [user.to_dict() for user in users.items],
+            'total': users.total,
+            'pages': users.pages,
+            'current_page': users.page
+        }), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch users', 'details': str(e)}), 500
+
+# READ - Get single user
+@user_bp.route('/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        include_rels = request.args.get('include_relationships', 'false').lower() == 'true'
+        return jsonify(user.to_dict(include_relationships=include_rels)), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch user', 'details': str(e)}), 500
+
+# UPDATE - Update user
+@user_bp.route('/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        
+        # Validate input
+        errors = validate_user_data(data, is_update=True)
+        if errors:
+            return jsonify({'error': 'Validation failed', 'details': errors}), 400
+        
+        # Check for duplicate username/email
+        if 'username' in data and data['username'] != user.username:
+            if User.query.filter(User.id != user_id, User.username == data['username']).first():
+                return jsonify({'error': 'Username already exists'}), 409
+        
+        if 'email' in data and data['email'] != user.email:
+            if User.query.filter(User.id != user_id, User.email == data['email']).first():
+                return jsonify({'error': 'Email already exists'}), 409
+        
+        # Update fields
+        if 'username' in data:
+            user.username = data['username']
+        if 'email' in data:
+            user.email = data['email']
+        if 'password' in data:
+            user.password = data['password']
+        if 'is_admin' in data:
+            user.is_admin = data['is_admin']
+        if 'is_active' in data:
+            user.is_active = data['is_active']
+        
+        db.session.commit()
+        return jsonify(user.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'User update failed', 'details': str(e)}), 500
+
+# DELETE - Delete user
+@user_bp.route('/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'message': 'User deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'User deletion failed', 'details': str(e)}), 500
+
+# Additional endpoints for user management
+@user_bp.route('/<int:user_id>/activate', methods=['PATCH'])
+def activate_user(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        user.is_active = True
+        db.session.commit()
+        return jsonify(user.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Activation failed', 'details': str(e)}), 500
+
+@user_bp.route('/<int:user_id>/deactivate', methods=['PATCH'])
+def deactivate_user(user_id):
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        user.is_active = False
+        db.session.commit()
+        return jsonify(user.to_dict()), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Deactivation failed', 'details': str(e)}), 500
+
+# Follow/unfollow endpoints
+@user_bp.route('/<int:user_id>/follow/<int:target_id>', methods=['POST'])
+def follow_user(user_id, target_id):
+    try:
+        user = User.query.get(user_id)
+        target = User.query.get(target_id)
+        
+        if not user or not target:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if user.follow(target):
+            return jsonify({'message': f'Now following {target.username}'}), 200
+        return jsonify({'message': 'Already following or cannot follow yourself'}), 400
+    except Exception as e:
+        return jsonify({'error': 'Follow action failed', 'details': str(e)}), 500
+
+@user_bp.route('/<int:user_id>/unfollow/<int:target_id>', methods=['POST'])
+def unfollow_user(user_id, target_id):
+    try:
+        user = User.query.get(user_id)
+        target = User.query.get(target_id)
+        
+        if not user or not target:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if user.unfollow(target):
+            return jsonify({'message': f'Unfollowed {target.username}'}), 200
+        return jsonify({'message': 'Not following this user'}), 400
+    except Exception as e:
+        return jsonify({'error': 'Unfollow action failed', 'details': str(e)}), 500

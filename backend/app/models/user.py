@@ -1,7 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import current_app
-import jwt
 from app import db
 from typing import Optional, Dict, Any
 import logging
@@ -62,51 +60,6 @@ class User(db.Model):
     def verify_password(self, password: str) -> bool:
         """Securely verify password against stored hash"""
         return check_password_hash(self.password_hash, password)
-
-    # Authentication Tokens
-    def generate_auth_token(self, expires_in: int = 86400) -> str:
-        """Generate JWT token with standard claims"""
-        if not current_app.config['SECRET_KEY']:
-            raise RuntimeError("SECRET_KEY not configured")
-            
-        token_payload = {
-            'sub': self.id,  # Standard JWT subject claim
-            'email': self.email,
-            'is_admin': self.is_admin,
-            'iat': datetime.utcnow(),  # Issued at
-            'exp': datetime.utcnow() + timedelta(seconds=expires_in),
-            'jti': str(uuid.uuid4())  # Unique token ID for revocation
-        }
-        
-        return jwt.encode(
-            token_payload,
-            current_app.config['SECRET_KEY'],
-            algorithm='HS256'
-        )
-
-    @staticmethod
-    def verify_auth_token(token: str) -> Optional['User']:
-        """Verify JWT token and return user if valid"""
-        try:
-            payload = jwt.decode(
-                token,
-                current_app.config['SECRET_KEY'],
-                algorithms=['HS256'],
-                options={'require': ['exp', 'iat', 'sub']},
-            )
-            user = User.query.get(payload['sub'])
-            
-            # Additional security checks
-            if not user or not user.is_active:
-                return None
-                
-            return user
-        except jwt.ExpiredSignatureError:
-            logger.warning("Expired token attempted")
-            return None
-        except (jwt.InvalidTokenError, KeyError) as e:
-            logger.warning(f"Invalid token: {str(e)}")
-            return None
 
     # Social Features
     def is_following(self, user: 'User') -> bool:
