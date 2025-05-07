@@ -276,7 +276,11 @@ th {
   th svg {
     margin-left: 5px;
   }
-  
+  .club-name{
+    color: #666;
+    font-size: 16px;
+    font-weight: 500;
+  }
   /* Modal Styles */
   .modal-overlay {
     position: fixed;
