@@ -1,387 +1,162 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { FiEdit, FiTrash2, FiPlus, FiSearch, FiChevronUp, FiChevronDown, FiUsers, FiBook } from 'react-icons/fi';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import '../../styles/AdminPages.css';
-
-const API_BASE_URL = 'http://localhost:5000';
+import React, { useEffect, useState } from 'react';
+import {
+  FiBook, FiUsers, FiSearch, FiEdit, FiTrash2, FiPlus, FiChevronUp, FiChevronDown,
+} from 'react-icons/fi';
+import '../../styles/AdminPages.css' // Optional if you have styles
 
 const AdminBookClubs = () => {
-  // State management
-  const [state, setState] = useState({
-    clubs: [],
-    users: [],
-    books: [],
-    loading: true,
-    error: null,
-    searchTerm: '',
-    sortConfig: { key: null, direction: 'asc' },
-    showAddForm: false,
-    showEditForm: false,
-    showMemberForm: false,
-    currentClub: null,
-    newClub: {
-      name: '',
-      synopsis: '',
-      user_id: '',
-      current_book_id: ''
-    },
-    newMember: {
-      user_id: '',
-      role: 'member'
-    }
-  });
-
-  // Destructure state for easier access
-  const {
-    clubs, users, books, loading, error, searchTerm, sortConfig,
-    showAddForm, showEditForm, showMemberForm, currentClub, 
-    newClub, newMember
-  } = state;
-
-  // Memoized stats calculations
-  const stats = useMemo(() => {
-    const totalClubs = clubs.length;
-    const activeClubs = clubs.filter(club => club.status === "Active").length;
-    const averageMembers = clubs.length > 0 
-      ? Math.round(clubs.reduce((sum, club) => sum + (club.memberships?.length || 1), 0) / clubs.length)
-      : 0;
-
-    return { totalClubs, activeClubs, averageMembers };
-  }, [clubs]);
-
-  // Fetch all necessary data
-  const fetchData = useCallback(async () => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-  
-      const [clubsRes, usersRes, booksRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/bookclubs/`),
-        fetch(`${API_BASE_URL}/users/`),
-        fetch(`${API_BASE_URL}/books/`)
-      ]);
-  
-      if (!clubsRes.ok || !usersRes.ok || !booksRes.ok) {
-        throw new Error('Failed to fetch data');
-      }
-  
-      const clubsData = await clubsRes.json();
-      const usersData = await usersRes.json();
-      const booksData = await booksRes.json();
-  
-      // Handle the users data structure properly
-      const usersList = Array.isArray(usersData) ? usersData : 
-                       (usersData.users || usersData.data || []);
-  
-      setState(prev => ({
-        ...prev,
-        clubs: clubsData,
-        users: usersList,
-        books: Array.isArray(booksData) ? booksData : [],
-        loading: false
-      }));
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        error: err.message,
-        loading: false,
-        users: [],
-        books: []
-      }));
-      toast.error(`Failed to load data: ${err.message}`);
-    }
-  }, []);
+  const [bookClubs, setBookClubs] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [books, setBooks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [stats, setStats] = useState({ totalClubs: 0, averageMembers: 0 });
+  const [newClub, setNewClub] = useState({ name: '', synopsis: '', user_id: '', current_book_id: '' });
+  const [currentClub, setCurrentClub] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showMemberForm, setShowMemberForm] = useState(false);
+  const [error, setError] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Helper functions
-  const getUserName = useCallback((userId) => {
-  if (!Array.isArray(users)) return 'Unknown User';
-  const user = users.find(u => u.id === userId);
-  return user ? user.username : 'Unknown User';
-}, [users]);
-
-  const getBookTitle = useCallback((bookId) => {
-    if (!bookId) return 'None';
-    const book = books.find(b => b.id === bookId);
-    return book ? book.title : 'Unknown Book';
-  }, [books]);
-
-  // Sorting function
-  const requestSort = useCallback((key) => {
-    setState(prev => {
-      let direction = 'asc';
-      if (prev.sortConfig.key === key && prev.sortConfig.direction === 'asc') {
-        direction = 'desc';
-      }
-      return { ...prev, sortConfig: { key, direction } };
-    });
+    fetchAllData();
   }, []);
 
-  // Sorted and filtered clubs
-  const { sortedClubs, filteredClubs } = useMemo(() => {
-    let sortedClubs = [...clubs];
-    
-    if (sortConfig.key) {
-      sortedClubs.sort((a, b) => {
-        let aValue, bValue;
-        
-        if (sortConfig.key === 'user_name') {
-          aValue = getUserName(a.user_id);
-          bValue = getUserName(b.user_id);
-        } else if (sortConfig.key.includes('.')) {
-          const keys = sortConfig.key.split('.');
-          aValue = keys.reduce((obj, key) => obj?.[key], a);
-          bValue = keys.reduce((obj, key) => obj?.[key], b);
-        } else {
-          aValue = a[sortConfig.key];
-          bValue = b[sortConfig.key];
-        }
+  const fetchAllData = async () => {
+    try {
+      const [clubsRes, usersRes, booksRes] = await Promise.all([
+        fetch('http://127.0.0.1:5000/bookclubs/'),
+        fetch('http://127.0.0.1:5000/users'),
+        fetch('http://127.0.0.1:5000/books')
+      ]);
 
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
+      const [clubsData, usersData, booksData] = await Promise.all([
+        clubsRes.json(),
+        usersRes.json(),
+        booksRes.json()
+      ]);
+
+      // Ensure users is an array
+      setUsers(Array.isArray(usersData) ? usersData : []);
+      setBookClubs(clubsData);
+      setBooks(booksData);
+      setStats({
+        totalClubs: clubsData.length,
+        averageMembers: (
+          clubsData.reduce((acc, club) => acc + (club.memberships?.length || 1), 0) / clubsData.length
+        ).toFixed(1),
       });
+    } catch (err) {
+      setError('Failed to load data. Please check your backend.');
     }
-
-    const filtered = sortedClubs.filter(club =>
-      club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getUserName(club.user_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getBookTitle(club.currentbook?.book_id).toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    return { sortedClubs, filteredClubs: filtered };
-  }, [clubs, sortConfig, searchTerm, getUserName, getBookTitle]);
-
-  // State updater helper
-  const updateState = (updates) => {
-    setState(prev => ({ ...prev, ...updates }));
   };
 
-  // CRUD operations
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (showAddForm) {
+      setNewClub(prev => ({ ...prev, [name]: value }));
+    } else if (showEditForm && currentClub) {
+      setCurrentClub(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
   const handleAddClub = async () => {
     try {
-      if (!newClub.name || !newClub.user_id) {
-        throw new Error('Club name and owner are required');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/bookclubs`, {
+      const res = await fetch('http://127.0.0.1:5000/bookclubs/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newClub.name,
-          synopsis: newClub.synopsis,
-          user_id: newClub.user_id,
-          current_book_id: newClub.current_book_id || null
-        })
+        body: JSON.stringify(newClub),
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to add club');
-      }
-
-      await fetchData();
-      updateState({ 
-        showAddForm: false,
-        newClub: {
-          name: '',
-          synopsis: '',
-          user_id: '',
-          current_book_id: ''
-        },
-        error: null
-      });
-      toast.success('Book club added successfully!');
-    } catch (err) {
-      updateState({ error: err.message });
-      toast.error(`Error: ${err.message}`);
+      if (!res.ok) throw new Error('Add failed');
+      await fetchAllData();
+      setShowAddForm(false);
+      setNewClub({ name: '', synopsis: '', user_id: '', current_book_id: '' });
+    } catch {
+      setError('Failed to add club.');
     }
   };
 
   const handleEditClub = async () => {
     try {
-      if (!currentClub.name || !currentClub.user_id) {
-        throw new Error('Club name and owner are required');
-      }
-
-      const response = await fetch(
-        `${API_BASE_URL}/bookclubs/${currentClub.id}/`, 
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: currentClub.name,
-            synopsis: currentClub.synopsis,
-            user_id: currentClub.user_id,
-            current_book_id: currentClub.current_book_id || null
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to update club');
-      }
-
-      await fetchData();
-      updateState({ showEditForm: false, error: null });
-      toast.success('Book club updated successfully!');
-    } catch (err) {
-      updateState({ error: err.message });
-      toast.error(`Error: ${err.message}`);
+      const res = await fetch(`http://127.0.0.1:5000/bookclubs/${currentClub.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentClub),
+      });
+      if (!res.ok) throw new Error('Edit failed');
+      await fetchAllData();
+      setShowEditForm(false);
+    } catch {
+      setError('Failed to update club.');
     }
   };
 
   const handleDeleteClub = async (id) => {
-    if (window.confirm('Are you sure you want to delete this book club?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/bookclubs/${id}`, {
-          method: 'DELETE'
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to delete club');
-        }
-
-        await fetchData();
-        toast.success('Book club deleted successfully!');
-      } catch (err) {
-        updateState({ error: err.message });
-        toast.error(`Error: ${err.message}`);
-      }
-    }
-  };
-
-  const handleAddMember = async (clubId) => {
+    if (!window.confirm('Are you sure you want to delete this club?')) return;
     try {
-      if (!newMember.user_id) {
-        throw new Error('User ID is required');
-      }
-
-      const response = await fetch(
-        `${API_BASE_URL}/bookclubs/${clubId}/members`, 
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: newMember.user_id,
-            role: newMember.role
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to add member');
-      }
-
-      await fetchData();
-      updateState({ 
-        showMemberForm: false,
-        newMember: {
-          user_id: '',
-          role: 'member'
-        },
-        error: null
-      });
-      toast.success('Member added successfully!');
-    } catch (err) {
-      updateState({ error: err.message });
-      toast.error(`Error: ${err.message}`);
-    }
-  };
-
-  const handleRemoveMember = async (clubId, userId) => {
-    if (window.confirm('Are you sure you want to remove this member?')) {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/bookclubs/${clubId}/members/${userId}`, 
-          {
-            method: 'DELETE'
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to remove member');
-        }
-
-        await fetchData();
-        toast.success('Member removed successfully!');
-      } catch (err) {
-        updateState({ error: err.message });
-        toast.error(`Error: ${err.message}`);
-      }
+      await fetch(`http://127.0.0.1:5000/bookclubs/${id}`, { method: 'DELETE' });
+      await fetchAllData();
+    } catch {
+      setError('Failed to delete club.');
     }
   };
 
   const handleSetCurrentBook = async (clubId, bookId) => {
     try {
-      if (!bookId) {
-        throw new Error('Book ID is required');
-      }
-
-      const response = await fetch(
-        `${API_BASE_URL}/bookclubs/${clubId}/current-book`, 
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            book_id: bookId
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to set current book');
-      }
-
-      await fetchData();
-      toast.success('Current book set successfully!');
-    } catch (err) {
-      updateState({ error: err.message });
-      toast.error(`Error: ${err.message}`);
+      const res = await fetch(`http://127.0.0.1:5000/bookclubs/${clubId}/set_current_book`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ book_id: bookId }),
+      });
+      if (!res.ok) throw new Error('Failed to update book');
+      await fetchAllData();
+    } catch {
+      setError('Could not set current book');
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (showEditForm) {
-      updateState({ currentClub: { ...currentClub, [name]: value } });
-    } else if (showMemberForm) {
-      updateState({ newMember: { ...newMember, [name]: value } });
-    } else {
-      updateState({ newClub: { ...newClub, [name]: value } });
-    }
+  const getBookTitle = (bookId) => books.find(book => book.id === bookId)?.title || '—';
+  const getUserName = (userId) => {
+    if (!Array.isArray(users)) return 'Unknown';
+    return users.find(user => user.id === userId)?.username || 'Unknown';
+  };
+  const userList = Array.isArray(users) ? users.map(user => (
+    <div key={user.id}>{user.username}</div>
+  )) : null; // or show a fallback message
+
+  const requestSort = (key) => {
+    const direction = sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    setSortConfig({ key, direction });
   };
 
-  // Loading and error states
-  if (loading) return (
-    <div className="admin-page loading-state">
-      <div className="spinner"></div>
-      <p>Loading book clubs data...</p>
-    </div>
-  );
+  const sortedClubs = [...bookClubs].sort((a, b) => {
+    const key = sortConfig.key;
+    const aVal = key.includes('.') ? key.split('.').reduce((o, k) => o?.[k], a) : a[key];
+    const bVal = key.includes('.') ? key.split('.').reduce((o, k) => o?.[k], b) : b[key];
+    if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
 
-  if (error) return (
-    <div className="admin-page error-state">
-      <p>Error loading data: {error}</p>
-      <button onClick={fetchData} className="retry-btn">
-        Retry
-      </button>
-    </div>
-  );
+  const filteredClubs = sortedClubs.filter(club => {
+    const owner = getUserName(club.user_id);
+    const book = getBookTitle(club.currentbook?.book_id);
+    return (
+      club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const updateState = (updates) => {
+    if ('showAddForm' in updates) setShowAddForm(updates.showAddForm);
+    if ('showEditForm' in updates) setShowEditForm(updates.showEditForm);
+    if ('showMemberForm' in updates) setShowMemberForm(updates.showMemberForm);
+    if ('currentClub' in updates) setCurrentClub(updates.currentClub);
+    if ('searchTerm' in updates) setSearchTerm(updates.searchTerm);
+    if ('error' in updates) setError(updates.error);
+  };
 
   return (
     <div className="admin-page">
@@ -502,7 +277,7 @@ const AdminBookClubs = () => {
                     </td>
                     <td>{getUserName(club.user_id)}</td>
                     <td className="actions">
-                      <button 
+                      <button
                         className="action-btn edit"
                         onClick={() => {
                           updateState({
@@ -516,7 +291,7 @@ const AdminBookClubs = () => {
                       >
                         <FiEdit />
                       </button>
-                      <button 
+                      <button
                         className="action-btn delete"
                         onClick={() => handleDeleteClub(club.id)}
                       >
@@ -554,16 +329,16 @@ const AdminBookClubs = () => {
           <div className="modal">
             <div className="modal-header">
               <h3>Add New Book Club</h3>
-              <button 
+              <button
                 className="close-btn"
                 onClick={() => updateState({ showAddForm: false, error: null })}
               >
                 &times;
               </button>
             </div>
-            
+
             {error && <div className="error-message">{error}</div>}
-            
+
             <div className="modal-body">
               <div className="form-group">
                 <label>Club Name*</label>
@@ -595,7 +370,7 @@ const AdminBookClubs = () => {
                   required
                 >
                   <option value="">Select Owner</option>
-                  {users.map(user => (
+                  {Array.isArray(users) && users.map(user => (
                     <option key={user.id} value={user.id}>
                       {user.username} ({user.email})
                     </option>
@@ -618,15 +393,15 @@ const AdminBookClubs = () => {
                 </select>
               </div>
             </div>
-            
+
             <div className="modal-actions">
-              <button 
+              <button
                 className="cancel-btn"
                 onClick={() => updateState({ showAddForm: false, error: null })}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="submit-btn"
                 onClick={handleAddClub}
                 disabled={!newClub.name || !newClub.user_id}
@@ -644,16 +419,16 @@ const AdminBookClubs = () => {
           <div className="modal">
             <div className="modal-header">
               <h3>Edit Book Club</h3>
-              <button 
+              <button
                 className="close-btn"
                 onClick={() => updateState({ showEditForm: false, error: null })}
               >
                 &times;
               </button>
             </div>
-            
+
             {error && <div className="error-message">{error}</div>}
-            
+
             <div className="modal-body">
               <div className="form-group">
                 <label>Club Name*</label>
@@ -705,15 +480,15 @@ const AdminBookClubs = () => {
                 </select>
               </div>
             </div>
-            
+
             <div className="modal-actions">
-              <button 
+              <button
                 className="cancel-btn"
                 onClick={() => updateState({ showEditForm: false, error: null })}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="submit-btn"
                 onClick={handleEditClub}
                 disabled={!currentClub.name || !currentClub.user_id}
@@ -731,16 +506,16 @@ const AdminBookClubs = () => {
           <div className="modal">
             <div className="modal-header">
               <h3>Add Member to {currentClub.name}</h3>
-              <button 
+              <button
                 className="close-btn"
                 onClick={() => updateState({ showMemberForm: false, error: null })}
               >
                 &times;
               </button>
             </div>
-            
+
             {error && <div className="error-message">{error}</div>}
-            
+
             <div className="modal-body">
               <div className="form-group">
                 <label>User*</label>
@@ -772,15 +547,15 @@ const AdminBookClubs = () => {
                 </select>
               </div>
             </div>
-            
+
             <div className="modal-actions">
-              <button 
+              <button
                 className="cancel-btn"
                 onClick={() => updateState({ showMemberForm: false, error: null })}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="submit-btn"
                 onClick={() => handleAddMember(currentClub.id)}
                 disabled={!newMember.user_id}
