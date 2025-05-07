@@ -1,17 +1,17 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
-from datetime import datetime
 from app.models.user import User
 from app import db
+from datetime import datetime
 from app.utils import validate_email, validate_password, validate_username
 from marshmallow import ValidationError
 from app.schemas.user_schema import user_create_schema
 
 auth_bp = Blueprint('auth', __name__)
 
-from app import db  # Make sure this imports the SINGLE db instance
-
+# ----------------------
+# Register Route
+# ----------------------
 @auth_bp.route('/register', methods=['POST'])
 def register():
     if not request.is_json:
@@ -19,8 +19,7 @@ def register():
 
     try:
         data = request.get_json()
-        
-        # Validate required fields
+
         required_fields = ['username', 'email', 'password']
         if not all(field in data for field in required_fields):
             return jsonify({
@@ -28,17 +27,21 @@ def register():
                 "required": required_fields
             }), 400
 
-        # Check for existing email or username
+        # Validate using schema
+        user_create_schema.load(data)
+
+        # Check if email or username already exists
         if User.query.filter_by(email=data['email']).first():
             return jsonify({"error": "Email already registered"}), 409
+
         if User.query.filter_by(username=data['username']).first():
             return jsonify({"error": "Username already taken"}), 409
 
-        # Create new user
+        # Create user — model will hash password via setter
         new_user = User(
             username=data['username'],
             email=data['email'],
-            password=generate_password_hash(data['password'])
+            password=data['password']  # auto-hashed in model
         )
 
         db.session.add(new_user)
@@ -46,9 +49,12 @@ def register():
 
         return jsonify({
             "message": "User registered successfully",
-            "user_id": new_user.id
+            "user_id": new_user.id,
+            "username": new_user.username
         }), 201
 
+    except ValidationError as ve:
+        return jsonify({"error": "Validation error", "messages": ve.messages}), 422
     except Exception as e:
         db.session.rollback()
         return jsonify({
@@ -57,6 +63,9 @@ def register():
         }), 500
 
 
+# ----------------------
+# Login Route
+# ----------------------
 @auth_bp.route('/login', methods=['POST'])
 def login():
     if not request.is_json:
@@ -74,27 +83,28 @@ def login():
                 "required": {"email": "string", "password": "string"}
             }), 400
 
-        # Find user by email
         user = User.query.filter_by(email=email).first()
         if not user:
             return jsonify({"error": "User not found"}), 404
 
-        # Check password using model's method
         if not user.verify_password(password):
             return jsonify({"error": "Invalid password"}), 401
 
-        # Optionally update last login
+        # Update last login timestamp
         user.update_last_login()
+        db.session.commit()
 
-        # Create JWT access token
         access_token = create_access_token(identity=user.id)
 
         return jsonify({
             "message": "Login successful",
             "access_token": access_token,
             "user_id": user.id,
-            "username": user.username,
+            "username": user.username
         }), 200
 
     except Exception as e:
-        return jsonify({"error": "Login failed", "details": str(e)}), 500
+        return jsonify({
+            "error": "Login failed",
+            "details": str(e)
+        }), 500

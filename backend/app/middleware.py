@@ -16,8 +16,9 @@ def token_required(f):
             return jsonify({'error': 'Token is missing'}), 401
         
         try:
-            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
-            current_user = User.query.get(data['id'])
+            data = jwt.decode(token, current_app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
+            print("Decoded JWT payload:", data)
+            current_user = User.query.get(data['sub'])
             
             if not current_user:
                 return jsonify({'error': 'Invalid token - user not found'}), 401
@@ -27,6 +28,7 @@ def token_required(f):
         except jwt.InvalidTokenError:
             return jsonify({'error': 'Invalid token'}), 401
         except Exception as e:
+            print(f"Unexpected error during token verification: {e}")
             return jsonify({'error': 'Token verification failed'}), 401
         
         return f(current_user, *args, **kwargs)
