@@ -7,7 +7,8 @@ class SummarySchema(ma.SQLAlchemyAutoSchema):
         model = Summary
         include_fk = True
         load_instance = True
-    
+        exclude = ("book", "user", "bookclub")  # Exclude relationship fields
+
     created_at = fields.DateTime(format='iso')
     updated_at = fields.DateTime(format='iso')
 
