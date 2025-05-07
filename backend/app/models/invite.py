@@ -1,6 +1,9 @@
 from app import db
 from datetime import datetime
 from enum import Enum
+from .user import User
+from .bookclub import BookClub
+
 
 class InviteStatus(Enum):
     PENDING = 'pending'

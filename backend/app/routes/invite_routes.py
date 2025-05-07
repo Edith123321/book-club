@@ -1,13 +1,13 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import db, Invite, User, BookClub, InviteStatus
-from app.middleware import token_required
 from datetime import datetime
 
 invite_bp = Blueprint('invite', __name__, url_prefix='/api/invites')
 
 # Send Invite
 @invite_bp.route('/', methods=['POST'])
-@token_required
+@jwt_required()
 def send_invite():
     data = request.get_json()
     
@@ -26,8 +26,9 @@ def send_invite():
         return jsonify({'error': 'Book club not found'}), 404
     
     # Check for existing invite
+    current_user_id = get_jwt_identity()
     existing_invite = Invite.query.filter_by(
-        sender_id=session['user_id'],
+        sender_id=current_user_id,
         recipient_id=data['recipient_id'],
         bookclub_id=data['bookclub_id'],
         status=InviteStatus.PENDING
@@ -38,7 +39,7 @@ def send_invite():
     
     try:
         new_invite = Invite(
-            sender_id=session['user_id'],
+            sender_id=current_user_id,
             recipient_id=data['recipient_id'],
             bookclub_id=data['bookclub_id'],
             status=InviteStatus.PENDING
@@ -64,10 +65,12 @@ def send_invite():
 
 # Get User's Received Invites
 @invite_bp.route('/received', methods=['GET'])
-@token_required
+@jwt_required()
 def get_received_invites():
+    current_user_id = get_jwt_identity()
+    
     invites = Invite.query.filter_by(
-        recipient_id=session['user_id'],
+        recipient_id=current_user_id,
         status=InviteStatus.PENDING
     ).all()
     
@@ -85,11 +88,13 @@ def get_received_invites():
 
 # Accept Invite
 @invite_bp.route('/<int:invite_id>/accept', methods=['POST'])
-@token_required
+@jwt_required()
 def accept_invite(invite_id):
+    current_user_id = get_jwt_identity()
+    
     invite = Invite.query.filter_by(
         id=invite_id,
-        recipient_id=session['user_id']
+        recipient_id=current_user_id
     ).first_or_404()
     
     if invite.status != InviteStatus.PENDING:
@@ -119,11 +124,13 @@ def accept_invite(invite_id):
 
 # Decline Invite
 @invite_bp.route('/<int:invite_id>/decline', methods=['POST'])
-@token_required
+@jwt_required()
 def decline_invite(invite_id):
+    current_user_id = get_jwt_identity()
+    
     invite = Invite.query.filter_by(
         id=invite_id,
-        recipient_id=session['user_id']
+        recipient_id=current_user_id
     ).first_or_404()
     
     if invite.status != InviteStatus.PENDING:
@@ -142,10 +149,12 @@ def decline_invite(invite_id):
 
 # Get Sent Invites
 @invite_bp.route('/sent', methods=['GET'])
-@token_required
+@jwt_required()
 def get_sent_invites():
+    current_user_id = get_jwt_identity()
+    
     invites = Invite.query.filter_by(
-        sender_id=session['user_id']
+        sender_id=current_user_id
     ).all()
     
     return jsonify({
@@ -160,4 +169,4 @@ def get_sent_invites():
             'created_at': i.created_at.isoformat(),
             'updated_at': i.updated_at.isoformat() if i.updated_at else None
         } for i in invites]
-        }), 200
+    }), 200
