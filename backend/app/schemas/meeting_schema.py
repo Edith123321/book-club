@@ -9,8 +9,7 @@ class MeetingSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
     
     created_at = fields.DateTime(format='iso')
-    updated_at = fields.DateTime(format='iso')
-    meeting_time = fields.DateTime(format='iso')
+    meeting_date = fields.DateTime(format='iso')
 
 # Create schema instances
 meeting_schema = MeetingSchema()
