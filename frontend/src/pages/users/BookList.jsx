@@ -1,13 +1,33 @@
 // src/pages/BookList.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import booksData from '../../components/booksData';
 import '../../styles/BookList.css'; // Import the separate CSS file
 
 const BookList = () => {
+  const [booksData, setBooksData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [sortOption, setSortOption] = useState('rating-desc');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/books/')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch books');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setBooksData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   const allGenres = ['All', ...new Set(booksData.flatMap(book => book.genres))];
 
@@ -29,6 +49,14 @@ const BookList = () => {
         default: return 0;
       }
     });
+
+  if (loading) {
+    return <div>Loading books...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading books: {error}</div>;
+  }
 
   return (
     <div className="book-list-page">

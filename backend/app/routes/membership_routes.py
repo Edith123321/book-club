@@ -5,6 +5,9 @@ from app.models.user import User
 from app.models.book_club import BookClub
 from app.schemas.membership_schema import membership_schema, memberships_schema
 
+from flask import request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 membership_bp = Blueprint('membership_bp', __name__, url_prefix='/memberships')
 
 # Create a new membership (user joins a book club)
@@ -65,3 +68,22 @@ def delete_membership(id):
     db.session.delete(membership)
     db.session.commit()
     return jsonify({'message': 'Membership deleted'}), 200
+
+@membership_bp.route('/user', methods=['GET'])
+@jwt_required()
+def get_user_memberships():
+    current_user_id = get_jwt_identity()
+    memberships = Membership.query.filter_by(user_id=current_user_id).all()
+    book_clubs = []
+    for membership in memberships:
+        club = membership.book_club
+        if club:
+            book_clubs.append({
+                'id': club.id,
+                'bookClubName': club.bookClubName,
+                'description': club.description,
+                'genres': club.genres.split(',') if club.genres else [],
+                'currentBook': club.currentBook.to_dict() if club.currentBook else None,
+                'members': [m.user_id for m in Membership.query.filter_by(book_club_id=club.id).all()]
+            })
+    return jsonify(book_clubs), 200

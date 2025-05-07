@@ -5,12 +5,15 @@ class Review(db.Model):
     __tablename__ = 'reviews'
 
     id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=True)  # Added title field
     content = db.Column(db.Text, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
 
-    # Temporarily remove foreign key constraints
-    user_id = db.Column(db.Integer, nullable=False)
-    book_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
+
+    user = db.relationship('User', backref=db.backref('reviews', lazy=True))
+    book = db.relationship('Book', backref=db.backref('reviews', lazy=True))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

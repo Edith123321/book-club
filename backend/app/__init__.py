@@ -26,9 +26,13 @@ def create_app():
     # Import and register blueprints
     from app.routes.book_routes import book_bp
     from app.routes.summary_routes import summary_bp
+    from app.routes.membership_routes import membership_bp
+    from app.routes.book_club_routes import book_club_bp
 
     app.register_blueprint(book_bp)
     app.register_blueprint(summary_bp)
+    app.register_blueprint(membership_bp)
+    app.register_blueprint(book_club_bp)
 
     from app.routes.review_routes import review_bp
     app.register_blueprint(review_bp)

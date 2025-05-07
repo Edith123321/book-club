@@ -1,13 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import booksData from '../../components/booksData';
 
 const BookDetailsPage = () => {
   const { id } = useParams();
+  const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [newReview, setNewReview] = useState({ title: '', description: '', username: '' });
   const [reviews, setReviews] = useState([]);
 
-  const book = booksData.find(book => book.id === parseInt(id));
+  useEffect(() => {
+    const fetchBook = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/books/${id}`);
+        if (!response.ok) {
+          throw new Error(`Error fetching book: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setBook(data);
+        setReviews(data.reviews || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, [id]);
+
+  if (loading) {
+    return <div className="loading">Loading book details...</div>;
+  }
+
+  if (error) {
+    return <div className="error">Error: {error}</div>;
+  }
 
   if (!book) {
     return <div className="not-found">Book not found</div>;
@@ -37,7 +67,7 @@ const BookDetailsPage = () => {
             <p><span className="info-label">Pages:</span> {book.pages}</p>
             <div className="rating-badge">
               <span className="stars">{"★".repeat(Math.floor(book.rating))}{"☆".repeat(5 - Math.floor(book.rating))}</span>
-              <span className="rating-value">{book.rating.toFixed(2)}</span>
+              <span className="rating-value">{book.rating ? book.rating.toFixed(2) : 'N/A'}</span>
             </div>
           </div>
         </div>
@@ -48,7 +78,7 @@ const BookDetailsPage = () => {
           <h2>by {book.author}</h2>
           
           <div className="genres-container">
-            {book.genres.map((genre, index) => (
+            {book.genres && book.genres.map((genre, index) => (
               <span key={index} className="genre-tag">{genre}</span>
             ))}
           </div>
@@ -62,10 +92,10 @@ const BookDetailsPage = () => {
 
       {/* Reviews Section - Full Width Below */}
       <div className="reviews-section">
-        <h3>Reader Reviews ({book.reviews.length + reviews.length})</h3>
+        <h3>Reader Reviews ({reviews.length})</h3>
         
         <div className="reviews-grid">
-          {[...book.reviews, ...reviews].map((review, index) => (
+          {reviews.map((review, index) => (
             <div key={index} className="review-card">
               <h4>{review.title}</h4>
               <p className="review-text">{review.description}</p>

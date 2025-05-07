@@ -1,17 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import '../../styles/BookClubList.css';
 import { CiSearch } from "react-icons/ci";
-import bookClubsData from '../../components/bookClubsData';
 import Footer from '../../components/Footer';
 
 const BookClubList = () => {
+  const [bookClubsData, setBookClubsData] = useState([]);
   const [joinedClubs, setJoinedClubs] = useState([]);
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch('http://localhost:5000/bookclubs/')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch book clubs');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setBookClubsData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   const allCategories = ['all', ...new Set(bookClubsData.flatMap(club => club.genres))];
 
@@ -40,6 +60,14 @@ const BookClubList = () => {
       club.genres.includes(selectedCategory);
     return tabMatch && searchMatch && categoryMatch;
   });
+
+  if (loading) {
+    return <div>Loading book clubs...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading book clubs: {error}</div>;
+  }
 
   return (
     <div className="book-club-list-page">
