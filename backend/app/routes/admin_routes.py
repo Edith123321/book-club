@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify 
-from ..models import db, User, BookClub, Summary, Membership
+from ..models import User, BookClub, Summary, Membership
+from app.extensions import db  # ✅ CORRECT
 from ..middleware import token_required, admin_required
 from datetime import datetime
 from sqlalchemy import func

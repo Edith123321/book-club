@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from app.extensions import db  # ✅ CORRECT
 from sqlalchemy.dialects.postgresql import ARRAY
 from .review import Review
 

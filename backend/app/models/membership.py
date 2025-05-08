@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from app.extensions import db  # ✅ CORRECT
 
 class Membership(db.Model):
     __tablename__ = 'memberships'  # Fixed double underscores

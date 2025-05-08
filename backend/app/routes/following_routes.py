@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import db, User
+from app.models import User
+from app.extensions import db  # ✅ CORRECT
 from ..middleware import token_required
 
 following_bp = Blueprint('following', __name__, url_prefix='/api/following')

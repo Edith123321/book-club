@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash
 from datetime import datetime
-from app import db
+from app.extensions import db  # ✅ CORRECT
 from app.models.user import User
 from typing import Dict, Any
 

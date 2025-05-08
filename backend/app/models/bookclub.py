@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from app.extensions import db  # ✅ CORRECT
 
 class BookClub(db.Model):
     __tablename__ = 'bookclubs'

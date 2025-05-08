@@ -1,4 +1,4 @@
-from app import db
+from app.extensions import db  # ✅ CORRECT
 from datetime import datetime
 
 class Review(db.Model):

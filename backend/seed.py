@@ -12,6 +12,7 @@ from werkzeug.security import generate_password_hash
 from datetime import datetime, timedelta
 from sqlalchemy import text, inspect
 import traceback
+from app.utils import generate_invite_token
 
 def clear_database():
     print("🧹 Clearing existing data...")
@@ -213,14 +214,16 @@ def seed_database():
                     sender_id=user1.id, 
                     recipient_id=user2.id, 
                     bookclub_id=club1.id, 
-                    status=InviteStatus.PENDING
-                ),
+                    status=InviteStatus.PENDING,
+                    token=generate_invite_token(user1.id, club1.id, user2.id)),
+                
                 Invite(
                     sender_id=user2.id, 
                     recipient_id=user3.id, 
                     bookclub_id=club2.id, 
-                    status=InviteStatus.ACCEPTED
-                )
+                    status=InviteStatus.ACCEPTED,
+                    token=generate_invite_token(user1.id, club1.id, user2.id))
+                
             ]
             db.session.add_all(invites)
             db.session.commit()

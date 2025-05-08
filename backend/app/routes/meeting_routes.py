@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app import db
+from app.extensions import db  # ✅ CORRECT
 from app.schemas.meeting_schema import MeetingSchema  # Only import the schema
 from app.models import Meeting
 
