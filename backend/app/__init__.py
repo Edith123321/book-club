@@ -1,45 +1,29 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_cors import CORS
-from flask_marshmallow import Marshmallow
 from .config import Config
-from flask_jwt_extended import JWTManager
-
-# Initialize extensions without binding to app
-db = SQLAlchemy()
-migrate = Migrate()
-ma = Marshmallow()
-cors = CORS()
-jwt = JWTManager()
+from .extensions import db, migrate, ma, cors, jwt  # ✅ Import shared extensions
 
 def create_app(config_class=Config):
     """Application factory function"""
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Initialize extensions with the app
+    # ✅ Initialize extensions with the app
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
     cors.init_app(app)
     jwt.init_app(app)
 
-    # Import and register blueprints
+    # ✅ Register routes
     register_blueprints(app)
 
-    # Import models AFTER db initialization
+    # ✅ Register models and (optionally) create tables
     with app.app_context():
-        from app.models.user import User
-        from app.models.book import Book
-        from app.models.summary import Summary
-        from app.models.review import Review
-        from app.models.bookclub import BookClub
-        from app.models.meeting import Meeting
-        from app.models.invite import Invite
-        from app.models.membership import Membership
-        
-        # Only create tables if not using migrations
+        from app.models import (
+            user, book, summary, review,
+            bookclub, meeting, invite, membership
+        )
+
         if not app.config.get('MIGRATIONS_ENABLED', True):
             db.create_all()
 
@@ -47,7 +31,6 @@ def create_app(config_class=Config):
 
 def register_blueprints(app):
     """Register all application blueprints"""
-    # Import blueprints inside the function to avoid circular imports
     from app.routes.book_routes import book_bp
     from app.routes.summary_routes import summary_bp
     from app.routes.review_routes import review_bp

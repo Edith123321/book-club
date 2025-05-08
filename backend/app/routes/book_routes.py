@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
-from app import db
+from app.extensions import db  # ✅ CORRECT
 from app.models.book import Book
 
 book_bp = Blueprint('books', __name__, url_prefix='/books')

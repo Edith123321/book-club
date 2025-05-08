@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from app import db
+from app.extensions import db  # ✅ CORRECT
 from app.models.summary import Summary
 from app.models.book import Book
 from app.models.user import User  # Added missing import

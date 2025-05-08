@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.models import Membership, db
+from app.models import Membership
+from app.extensions import db  # ✅ CORRECT
 from app.schemas.membership_schema import membership_schema, memberships_schema
 
 membership_bp = Blueprint('memberships', __name__)

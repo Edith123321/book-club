@@ -4,6 +4,8 @@ from app.models.bookclub import BookClub, CurrentBook
 from app.models.membership import Membership
 from app.models.book import Book
 from app.models.user import User
+from app.extensions import db  # ✅ CORRECT
+from datetime import datetime
 from app import db
 
 bookclub_bp = Blueprint('bookclub', __name__)
