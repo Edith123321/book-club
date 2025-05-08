@@ -1,129 +1,72 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CiSearch } from 'react-icons/ci';
-
 import Navbar from '../../components/Navbar';
-import '../../styles/BookList.css';
+import "../../styles/BookList.css"
 
 const BookList = () => {
   const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [sortOption, setSortOption] = useState('rating-desc');
   const [activeTab, setActiveTab] = useState('all');
-
+  const [allGenres, setAllGenres] = useState(['All']);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        const response = await fetch('http://127.0.0.1:5000/books/');
+        const data = await response.json();
+        setBooks(data);
 
-        const response = await fetch('http://127.0.0.1:5000/books');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.status !== 'success') {
-          throw new Error(result.message || 'Failed to fetch books');
-        }
-
-        setBooks(result.data || []);
+        // Extract all unique genres
+        const genres = new Set();
+        data.forEach(book => book.genres.forEach(g => genres.add(g)));
+        setAllGenres(['All', ...Array.from(genres)]);
       } catch (err) {
-        console.error('Fetch error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching books:', err);
       }
     };
 
     fetchBooks();
   }, []);
 
-  const allGenres = useMemo(() => {
-    const genres = new Set(['All']);
-    books.forEach(book => {
-      (book.genres || []).forEach(genre => genres.add(genre));
-    });
-    return Array.from(genres);
-  }, [books]);
-
-  const filteredBooks = useMemo(() => {
-    let filtered = books;
-
-    if (activeTab === 'featured') {
-      filtered = filtered.filter(book => (book.rating || 0) >= 4);
-    }
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(book =>
-        (book.title || '').toLowerCase().includes(term) ||
-        (book.author || '').toLowerCase().includes(term)
-      );
-    }
-
-    if (selectedGenre !== 'All') {
-      filtered = filtered.filter(book =>
-        (book.genres || []).includes(selectedGenre)
-      );
-    }
-
-    filtered = [...filtered].sort((a, b) => {
-      const aRating = a.rating || 0;
-      const bRating = b.rating || 0;
-      const aTitle = a.title || '';
-      const bTitle = b.title || '';
-      const aAuthor = a.author || '';
-      const bAuthor = b.author || '';
-
-      switch (sortOption) {
-        case 'title-asc': return aTitle.localeCompare(bTitle);
-        case 'title-desc': return bTitle.localeCompare(aTitle);
-        case 'author-asc': return aAuthor.localeCompare(bAuthor);
-        case 'author-desc': return bAuthor.localeCompare(aAuthor);
-        case 'rating-asc': return aRating - bRating;
-        case 'rating-desc': return bRating - aRating;
-        default: return 0;
-      }
-    });
-
-    return filtered;
-  }, [books, activeTab, searchTerm, selectedGenre, sortOption]);
-
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    navigate(tab === 'featured' ? '/my-books' : '/books');
   };
 
   const resetFilters = () => {
     setSearchTerm('');
     setSelectedGenre('All');
-    setActiveTab('all');
     setSortOption('rating-desc');
   };
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading books...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-container">
-        <p>Error loading books: {error}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
-      </div>
-    );
-  }
+  const filteredBooks = books
+    .filter(book => {
+      const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            book.author.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesGenre = selectedGenre === 'All' || book.genres.includes(selectedGenre);
+      return matchesSearch && matchesGenre;
+    })
+    .sort((a, b) => {
+      switch (sortOption) {
+        case 'rating-desc':
+          return b.rating - a.rating;
+        case 'rating-asc':
+          return a.rating - b.rating;
+        case 'title-asc':
+          return a.title.localeCompare(b.title);
+        case 'title-desc':
+          return b.title.localeCompare(a.title);
+        case 'author-asc':
+          return a.author.localeCompare(b.author);
+        case 'author-desc':
+          return b.author.localeCompare(a.author);
+        default:
+          return 0;
+      }
+    });
 
   return (
     <>
@@ -195,7 +138,7 @@ const BookList = () => {
               <div key={book.id} className="book-card">
                 <Link to={`/book/${book.id}`}>
                   <img
-                    src={book.cover || 'https://via.placeholder.com/150x200?text=No+Cover'}
+                    src={book.cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
                     alt={`${book.title} cover`}
                     className="book-cover"
                     onError={(e) => {

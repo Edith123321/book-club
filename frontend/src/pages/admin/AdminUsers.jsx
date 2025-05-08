@@ -1,19 +1,11 @@
-import React, { useState } from 'react';
-import { FiEdit, FiTrash2, FiEye, FiPlus, FiSearch, FiChevronUp, FiChevronDown } from 'react-icons/fi';
-import '../../styles/AdminPages.css';
+import React, { useState, useEffect } from 'react';
+import { FiPlus, FiSearch, FiChevronUp, FiChevronDown, FiEdit, FiTrash2 } from 'react-icons/fi';
 
 const AdminUsers = () => {
-  // Sample data
-  const initialUsers = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Member', status: 'Active', created: '2025-01-15', lastLogin: '2025-03-20' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Member', status: 'Active', created: '2025-02-10', lastLogin: '2025-04-18' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'Member', status: 'Inactive', created: '2025-03-05', lastLogin: '2025-05-01' },
-    { id: 4, name: 'Alice Brown', email: 'alice@example.com', role: 'Admin', status: 'Active', created: '2025-02-01', lastLogin: '2025-04-19' },
-  ];
-
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -24,18 +16,55 @@ const AdminUsers = () => {
     status: 'Active'
   });
 
-  // Stats calculation
-  const totalUsers = users.length;
-  const activeUsers = users.filter(user => user.status === 'Active').length;
-  const inactiveUsers = users.filter(user => user.status === 'Inactive').length;
-  const newUsers = users.filter(user => {
-    const createdDate = new Date(user.created);
+  // Stats
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [activeUsers, setActiveUsers] = useState(0);
+  const [inactiveUsers, setInactiveUsers] = useState(0);
+  const [newUsers, setNewUsers] = useState(0);
+
+  // Fetch users from API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/users/');
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        
+        setUsers(data.users || data); // Handle both formats
+        calculateStats(data.users || data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+    
+    fetchUsers();
+  }, []);
+
+  // Calculate statistics
+  const calculateStats = (users) => {
+    setTotalUsers(users.length);
+    setActiveUsers(users.filter(user => user.is_active).length);
+    setInactiveUsers(users.filter(user => !user.is_active).length);
+    
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    return createdDate > thirtyDaysAgo;
-  }).length;
+    setNewUsers(users.filter(user => {
+      const createdDate = new Date(user.created_at || user.date_joined);
+      return createdDate > thirtyDaysAgo;
+    }).length);
+  };
 
-  // Sorting function
+  // Filter users based on search term
+  useEffect(() => {
+    const filtered = users.filter(user => 
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    setFilteredUsers(sortUsers(filtered));
+  }, [searchTerm, users, sortConfig]);
+
+  // Sort functionality
   const requestSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -44,55 +73,132 @@ const AdminUsers = () => {
     setSortConfig({ key, direction });
   };
 
-  const sortedUsers = React.useMemo(() => {
-    let sortableUsers = [...users];
-    if (sortConfig.key) {
-      sortableUsers.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableUsers;
-  }, [users, sortConfig]);
+  const sortUsers = (users) => {
+    return [...users].sort((a, b) => {
+      // Handle nested properties and null values
+      const aValue = getSortValue(a, sortConfig.key);
+      const bValue = getSortValue(b, sortConfig.key);
 
-  // Filter users based on search term
-  const filteredUsers = sortedUsers.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // CRUD operations
-  const handleAddUser = () => {
-    const newId = Math.max(...users.map(user => user.id)) + 1;
-    setUsers([...users, { ...newUser, id: newId, created: new Date().toISOString().split('T')[0], lastLogin: '' }]);
-    setShowAddForm(false);
-    setNewUser({ name: '', email: '', role: 'Member', status: 'Active' });
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
   };
 
-  const handleEditUser = () => {
-    setUsers(users.map(user => user.id === currentUser.id ? currentUser : user));
-    setShowEditForm(false);
-  };
-
-  const handleDeleteUser = (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(user => user.id !== id));
+  const getSortValue = (user, key) => {
+    switch(key) {
+      case 'name': 
+        return user.name || user.username || '';
+      case 'role':
+        return user.is_admin ? 'Admin' : 'Member';
+      case 'status':
+        return user.is_active ? 'Active' : 'Inactive';
+      case 'created':
+        return new Date(user.created_at || user.date_joined);
+      case 'lastLogin':
+        return user.last_login ? new Date(user.last_login) : new Date(0);
+      default:
+        return '';
     }
   };
 
-  // Form handlers
+  // Form handling
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     if (showEditForm) {
-      setCurrentUser({ ...currentUser, [name]: value });
+      setCurrentUser(prev => ({ ...prev, [name]: value }));
     } else {
-      setNewUser({ ...newUser, [name]: value });
+      setNewUser(prev => ({ ...prev, [name]: value }));
     }
+  };
+
+  // Add new user
+  const handleAddUser = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/users/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: newUser.name,
+          email: newUser.email,
+          is_admin: newUser.role === 'Admin',
+          is_active: newUser.status === 'Active',
+          password: 'defaultPassword' // In a real app, you'd generate or prompt for this
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to add user');
+
+      const result = await response.json();
+      setUsers(prev => [...prev, result]);
+      setShowAddForm(false);
+      setNewUser({
+        name: '',
+        email: '',
+        role: 'Member',
+        status: 'Active'
+      });
+    } catch (error) {
+      console.error('Error adding user:', error);
+    }
+  };
+
+  // Edit user
+  const handleEditUser = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: currentUser.name,
+          email: currentUser.email,
+          is_admin: currentUser.role === 'Admin',
+          is_active: currentUser.status === 'Active'
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to update user');
+
+      const result = await response.json();
+      setUsers(prev => prev.map(user => 
+        user.id === currentUser.id ? result : user
+      ));
+      setShowEditForm(false);
+    } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
+  // Delete user
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    
+    try {
+      const response = await fetch(`http://localhost:5000/users/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Failed to delete user');
+
+      setUsers(prev => prev.filter(user => user.id !== id));
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   return (
@@ -170,47 +276,60 @@ const AdminUsers = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map(user => (
-              <tr key={user.id}>
-                <td>
-                  <div className="user-info">
-                    <div>
-                      <div className="user-name">{user.name}</div>
-                      <div className="user-email">{user.email}</div>
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map(user => (
+                <tr key={user.id}>
+                  <td>
+                    <div className="user-info">
+                      <div>
+                        <div className="user-name">{user.name || user.username}</div>
+                        <div className="user-email">{user.email}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td>
-                  <span className={`role-badge ${user.role.toLowerCase()}`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td>
-                  <span className={`status-badge ${user.status.toLowerCase()}`}>
-                    {user.status}
-                  </span>
-                </td>
-                <td>{user.created}</td>
-                <td>{user.lastLogin || 'Never'}</td>
-                <td className="actions">
-                  <button 
-                    className="action-btn edit"
-                    onClick={() => {
-                      setCurrentUser({...user});
-                      setShowEditForm(true);
-                    }}
-                  >
-                    <FiEdit />
-                  </button>
-                  <button 
-                    className="action-btn delete"
-                    onClick={() => handleDeleteUser(user.id)}
-                  >
-                    <FiTrash2 />
-                  </button>
+                  </td>
+                  <td>
+                    <span className={`role-badge ${user.is_admin ? 'admin' : 'member'}`}>
+                      {user.is_admin ? 'Admin' : 'Member'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
+                      {user.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td>{formatDate(user.created_at || user.date_joined)}</td>
+                  <td>{formatDate(user.last_login)}</td>
+                  <td className="actions">
+                    <button 
+                      className="action-btn edit"
+                      onClick={() => {
+                        setCurrentUser({
+                          ...user,
+                          name: user.name || user.username,
+                          role: user.is_admin ? 'Admin' : 'Member',
+                          status: user.is_active ? 'Active' : 'Inactive'
+                        });
+                        setShowEditForm(true);
+                      }}
+                    >
+                      <FiEdit />
+                    </button>
+                    <button 
+                      className="action-btn delete"
+                      onClick={() => handleDeleteUser(user.id)}
+                    >
+                      <FiTrash2 />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" className="no-results">
+                  No users found matching your criteria
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -227,6 +346,7 @@ const AdminUsers = () => {
                 name="name"
                 value={newUser.name}
                 onChange={handleInputChange}
+                required
               />
             </div>
             <div className="form-group">
@@ -236,6 +356,7 @@ const AdminUsers = () => {
                 name="email"
                 value={newUser.email}
                 onChange={handleInputChange}
+                required
               />
             </div>
             <div className="form-group">
@@ -271,6 +392,7 @@ const AdminUsers = () => {
               <button 
                 className="submit-btn"
                 onClick={handleAddUser}
+                disabled={!newUser.name || !newUser.email}
               >
                 Add User
               </button>
@@ -291,6 +413,7 @@ const AdminUsers = () => {
                 name="name"
                 value={currentUser.name}
                 onChange={handleInputChange}
+                required
               />
             </div>
             <div className="form-group">
@@ -300,6 +423,7 @@ const AdminUsers = () => {
                 name="email"
                 value={currentUser.email}
                 onChange={handleInputChange}
+                required
               />
             </div>
             <div className="form-group">
@@ -335,6 +459,7 @@ const AdminUsers = () => {
               <button 
                 className="submit-btn"
                 onClick={handleEditUser}
+                disabled={!currentUser.name || !currentUser.email}
               >
                 Save Changes
               </button>

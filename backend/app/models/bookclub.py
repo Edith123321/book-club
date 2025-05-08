@@ -9,13 +9,16 @@ class BookClub(db.Model):
     synopsis = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-
+    owner = db.relationship('User', foreign_keys=[owner_id])
+    
     # Relationships
     owner = db.relationship('User', back_populates='owned_clubs')
     memberships = db.relationship('Membership', back_populates='bookclub', cascade='all, delete-orphan')
     currentbook = db.relationship('CurrentBook', back_populates='bookclub', uselist=False, cascade='all, delete-orphan')
     summaries = db.relationship('Summary', back_populates='bookclub', cascade='all, delete-orphan')
     meetings = db.relationship('Meeting', back_populates='bookclub', cascade='all, delete-orphan')
+
+    
     
 
     def to_dict(self):

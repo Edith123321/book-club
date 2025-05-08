@@ -22,6 +22,8 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+
+  // const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
   
   // Form validation
   const [errors, setErrors] = useState({});
@@ -68,41 +70,105 @@ const Login = () => {
     return newErrors;
   };
 
-  const handleSignInSubmit = (e) => {
+  const handleSignInSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateSignInForm();
     
     if (Object.keys(formErrors).length === 0) {
       setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Login submitted with:', { email, password, rememberMe });
+      
+      try {
+        const response = await fetch('http://localhost:5000/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            password
+          }),
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Login failed');
+        }
+  
+        const userData = await response.json();
+        console.log('Login successful:', userData);
+        
+        // Store user data and token if available
+        if (userData.token) {
+          localStorage.setItem('authToken', userData.token);
+          localStorage.setItem('userData', JSON.stringify(userData));
+          
+          if (rememberMe) {
+            localStorage.setItem('rememberMe', 'true');
+          }
+        }
+        
+        // Redirect based on admin status
+        if (userData.is_admin) {
+          window.location.href = '/admin/dashboard';
+        } else {
+          window.location.href = '/';
+        }
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        setErrors({ 
+          ...errors, 
+          apiError: error.message || 'An error occurred during login' 
+        });
+      } finally {
         setIsLoading(false);
-        // Redirect would happen here in a real app
-      }, 1500);
+      }
     } else {
       setErrors(formErrors);
     }
   };
   
-  const handleCreateAccountSubmit = (e) => {
+  const handleCreateAccountSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateCreateAccountForm();
     
     if (Object.keys(formErrors).length === 0) {
       setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Create account submitted with:', { 
-          firstName, 
-          lastName, 
-          email: newEmail, 
-          password: newPassword,
-          agreeToTerms
+      
+      try {
+        const response = await fetch('http://127.0.0.1:5000/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            email: newEmail,
+            password: newPassword
+          }),
         });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Registration failed');
+        }
+  
+        const data = await response.json();
+        console.log('Registration successful:', data);
+        
+        // Optionally auto-login the user after registration
+        // Or redirect to login page with success message
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        setErrors({ 
+          ...errors, 
+          apiError: error.message || 'An error occurred during registration' 
+        });
+      } finally {
         setIsLoading(false);
-        // Redirect would happen here in a real app
-      }, 1500);
+      }
     } else {
       setErrors(formErrors);
     }

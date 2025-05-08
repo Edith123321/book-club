@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import '../../styles/AddBook.css';
+import { useNavigate } from 'react-router-dom';
+
+
+// const navigate = useNavigate();
 
 const AddBook = () => {
   const [bookData, setBookData] = useState({
@@ -43,11 +47,45 @@ const AddBook = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Book submitted:', bookData);
-    // Here you would typically send the data to your backend
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/books/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to add book: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Book successfully submitted:', result);
+      alert('Book added successfully!');
+      navigate('/books')
+      
+      setBookData({
+        title: '',
+        author: '',
+        cover: '',
+        rating: '',
+        genres: [],
+        synopsis: '',
+        datePublished: '',
+        language: '',
+        pages: ''
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to submit book. Please try again.');
+    }
+    
   };
+
 
   return (
     <div className="add-book-page">

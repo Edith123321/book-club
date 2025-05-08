@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {  Routes, Route } from 'react-router-dom';
 
 // User pages
 import Home from './pages/users/Home';
@@ -37,7 +37,7 @@ import BookClubDetails from './pages/users/BookClubDetails';
 
 const App = () => {
   return (
-    <BrowserRouter>
+    
       <Routes>
         {/* User Routes */}
         <Route path="/" element={<Home />} />
@@ -95,7 +95,7 @@ const App = () => {
           }
         />
       </Routes>
-    </BrowserRouter>
+   
   );
 };
 

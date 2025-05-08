@@ -109,10 +109,13 @@ body {
 
 .book-cover {
   width: 100%;
-  height: 350px;
-  object-fit: cover;
-  border-bottom: 1px solid #eee;
+  height: 280px; /* fixed height */
+  object-fit: cover; /* crop to fill the container */
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #f0f0f0;
+  display: block;
 }
+
 
 .book-info {
   padding: 1.25rem;
