@@ -86,40 +86,6 @@ def seed_database():
             db.session.add_all([user1, user2, user3])
             db.session.commit()
 
-            print("📚 Creating book clubs...")
-            club1 = BookClub(
-                name="Classic Literature Circle",
-                owner_id=user1.id,
-                synopsis="A vibrant community dedicated to exploring and analyzing timeless literary classics from around the world. We meet weekly to discuss themes, historical contexts, and personal interpretations of works from authors like Shakespeare, Austen, Dickens, and more. Our group welcomes both casual readers and scholarly types, with discussions ranging from surface-level plot points to deep literary analysis.",
-                created_at=datetime(2023, 1, 15)
-            )
-            club2 = BookClub(
-                name="Sci-Fi & Fantasy Explorers",
-                owner_id=user2.id,
-                synopsis="A passionate group that journeys through galaxies, parallel dimensions, and enchanted lands via the pages of science fiction and fantasy books. From Asimov to Zelazny, we explore world-building, futuristic technologies, and magical systems. Each month we select a new book or series to discuss, with special meetings dedicated to comparing adaptations and analyzing genre trends.",
-                created_at=datetime(2023, 2, 20)
-            )
-            club3 = BookClub(
-                name="Modern Reads Book Club",
-                owner_id=user3.id,
-                synopsis="Focusing on contemporary novels from the past decade, we examine trending authors, diverse voices, and thought-provoking themes in modern literature. Our discussions often extend beyond the books to current events and social issues they reflect. We prioritize works that challenge perspectives and introduce readers to new cultural experiences.",
-                created_at=datetime(2023, 3, 10)
-            )
-            db.session.add_all([club1, club2, club3])
-            db.session.commit()
-
-            print("🧾 Creating Memberships...")
-            memberships = [
-                Membership(user_id=user1.id, bookclub_id=club1.id, joined_at=datetime(2023, 1, 16)),
-                Membership(user_id=user2.id, bookclub_id=club2.id, joined_at=datetime(2023, 2, 21)),
-                Membership(user_id=user3.id, bookclub_id=club3.id, joined_at=datetime(2023, 3, 11)),
-                Membership(user_id=user1.id, bookclub_id=club2.id, joined_at=datetime(2023, 3, 15)),
-                Membership(user_id=user2.id, bookclub_id=club1.id, joined_at=datetime(2023, 4, 1)),
-                Membership(user_id=user3.id, bookclub_id=club1.id, joined_at=datetime(2023, 4, 3))
-            ]
-            db.session.add_all(memberships)
-            db.session.commit()
-
             print("📖 Adding books...")
             book1 = Book(
                 title="1984",
@@ -127,7 +93,7 @@ def seed_database():
                 genres=["Dystopian", "Political Fiction", "Science Fiction"],
                 rating=4.17,
                 synopsis="In a chilling dystopia where the Party maintains absolute control through pervasive surveillance and psychological manipulation, Winston Smith works at the Ministry of Truth rewriting history. When he begins a forbidden relationship with Julia and encounters the mysterious O'Brien, Winston dares to imagine rebellion against Big Brother. Orwell's masterpiece explores themes of totalitarianism, censorship, and the manipulation of truth that remain frighteningly relevant today. The novel introduces concepts like Newspeak, doublethink, and the Thought Police that have entered our cultural lexicon as warnings against government overreach.",
-                cover_image_url="https://upload.wikimedia.org/wikipedia/en/c/c3/1984first.jpg",
+                cover_image_url="https://m.media-amazon.com/images/I/71kXYs4tCvL._AC_UF1000,1000_QL80_.jpg",
                 date_published=datetime(1949, 6, 8),
                 language="English",
                 pages=328,
@@ -139,7 +105,7 @@ def seed_database():
                 genres=["Classic", "Coming-of-Age", "Historical Fiction"],
                 rating=4.28,
                 synopsis="Set in the racially charged American South during the Great Depression, this Pulitzer Prize-winning novel follows young Scout Finch as her father, Atticus, defends Tom Robinson, a black man falsely accused of rape. Through Scout's innocent eyes, the story explores complex themes of racial injustice, moral growth, and the coexistence of good and evil. The novel's enduring wisdom about human nature and its powerful portrayal of integrity continue to resonate with readers worldwide. Memorable characters like Boo Radley and Calpurnia create a rich tapestry of small-town life and moral dilemmas.",
-                cover_image_url="https://upload.wikimedia.org/wikipedia/en/7/79/To_Kill_a_Mockingbird.JPG",
+                cover_image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg/1200px-To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
                 date_published=datetime(1960, 7, 11),
                 language="English",
                 pages=281,
@@ -151,13 +117,76 @@ def seed_database():
                 genres=["Science Fiction", "Adventure", "Space Opera"],
                 rating=4.25,
                 synopsis="Set in a distant future amidst a feudal interstellar society, Dune tells the story of young Paul Atreides as his family assumes control of the desert planet Arrakis, the only source of the universe's most valuable substance: the spice melange. This epic saga explores complex themes of politics, religion, ecology, and human evolution, creating one of the most detailed and immersive worlds in science fiction history. The novel's influence can be seen across the genre, from Star Wars to modern ecological science fiction. Its intricate world-building includes the Fremen culture, the Bene Gesserit sisterhood, and the giant sandworms that produce the spice.",
-                cover_image_url="https://upload.wikimedia.org/wikipedia/en/5/51/Dune_first_edition.jpg",
+                cover_image_url="https://5.imimg.com/data5/SELLER/Default/2022/3/TX/KN/VL/148839554/dune-book.jpg",
                 date_published=datetime(1965, 8, 1),
                 language="English",
                 pages=412,
                 date_added=datetime.now()
             )
             db.session.add_all([book1, book2, book3])
+            db.session.commit()
+
+     
+            club1 = BookClub(
+                name="Classic Literature Circle",
+                owner_id=user1.id,
+                synopsis="A vibrant community dedicated to exploring and analyzing timeless literary classics from around the world. We meet weekly to discuss themes, historical contexts, and personal interpretations of works from authors like Shakespeare, Austen, Dickens, and more. Our group welcomes both casual readers and scholarly types, with discussions ranging from surface-level plot points to deep literary analysis.",
+                created_at=datetime(2023, 1, 15),
+                current_book={
+                    "title": "Pride and Prejudice",
+                    "author": "Jane Austen",
+                    "description": "A romantic novel that explores manners, upbringing, morality, and marriage in early 19th-century England.",
+                    "progress": 45,  # percent
+                    "cover": "https://example.com/pride_and_prejudice_cover.jpg",
+                    "pagesRead": 134
+                }
+            )
+
+            club2 = BookClub(
+                name="Sci-Fi & Fantasy Explorers",
+                owner_id=user2.id,
+                synopsis="A passionate group that journeys through galaxies, parallel dimensions, and enchanted lands via the pages of science fiction and fantasy books. From Asimov to Zelazny, we explore world-building, futuristic technologies, and magical systems. Each month we select a new book or series to discuss, with special meetings dedicated to comparing adaptations and analyzing genre trends.",
+                created_at=datetime(2023, 2, 20),
+                current_book={
+                    "title": "Dune",
+                    "author": "Frank Herbert",
+                    "description": "A science fiction epic that follows the story of Paul Atreides on the desert planet Arrakis.",
+                    "progress": 67,
+                    "cover": "https://example.com/dune_cover.jpg",
+                    "pagesRead": 412
+                }
+            )
+
+            club3 = BookClub(
+                name="Modern Reads Book Club",
+                owner_id=user3.id,
+                synopsis="Focusing on contemporary novels from the past decade, we examine trending authors, diverse voices, and thought-provoking themes in modern literature. Our discussions often extend beyond the books to current events and social issues they reflect. We prioritize works that challenge perspectives and introduce readers to new cultural experiences.",
+                created_at=datetime(2023, 3, 10),
+                current_book={
+                    "title": "The Night Circus",
+                    "author": "Erin Morgenstern",
+                    "description": "A phantasmagorical novel centered on a magical competition between two young illusionists.",
+                    "progress": 32,
+                    "cover": "https://example.com/night_circus_cover.jpg",
+                    "pagesRead": 110
+                }
+            )
+            
+            db.session.add_all([club1, club2, club3])
+            db.session.commit()
+
+            
+
+            print("🧾 Creating Memberships...")
+            memberships = [
+                Membership(user_id=user1.id, bookclub_id=club1.id, joined_at=datetime(2023, 1, 16)),
+                Membership(user_id=user2.id, bookclub_id=club2.id, joined_at=datetime(2023, 2, 21)),
+                Membership(user_id=user3.id, bookclub_id=club3.id, joined_at=datetime(2023, 3, 11)),
+                Membership(user_id=user1.id, bookclub_id=club2.id, joined_at=datetime(2023, 3, 15)),
+                Membership(user_id=user2.id, bookclub_id=club1.id, joined_at=datetime(2023, 4, 1)),
+                Membership(user_id=user3.id, bookclub_id=club1.id, joined_at=datetime(2023, 4, 3))
+            ]
+            db.session.add_all(memberships)
             db.session.commit()
 
             print("✍ Adding summaries...")

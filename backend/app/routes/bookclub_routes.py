@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
-from app.models.bookclub import BookClub, CurrentBook
+from app.models.bookclub import BookClub
 from app.models.membership import Membership
 from app.models.book import Book
 from app.models.user import User
@@ -44,7 +44,7 @@ def get_all_clubs():
     try:
         clubs = BookClub.query.options(
             db.joinedload(BookClub.memberships),
-            db.joinedload(BookClub.currentbook)
+            db.joinedload(BookClub.owner)
         ).all()
         
         clubs_data = []
@@ -52,12 +52,11 @@ def get_all_clubs():
             club_data = {
                 'id': club.id,
                 'name': club.name,
-                'owner_id': club.owner_id,
                 'synopsis': club.synopsis,
-                'status': club.status,
                 'created_at': club.created_at.isoformat() if club.created_at else None,
+                'owner_id': club.owner_id,
                 'member_count': len(club.memberships),
-                'current_book': club.currentbook.to_dict() if club.currentbook else None
+                'current_book': club.current_book  # Directly use the JSON field
             }
             clubs_data.append(club_data)
         
@@ -93,7 +92,8 @@ def create_club():
             name=data['name'],
             synopsis=data.get('synopsis'),
             status=data.get('status', 'Active'),
-            owner_id=data['owner_id']
+            owner_id=data['owner_id'],
+            current_book=data.get('current_book')  # Directly store the JSON field
         )
         
         db.session.add(new_club)
@@ -138,14 +138,13 @@ def get_club(club_id):
     try:
         club = BookClub.query.options(
             db.joinedload(BookClub.memberships),
-            db.joinedload(BookClub.currentbook).joinedload(CurrentBook.book),
             db.joinedload(BookClub.owner)
         ).get(club_id)
         
         if not club:
             return jsonify({'message': 'Book club not found'}), 404
 
-        members = [{
+        members = [ {
             'user_id': m.user_id,
             'role': m.role,
             'joined_at': m.joined_at.isoformat() if m.joined_at else None
@@ -162,7 +161,7 @@ def get_club(club_id):
                 'username': club.owner.username
             },
             'members': members,
-            'current_book': club.currentbook.to_dict() if club.currentbook else None,
+            'current_book': club.current_book,  # Directly use the JSON field
             'member_count': len(members)
         }
 
@@ -196,6 +195,10 @@ def update_club(club_id):
 
         club.updated_at = datetime.utcnow()
 
+        # Update current_book JSON field if provided
+        if 'current_book' in data:
+            club.current_book = data['current_book']
+
         if error := commit_session():
             return jsonify({'message': 'Failed to update club', 'error': error}), 500
 
@@ -222,18 +225,71 @@ def delete_club(club_id):
     try:
         # Delete associated records
         Membership.query.filter_by(bookclub_id=club_id).delete()
-        CurrentBook.query.filter_by(bookclub_id=club_id).delete()
         db.session.delete(club)
 
         if error := commit_session():
             return jsonify({'message': 'Failed to delete club', 'error': error}), 500
 
         return jsonify({'message': 'Club deleted successfully'}), 200
-        
+
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error deleting club {club_id}: {str(e)}")
         return jsonify({
             'message': 'An error occurred while deleting the club',
+            'error': str(e)
+        }), 500
+
+@bookclub_bp.route('/<int:club_id>/current_book', methods=['PUT'])
+def set_current_book(club_id):
+    """Assign or update the current book for a club"""
+    club, error_response = get_instance_or_404(BookClub, club_id, 'Book Club')
+    if error_response:
+        return error_response
+
+    try:
+        data = request.get_json()
+        if 'current_book' not in data:
+            return jsonify({'message': 'Missing required field: current_book'}), 400
+
+        # Update the current_book JSON field
+        club.current_book = data['current_book']
+
+        if error := commit_session():
+            return jsonify({'message': 'Failed to set current book', 'error': error}), 500
+
+        return jsonify({
+            'message': 'Current book updated successfully',
+            'current_book': club.current_book
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error setting current book for club {club_id}: {str(e)}")
+        return jsonify({
+            'message': 'An error occurred while updating the current book',
+            'error': str(e)
+        }), 500
+
+@bookclub_bp.route('/<int:club_id>/current_book', methods=['DELETE'])
+def remove_current_book(club_id):
+    """Remove current book from the book club"""
+    club, error_response = get_instance_or_404(BookClub, club_id, 'Book Club')
+    if error_response:
+        return error_response
+
+    try:
+        club.current_book = None  # Remove the current book by setting it to None
+
+        if error := commit_session():
+            return jsonify({'message': 'Failed to remove current book', 'error': error}), 500
+
+        return jsonify({'message': 'Current book removed successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error removing current book from club {club_id}: {str(e)}")
+        return jsonify({
+            'message': 'An error occurred while removing the current book',
             'error': str(e)
         }), 500
