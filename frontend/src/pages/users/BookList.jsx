@@ -138,7 +138,7 @@ const BookList = () => {
               <div key={book.id} className="book-card">
                 <Link to={`/book/${book.id}`}>
                   <img
-                    src={book.cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
+                    src={book.cover_image_url}
                     alt={`${book.title} cover`}
                     className="book-cover"
                     onError={(e) => {
