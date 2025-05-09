@@ -11,7 +11,7 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
-    cors.init_app(app)
+    cors.init_app(app, resources={r"/*": {"origins": "http://localhost:5173"}})
     jwt.init_app(app)
 
     # ✅ Register routes
