@@ -1,25 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const EditBookClub = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Hardcoded initial data matching BookClubDetails.jsx
-  const initialData = {
-    clubName: 'Classic Literature Club',
-    founder: 'Jane Austen',
-    yearFounded: 'January 2024',
-    members: 42,
-    about: `Welcome to the Classic Literature Club! We're dedicated to exploring timeless literary works that have shaped our culture and understanding of the human experience.
-From ancient epics to 20th-century masterpieces, we delve into the themes, characters, and historical contexts of these influential texts.
-Join us for engaging discussions, thought-provoking analyses, and a shared love for the written word. Whether you're a seasoned reader or just starting your literary journey, there's a place for you here.
-Our club meets monthly to discuss a selected book, and we also host special events such as author talks, film screenings, and writing workshops.
-We believe in the power of literature to inspire, challenge, and connect us. Together, let's explore the beauty and complexity of classic literature.
-We look forward to welcoming you to our next meeting!`
-  };
+  const [formData, setFormData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [formData, setFormData] = useState(initialData);
+  // Fetch book club data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/bookclubs/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch book club data');
+        }
+        const data = await response.json();
+        setFormData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,18 +37,31 @@ We look forward to welcoming you to our next meeting!`
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate update
-    alert(`Book Club Updated:\n
-Club Name: ${formData.clubName}
-Founder: ${formData.founder}
-Year Founded: ${formData.yearFounded}
-Members: ${formData.members}
-About: ${formData.about}`);
-    // Navigate back to book club details page
-    navigate(`/bookclub/${id}`);
+    try {
+      const response = await fetch(`http://localhost:5000/bookclubs/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update book club');
+      }
+
+      navigate(`http://localhost:5000/bookclub/${id}`);
+    } catch (err) {
+      alert(err.message);
+    }
   };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!formData) return null;
+
 
   return (
     <div style={{ maxWidth: '600px', margin: '20px auto', fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif' }}>

@@ -25,6 +25,7 @@ import AdminSchedules from './pages/admin/AdminSchedules';
 import Sidebar
  from './components/Sidebar';
 import BookClubDetails from './pages/users/BookClubDetails';
+import MyBookClub from './pages/users/MyBookClubs';
  const AdminLayout = ({ children }) => (
   <div style={{ display: 'flex' }}>
     <Sidebar />
@@ -52,6 +53,7 @@ const App = () => {
         <Route path="/add-book" element={<AddBook />} />
         <Route path="/books/:id/edit-book" element={<EditBook />} />
         <Route path="/my-books" element={<MyBooks />} />
+         <Route path='/my-bookclubs' element={<MyBookClub />} />
 
         {/* Admin Routes with Layout */}
         <Route

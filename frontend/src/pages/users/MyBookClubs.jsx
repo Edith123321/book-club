@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import '../../styles/MyBookClubs.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import {
   FiSearch,
   FiEdit,
@@ -11,263 +12,214 @@ import {
   FiChevronDown,
   FiX,
 } from 'react-icons/fi';
+import '../../styles/MyBookClubs.css';
 
 const MyBookClub = () => {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [bookClubs, setBookClubs] = useState([]);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [activeTab, setActiveTab] = useState('myClubs');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [sortBy, setSortBy] = useState('Newest');
   const [formData, setFormData] = useState({
-    clubName: '',
+    name: '',
     description: '',
-    categories: [],
-    meetingFrequency: '',
-    meetingFormat: '',
+    genres: [],
+    meeting_frequency: '',
+    meeting_format: '',
   });
-  const [editFormData, setEditFormData] = useState({
-    clubName: '',
-    description: '',
-    categories: [],
-    meetingFrequency: '',
-    meetingFormat: '',
-  });
-  const [editingClubId, setEditingClubId] = useState(null);
+  const [editingClub, setEditingClub] = useState(null);
   const [errors, setErrors] = useState({});
-
-  // Sample data for the book clubs
-  const [myBookClubs, setMyBookClubs] = useState([
-    {
-      id: 1,
-      initials: 'PT',
-      name: 'The Page Turners',
-      categories: ['Fiction', 'Classics'],
-      members: 42,
-      currentBook: 'To Kill a Mockingbird',
-      nextMeeting: 'May 15, 2023',
-      status: 'Active',
-      color: 'banner-purple',
-      description: 'A club for fiction lovers.',
-      meetingFrequency: 'Monthly',
-      meetingFormat: 'In-person',
-    },
-    {
-      id: 2,
-      initials: 'MM',
-      name: 'Mystery Mavens',
-      categories: ['Mystery', 'Thriller'],
-      members: 38,
-      currentBook: 'The Silent Patient',
-      nextMeeting: 'May 18, 2023',
-      status: 'Active',
-      color: 'banner-blue',
-      description: 'A club for mystery and thriller enthusiasts.',
-      meetingFrequency: 'Bi-weekly',
-      meetingFormat: 'Virtual',
-    },
-    {
-      id: 3,
-      initials: 'FF',
-      name: 'Fiction Fanatics',
-      categories: ['Contemporary', 'Literary'],
-      members: 35,
-      currentBook: 'The Midnight Library',
-      nextMeeting: 'May 22, 2023',
-      status: 'Pending',
-      color: 'banner-orange',
-      description: 'A club for contemporary and literary fiction lovers.',
-      meetingFrequency: 'Weekly',
-      meetingFormat: 'Hybrid',
-    },
-  ]);
-
-  const joinedClubs = [
-    {
-      id: 4,
-      initials: 'SF',
-      name: 'Sci-Fi Explorers',
-      categories: ['Science Fiction'],
-      members: 27,
-      currentBook: 'Dune',
-      nextMeeting: 'May 20, 2023',
-      status: 'Active',
-      color: 'banner-green',
-      description: 'A club for science fiction enthusiasts.',
-      meetingFrequency: 'Monthly',
-      meetingFormat: 'In-person',
-    },
-    {
-      id: 5,
-      initials: 'HC',
-      name: 'Historical Chronicles',
-      categories: ['Non-Fiction', 'History'],
-      members: 31,
-      currentBook: 'Sapiens',
-      nextMeeting: 'May 25, 2023',
-      status: 'Active',
-      color: 'banner-pink',
-      description: 'A club for history and non-fiction lovers.',
-      meetingFrequency: 'Bi-weekly',
-      meetingFormat: 'Virtual',
-    },
-  ];
 
   const categories = ['Fiction', 'Non-Fiction', 'Mystery', 'Science Fiction', 'Fantasy', 'Classics'];
   const meetingFormats = ['In-person', 'Virtual', 'Hybrid'];
 
-  const getRandomColor = () =>
-    ['banner-purple', 'banner-blue', 'banner-orange', 'banner-green', 'banner-pink'][
-      Math.floor(Math.random() * 5)
-    ];
+  // Fetch user's book clubs from backend
+  useEffect(() => {
+    const fetchBookClubs = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/bookclubs/user/${currentUser.id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch book clubs');
+        }
+        
+        const data = await response.json();
+        setBookClubs(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const toggleCreateForm = () => setShowCreateForm(!showCreateForm);
-
-  const handleInputChange = (e, isEditForm = false) => {
-    const { name, value } = e.target;
-    if (isEditForm) {
-      setEditFormData({ ...editFormData, [name]: value });
-    } else {
-      setFormData({ ...formData, [name]: value });
+    if (currentUser) {
+      fetchBookClubs();
     }
+  }, [currentUser]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
     if (errors[name]) setErrors({ ...errors, [name]: '' });
   };
 
-  const handleCategorySelect = (category, isEditForm = false) => {
-    if (isEditForm) {
-      const updatedCategories = editFormData.categories.includes(category)
-        ? editFormData.categories.filter((c) => c !== category)
-        : [...editFormData.categories, category];
-      setEditFormData({ ...editFormData, categories: updatedCategories });
-    } else {
-      const updatedCategories = formData.categories.includes(category)
-        ? formData.categories.filter((c) => c !== category)
-        : [...formData.categories, category];
-      setFormData({ ...formData, categories: updatedCategories });
-    }
-    if (errors.categories) setErrors({ ...errors, categories: '' });
+  const handleGenreSelect = (genre) => {
+    const updatedGenres = formData.genres.includes(genre)
+      ? formData.genres.filter((g) => g !== genre)
+      : [...formData.genres, genre];
+    setFormData({ ...formData, genres: updatedGenres });
+    if (errors.genres) setErrors({ ...errors, genres: '' });
   };
 
-  const handleFormatSelect = (format, isEditForm = false) => {
-    if (isEditForm) {
-      setEditFormData({ ...editFormData, meetingFormat: format });
-    } else {
-      setFormData({ ...formData, meetingFormat: format });
-    }
-    if (errors.meetingFormat) setErrors({ ...errors, meetingFormat: '' });
+  const handleFormatSelect = (format) => {
+    setFormData({ ...formData, meeting_format: format });
+    if (errors.meeting_format) setErrors({ ...errors, meeting_format: '' });
   };
 
-  const validateForm = (data) => {
+  const validateForm = () => {
     const newErrors = {};
-    if (!data.clubName.trim()) newErrors.clubName = 'Club name is required';
-    if (!data.description.trim()) newErrors.description = 'Description is required';
-    if (data.categories.length === 0)
-      newErrors.categories = 'Please select at least one category';
-    if (!data.meetingFrequency) newErrors.meetingFrequency = 'Meeting frequency is required';
-    if (!data.meetingFormat) newErrors.meetingFormat = 'Meeting format is required';
+    if (!formData.name.trim()) newErrors.name = 'Club name is required';
+    if (!formData.description.trim()) newErrors.description = 'Description is required';
+    if (formData.genres.length === 0) newErrors.genres = 'Please select at least one genre';
+    if (!formData.meeting_frequency) newErrors.meeting_frequency = 'Meeting frequency is required';
+    if (!formData.meeting_format) newErrors.meeting_format = 'Meeting format is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e, isEditForm = false) => {
+  const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    const data = isEditForm ? editFormData : formData;
-    if (!validateForm(data)) return;
+    if (!validateForm()) return;
 
-    if (isEditForm) {
-      const updatedClubs = myBookClubs.map((club) =>
-        club.id === editingClubId
-          ? {
-              ...club,
-              name: data.clubName,
-              description: data.description,
-              categories: data.categories,
-              meetingFrequency: data.meetingFrequency,
-              meetingFormat: data.meetingFormat,
-            }
-          : club
-      );
-      setMyBookClubs(updatedClubs);
-      setShowEditForm(false);
-    } else {
-      const newId = myBookClubs.length > 0 ? Math.max(...myBookClubs.map((club) => club.id)) + 1 : 1;
+    try {
+      const response = await fetch('http://localhost:5000/bookclubs/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          ...formData,
+          creator_id: currentUser.id
+        })
+      });
 
-      const newClub = {
-        id: newId,
-        initials: data.clubName
-          .split(' ')
-          .map((word) => word[0])
-          .slice(0, 2)
-          .join('')
-          .padEnd(2, 'X'),
-        name: data.clubName,
-        description: data.description,
-        categories: data.categories,
-        members: 1,
-        currentBook: 'Not set',
-        nextMeeting: 'Not scheduled',
-        status: 'Active',
-        color: getRandomColor(),
-        meetingFrequency: data.meetingFrequency,
-        meetingFormat: data.meetingFormat,
-      };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create book club');
+      }
 
-      setMyBookClubs((prev) => [...prev, newClub]);
+      const newClub = await response.json();
+      setBookClubs([...bookClubs, newClub]);
       setShowCreateForm(false);
+      setFormData({
+        name: '',
+        description: '',
+        genres: [],
+        meeting_frequency: '',
+        meeting_format: '',
+      });
+    } catch (err) {
+      setError(err.message);
     }
+  };
 
-    setFormData({
-      clubName: '',
-      description: '',
-      categories: [],
-      meetingFrequency: '',
-      meetingFormat: '',
-    });
-    setEditFormData({
-      clubName: '',
-      description: '',
-      categories: [],
-      meetingFrequency: '',
-      meetingFormat: '',
-    });
-    setEditingClubId(null);
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/bookclubs/${editingClub.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update book club');
+      }
+
+      const updatedClub = await response.json();
+      setBookClubs(bookClubs.map(club => 
+        club.id === updatedClub.id ? updatedClub : club
+      ));
+      setShowEditForm(false);
+      setEditingClub(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm('Are you sure you want to delete this book club?');
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/bookclubs/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete book club');
+      }
+
+      setBookClubs(bookClubs.filter(club => club.id !== id));
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const handleEdit = (club) => {
-    setEditingClubId(club.id);
-    setEditFormData({
-      clubName: club.name,
+    setEditingClub(club);
+    setFormData({
+      name: club.name,
       description: club.description,
-      categories: club.categories,
-      meetingFrequency: club.meetingFrequency,
-      meetingFormat: club.meetingFormat,
+      genres: club.genres,
+      meeting_frequency: club.meeting_frequency,
+      meeting_format: club.meeting_format,
     });
     setShowEditForm(true);
   };
 
-  const handleDelete = (id) => {
-    const confirmed = window.confirm('Are you sure you want to delete this book club?');
-    if (confirmed) {
-      setMyBookClubs(myBookClubs.filter((club) => club.id !== id));
-    }
-  };
-
-  const displayedClubs = activeTab === 'myClubs' ? myBookClubs : joinedClubs;
-
-  const filteredClubs = displayedClubs.filter((club) => {
+  // Filter and sort clubs
+  const filteredClubs = bookClubs.filter(club => {
     const nameMatch = club.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const categoryMatch =
-      categoryFilter === 'All Categories' || club.categories.some((cat) => cat === categoryFilter);
+    const categoryMatch = categoryFilter === 'All Categories' || 
+                         club.genres.some(genre => genre === categoryFilter);
     return nameMatch && categoryMatch;
   });
 
   const sortedClubs = [...filteredClubs].sort((a, b) => {
-    if (sortBy === 'Newest') return b.id - a.id;
+    if (sortBy === 'Newest') return new Date(b.created_at) - new Date(a.created_at);
     if (sortBy === 'Alphabetical') return a.name.localeCompare(b.name);
-    if (sortBy === 'Members') return b.members - a.members;
+    if (sortBy === 'Members') return b.member_count - a.member_count;
     return 0;
   });
+
+  const getRandomColor = () => {
+    const colors = ['banner-purple', 'banner-blue', 'banner-orange', 'banner-green', 'banner-pink'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
+
+  if (isLoading) return <div className="loading">Loading your book clubs...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
 
   return (
     <div className="bg-light-bg min-h-screen">
@@ -303,39 +255,11 @@ const MyBookClub = () => {
           </div>
           <button
             className="btn btn-primary flex items-center"
-            onClick={toggleCreateForm}
+            onClick={() => setShowCreateForm(true)}
           >
             <FiPlus className="mr-2" />
             Create New Club
           </button>
-        </div>
-
-        {/* Tabs */}
-        <div className="mb-6 border-b">
-          <div className="flex space-x-8">
-            <button
-              className={`pb-3 px-1 nav-link ${
-                activeTab === 'myClubs' ? 'active' : ''
-              }`}
-              onClick={() => setActiveTab('myClubs')}
-            >
-              My Clubs{' '}
-              <span className="ml-1 bg-gray-200 text-gray-700 px-2 py-0.5 text-xs rounded-full">
-                {myBookClubs.length}
-              </span>
-            </button>
-            <button
-              className={`pb-3 px-1 nav-link ${
-                activeTab === 'joinedClubs' ? 'active' : ''
-              }`}
-              onClick={() => setActiveTab('joinedClubs')}
-            >
-              Joined Clubs{' '}
-              <span className="ml-1 bg-gray-200 text-gray-700 px-2 py-0.5 text-xs rounded-full">
-                {joinedClubs.length}
-              </span>
-            </button>
-          </div>
         </div>
 
         {/* Search and Filters */}
@@ -380,7 +304,7 @@ const MyBookClub = () => {
           {sortedClubs.length > 0 ? (
             sortedClubs.map((club) => (
               <div key={club.id} className="club-card animate-slideDown">
-                <div className={`club-banner ${club.color}`}>
+                <div className={`club-banner ${getRandomColor()}`}>
                   <div className="banner-actions">
                     <button
                       className="banner-action"
@@ -396,46 +320,54 @@ const MyBookClub = () => {
                     </button>
                   </div>
                   <div className="club-initials">
-                    <span className="text-white">{club.initials}</span>
+                    <span className="text-white">
+                      {club.name.split(' ').map(w => w[0]).join('').substring(0, 2)}
+                    </span>
                   </div>
                 </div>
                 <div className="body relative p-4">
                   <div className="mt-6">
                     <h3 className="text-xl font-bold text-text-dark">{club.name}</h3>
                     <div className="text-text-light text-sm mt-1">
-                      {club.categories.join(', ')}
+                      {club.genres.join(', ')}
                     </div>
                     <div className="flex items-center mt-3 text-text-light">
                       <FiUsers className="mr-2" />
-                      <span>{club.members} members</span>
+                      <span>{club.member_count} members</span>
                     </div>
                     <div className="flex items-center mt-2 text-text-light">
                       <FiBook className="mr-2" />
-                      <span>Currently reading: {club.currentBook}</span>
+                      <span>Currently reading: {club.current_book || 'Not set'}</span>
                     </div>
                     <div className="flex items-center mt-2 text-text-light">
                       <FiCalendar className="mr-2" />
-                      <span>Next meeting: {club.nextMeeting}</span>
+                      <span>Next meeting: {club.next_meeting || 'Not scheduled'}</span>
                     </div>
                     <div className="flex justify-between items-center mt-4">
-                      <span
-                        className={`status-badge status-${club.status.toLowerCase()}`}
-                      >
-                        {club.status}
+                      <span className="status-badge status-active">
+                        Active
                       </span>
-                      <a
-                        href="#"
+                      <button
+                        onClick={() => navigate(`/bookclubs/${club.id}`)}
                         className="text-primary-color hover:text-primary-hover text-sm font-medium"
                       >
                         View Details
-                      </a>
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <p className="col-span-full text-text-light text-center py-10">No clubs found.</p>
+            <div className="col-span-full text-center py-10">
+              <p className="text-text-light mb-4">You haven't joined any book clubs yet.</p>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowCreateForm(true)}
+              >
+                Create Your First Club
+              </button>
+            </div>
           )}
         </div>
 
@@ -445,25 +377,25 @@ const MyBookClub = () => {
             <div className="modal-content animate-fadeIn">
               <div className="modal-header">
                 <h2>Create New Book Club</h2>
-                <button onClick={toggleCreateForm}>
+                <button onClick={() => setShowCreateForm(false)}>
                   <FiX size={24} />
                 </button>
               </div>
               <div className="modal-body">
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleCreateSubmit}>
                   {/* Club Name Input */}
                   <div className="mb-4">
-                    <label htmlFor="clubName" className="form-label">Club Name*</label>
+                    <label htmlFor="name" className="form-label">Club Name*</label>
                     <input
                       type="text"
-                      id="clubName"
-                      name="clubName"
-                      value={formData.clubName}
-                      onChange={(e) => handleInputChange(e)}
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="form-input"
                     />
-                    {errors.clubName && (
-                      <p className="form-error">{errors.clubName}</p>
+                    {errors.name && (
+                      <p className="form-error">{errors.name}</p>
                     )}
                   </div>
 
@@ -474,7 +406,7 @@ const MyBookClub = () => {
                       id="description"
                       name="description"
                       value={formData.description}
-                      onChange={(e) => handleInputChange(e)}
+                      onChange={handleInputChange}
                       placeholder="Tell us about your book club..."
                       rows="4"
                       className="form-textarea"
@@ -484,34 +416,34 @@ const MyBookClub = () => {
                     )}
                   </div>
 
-                  {/* Categories Selection */}
+                  {/* Genres Selection */}
                   <div className="mb-4">
-                    <label className="form-label">Categories*</label>
+                    <label className="form-label">Genres*</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {categories.map((category) => (
                         <button
                           key={category}
                           type="button"
-                          onClick={() => handleCategorySelect(category)}
-                          className={`category-btn ${formData.categories.includes(category) ? 'selected' : ''}`}
+                          onClick={() => handleGenreSelect(category)}
+                          className={`category-btn ${formData.genres.includes(category) ? 'selected' : ''}`}
                         >
                           {category}
                         </button>
                       ))}
                     </div>
-                    {errors.categories && (
-                      <p className="form-error">{errors.categories}</p>
+                    {errors.genres && (
+                      <p className="form-error">{errors.genres}</p>
                     )}
                   </div>
 
                   {/* Meeting Frequency */}
                   <div className="mb-4">
-                    <label htmlFor="meetingFrequency" className="form-label">Meeting Frequency*</label>
+                    <label htmlFor="meeting_frequency" className="form-label">Meeting Frequency*</label>
                     <select
-                      id="meetingFrequency"
-                      name="meetingFrequency"
-                      value={formData.meetingFrequency}
-                      onChange={(e) => handleInputChange(e)}
+                      id="meeting_frequency"
+                      name="meeting_frequency"
+                      value={formData.meeting_frequency}
+                      onChange={handleInputChange}
                       className="form-select"
                     >
                       <option value="">Select frequency</option>
@@ -520,8 +452,8 @@ const MyBookClub = () => {
                       <option value="monthly">Monthly</option>
                       <option value="quarterly">Quarterly</option>
                     </select>
-                    {errors.meetingFrequency && (
-                      <p className="form-error">{errors.meetingFrequency}</p>
+                    {errors.meeting_frequency && (
+                      <p className="form-error">{errors.meeting_frequency}</p>
                     )}
                   </div>
 
@@ -534,14 +466,14 @@ const MyBookClub = () => {
                           key={format}
                           type="button"
                           onClick={() => handleFormatSelect(format)}
-                          className={`format-btn ${formData.meetingFormat === format ? 'selected' : ''}`}
+                          className={`format-btn ${formData.meeting_format === format ? 'selected' : ''}`}
                         >
                           {format}
                         </button>
                       ))}
                     </div>
-                    {errors.meetingFormat && (
-                      <p className="form-error">{errors.meetingFormat}</p>
+                    {errors.meeting_format && (
+                      <p className="form-error">{errors.meeting_format}</p>
                     )}
                   </div>
 
@@ -549,7 +481,7 @@ const MyBookClub = () => {
                   <div className="modal-footer">
                     <button
                       type="button"
-                      onClick={toggleCreateForm}
+                      onClick={() => setShowCreateForm(false)}
                       className="btn btn-secondary"
                     >
                       Cancel
@@ -578,20 +510,20 @@ const MyBookClub = () => {
                 </button>
               </div>
               <div className="modal-body">
-                <form onSubmit={(e) => handleSubmit(e, true)}>
+                <form onSubmit={handleEditSubmit}>
                   {/* Club Name Input */}
                   <div className="mb-4">
-                    <label htmlFor="editClubName" className="form-label">Club Name*</label>
+                    <label htmlFor="editName" className="form-label">Club Name*</label>
                     <input
                       type="text"
-                      id="editClubName"
-                      name="clubName"
-                      value={editFormData.clubName}
-                      onChange={(e) => handleInputChange(e, true)}
+                      id="editName"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="form-input"
                     />
-                    {errors.clubName && (
-                      <p className="form-error">{errors.clubName}</p>
+                    {errors.name && (
+                      <p className="form-error">{errors.name}</p>
                     )}
                   </div>
 
@@ -601,8 +533,8 @@ const MyBookClub = () => {
                     <textarea
                       id="editDescription"
                       name="description"
-                      value={editFormData.description}
-                      onChange={(e) => handleInputChange(e, true)}
+                      value={formData.description}
+                      onChange={handleInputChange}
                       placeholder="Tell us about your book club..."
                       rows="4"
                       className="form-textarea"
@@ -612,23 +544,23 @@ const MyBookClub = () => {
                     )}
                   </div>
 
-                  {/* Categories Selection */}
+                  {/* Genres Selection */}
                   <div className="mb-4">
-                    <label className="form-label">Categories*</label>
+                    <label className="form-label">Genres*</label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {categories.map((category) => (
                         <button
                           key={category}
                           type="button"
-                          onClick={() => handleCategorySelect(category, true)}
-                          className={`category-btn ${editFormData.categories.includes(category) ? 'selected' : ''}`}
+                          onClick={() => handleGenreSelect(category)}
+                          className={`category-btn ${formData.genres.includes(category) ? 'selected' : ''}`}
                         >
                           {category}
                         </button>
                       ))}
                     </div>
-                    {errors.categories && (
-                      <p className="form-error">{errors.categories}</p>
+                    {errors.genres && (
+                      <p className="form-error">{errors.genres}</p>
                     )}
                   </div>
 
@@ -637,9 +569,9 @@ const MyBookClub = () => {
                     <label htmlFor="editMeetingFrequency" className="form-label">Meeting Frequency*</label>
                     <select
                       id="editMeetingFrequency"
-                      name="meetingFrequency"
-                      value={editFormData.meetingFrequency}
-                      onChange={(e) => handleInputChange(e, true)}
+                      name="meeting_frequency"
+                      value={formData.meeting_frequency}
+                      onChange={handleInputChange}
                       className="form-select"
                     >
                       <option value="">Select frequency</option>
@@ -648,8 +580,8 @@ const MyBookClub = () => {
                       <option value="monthly">Monthly</option>
                       <option value="quarterly">Quarterly</option>
                     </select>
-                    {errors.meetingFrequency && (
-                      <p className="form-error">{errors.meetingFrequency}</p>
+                    {errors.meeting_frequency && (
+                      <p className="form-error">{errors.meeting_frequency}</p>
                     )}
                   </div>
 
@@ -661,15 +593,15 @@ const MyBookClub = () => {
                         <button
                           key={format}
                           type="button"
-                          onClick={() => handleFormatSelect(format, true)}
-                          className={`format-btn ${editFormData.meetingFormat === format ? 'selected' : ''}`}
+                          onClick={() => handleFormatSelect(format)}
+                          className={`format-btn ${formData.meeting_format === format ? 'selected' : ''}`}
                         >
                           {format}
                         </button>
                       ))}
                     </div>
-                    {errors.meetingFormat && (
-                      <p className="form-error">{errors.meetingFormat}</p>
+                    {errors.meeting_format && (
+                      <p className="form-error">{errors.meeting_format}</p>
                     )}
                   </div>
 
