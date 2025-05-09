@@ -9,7 +9,7 @@ class BookClub(db.Model):
     synopsis = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    owner = db.relationship('User', foreign_keys=[owner_id])
+    status = db.Column(db.String(20), default='Active')  # Add this
     
     # Relationships
     owner = db.relationship('User', back_populates='owned_clubs')
