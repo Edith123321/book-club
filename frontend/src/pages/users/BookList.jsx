@@ -45,7 +45,7 @@ const BookList = () => {
   const filteredBooks = books
     .filter(book => {
       const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            book.author.toLowerCase().includes(searchTerm.toLowerCase());
+        book.author.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesGenre = selectedGenre === 'All' || book.genres.includes(selectedGenre);
       return matchesSearch && matchesGenre;
     })
@@ -134,40 +134,59 @@ const BookList = () => {
 
         <div className="book-grid">
           {filteredBooks.length > 0 ? (
-            filteredBooks.map(book => (
-              <div key={book.id} className="book-card">
-                <Link to={`/book/${book.id}`}>
-                  <img
-                    src={book.cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
-                    alt={`${book.title} cover`}
-                    className="book-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/150x200?text=No+Cover';
-                    }}
-                  />
-                  <div className="book-info">
-                    <h3>{book.title || 'Untitled Book'}</h3>
-                    <p className="author">{book.author || 'Unknown Author'}</p>
-                    <div className="rating">
-                      <span className="stars">
-                        {'★'.repeat(Math.floor(book.rating || 0))}
-                        {'☆'.repeat(5 - Math.floor(book.rating || 0))}
-                      </span>
-                      <span>({(book.rating || 0).toFixed(1)})</span>
+            filteredBooks.map((book) => {
+              const {
+                id,
+                title = 'Untitled Book',
+                author = 'Unknown Author',
+                cover_image_url,
+                rating = 0,
+                genres = [],
+              } = book;
+
+              const displayedGenres = genres.slice(0, 2);
+              const extraGenres = genres.length > 2 ? genres.length - 2 : 0;
+
+              return (
+                <div key={id} className="book-card">
+                  <Link to={`/book/${id}`}>
+                    <img
+                      src={cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
+                      alt={`${title} cover`}
+                      className="book-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/150x200?text=No+Cover';
+                      }}
+                    />
+                    <div className="book-info">
+                      <h3>{title}</h3>
+                      <p className="author">{author}</p>
+                      <div className="rating">
+                        <span className="stars">
+                          {'★'.repeat(Math.floor(rating))}
+                          {'☆'.repeat(5 - Math.floor(rating))}
+                        </span>
+                        <span>({rating.toFixed(1)})</span>
+                      </div>
+                      <div className="genres">
+                        {displayedGenres.map((genre) => (
+                          <span key={genre} className="genre-tag">
+                            {genre}
+                          </span>
+                        ))}
+                        {extraGenres > 0 && (
+                          <span className="more-tag">+{extraGenres}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="genres">
-                      {(book.genres || []).slice(0, 2).map(genre => (
-                        <span key={genre} className="genre-tag">{genre}</span>
-                      ))}
-                      {(book.genres || []).length > 2 && (
-                        <span className="more-tag">+{(book.genres.length - 2)}</span>
-                      )}
+                    <div className="read-book-button-div">
+                      <button className="read-book-button">Read book</button>
                     </div>
-                  </div>
-                </Link>
-              </div>
-            ))
+                  </Link>
+                </div>
+              );
+            })
           ) : (
             <div className="no-results">
               <p>No books found matching your criteria</p>
@@ -177,6 +196,7 @@ const BookList = () => {
             </div>
           )}
         </div>
+
       </div>
     </>
   );

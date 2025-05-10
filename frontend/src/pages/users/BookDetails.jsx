@@ -78,7 +78,7 @@ const BookDetails = () => {
         {/* Left Column - Book Cover */}
         <div className="book-cover-container">
           <img 
-            src={book.cover || '/default-book-cover.jpg'} 
+            src={book.cover_image_url || '/default-book-cover.jpg'} 
             alt={`${book.title} cover`} 
             className="book-cover" 
             onError={(e) => {
@@ -87,7 +87,7 @@ const BookDetails = () => {
             }}
           />
           <div className="quick-info">
-            <p><span className="info-label">Published:</span> {book.published || 'Unknown'}</p>
+            <p><span className="info-label">Published:</span> {book.author || 'Unknown'}</p>
             <p><span className="info-label">Pages:</span> {book.pages || 'Unknown'}</p>
             {book.rating && (
               <div className="rating-badge">
@@ -116,7 +116,7 @@ const BookDetails = () => {
 
           <div className="description-section">
             <h3>About This Book</h3>
-            <p>{book.description || 'No description available.'}</p>
+            <p>{book.synopsis || 'No description available.'}</p>
           </div>
         </div>
       </div>
@@ -130,7 +130,7 @@ const BookDetails = () => {
             {reviews.map((review, index) => (
               <div key={index} className="review-card">
                 <h4>{review.title}</h4>
-                <p className="review-text">{review.description}</p>
+                <p className="review-text">{review.content}</p>
                 <p className="reviewer">— {review.username}</p>
               </div>
             ))}

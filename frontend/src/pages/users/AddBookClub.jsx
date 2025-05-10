@@ -29,19 +29,46 @@ const AddBookClub = () => {
     setFormData({...formData, [e.target.name]: e.target.value});
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-    // Simulate API call to create book club
-    console.log('Creating book club:', formData);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  const validationErrors = validate();
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
 
-    // After successful creation, navigate back to book clubs list
-    navigate('/bookclubs');
+  const payload = {
+    ...formData,
+    genres: formData.genres
+      .split(',')
+      .map(genre => genre.trim())
+      .filter(genre => genre), // removes empty strings
   };
+
+  try {
+    const response = await fetch('http://127.0.0.1:5000/bookclubs/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create book club');
+    }
+
+    const data = await response.json();
+    console.log('Book club created:', data);
+
+    // Redirect after success
+    navigate('/bookclubs');
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to create book club. Please try again.');
+  }
+};
+
 
   const handleCancel = () => {
     navigate('/bookclubs');
