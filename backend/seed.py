@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import text, inspect
 import traceback
 from app.utils import generate_invite_token
+import random
 
 def clear_database():
     print("🧹 Clearing existing data...")
@@ -59,224 +60,460 @@ def seed_database():
 
         try:
             print("👤 Creating test users...")
-            user1 = User(
-                username='admin',
-                email='admin@bookclub.com',
-                password_hash=generate_password_hash('admin123'),
-                created_at=datetime.now(),
-                last_login=datetime.now(),
-                is_active=True,
-                is_admin = True
-            )
-            user2 = User(
-                username='booklover',
-                email='member@bookclub.com',
-                password_hash=generate_password_hash('password123'),
-                created_at=datetime.now(),
-                last_login=datetime.now() - timedelta(days=5),
-                is_active=True,
-                is_admin=False
-            )
-            user3 = User(
-                username='readerbee',
-                email='reader@bookclub.com',
-                password_hash=generate_password_hash('read1234'),
-                created_at=datetime.now(),
-                last_login=datetime.now() - timedelta(days=10),  # Example: last login 10 days ago
-                is_active=True ,
-                is_admin=False # Add this line
-            )
-            db.session.add_all([user1, user2, user3])
+            users = [
+                User(
+                    username='admin',
+                    email='admin@bookclub.com',
+                    password_hash=generate_password_hash('admin123'),
+                    created_at=datetime.now(),
+                    last_login=datetime.now(),
+                    is_active=True
+                ),
+                User(
+                    username='booklover',
+                    email='member@bookclub.com',
+                    password_hash=generate_password_hash('password123'),
+                    created_at=datetime.now(),
+                    last_login=datetime.now() - timedelta(days=5),
+                    is_active=True
+                ),
+                User(
+                    username='readerbee',
+                    email='reader@bookclub.com',
+                    password_hash=generate_password_hash('read1234'),
+                    created_at=datetime.now(),
+                    last_login=datetime.now() - timedelta(days=10),
+                    is_active=True
+                ),
+                User(
+                    username='literaturefan',
+                    email='litfan@bookclub.com',
+                    password_hash=generate_password_hash('lit12345'),
+                    created_at=datetime.now() - timedelta(days=15),
+                    last_login=datetime.now() - timedelta(days=2),
+                    is_active=True
+                ),
+                User(
+                    username='scifigeek',
+                    email='scifi@bookclub.com',
+                    password_hash=generate_password_hash('scifi123'),
+                    created_at=datetime.now() - timedelta(days=20),
+                    last_login=datetime.now() - timedelta(days=1),
+                    is_active=True
+                ),
+                User(
+                    username='mysteryreader',
+                    email='mystery@bookclub.com',
+                    password_hash=generate_password_hash('mystery123'),
+                    created_at=datetime.now() - timedelta(days=25),
+                    last_login=datetime.now() - timedelta(hours=12),
+                    is_active=True
+                ),
+                User(
+                    username='fantasylover',
+                    email='fantasy@bookclub.com',
+                    password_hash=generate_password_hash('fantasy123'),
+                    created_at=datetime.now() - timedelta(days=30),
+                    last_login=datetime.now() - timedelta(hours=6),
+                    is_active=True
+                ),
+                User(
+                    username='historybuff',
+                    email='history@bookclub.com',
+                    password_hash=generate_password_hash('history123'),
+                    created_at=datetime.now() - timedelta(days=35),
+                    last_login=datetime.now() - timedelta(days=3),
+                    is_active=True
+                ),
+                User(
+                    username='poetryenthusiast',
+                    email='poetry@bookclub.com',
+                    password_hash=generate_password_hash('poetry123'),
+                    created_at=datetime.now() - timedelta(days=40),
+                    last_login=datetime.now() - timedelta(days=7),
+                    is_active=True
+                ),
+                User(
+                    username='biographyfan',
+                    email='biofan@bookclub.com',
+                    password_hash=generate_password_hash('bio12345'),
+                    created_at=datetime.now() - timedelta(days=45),
+                    last_login=datetime.now() - timedelta(days=4),
+                    is_active=True
+                )
+            ]
+            db.session.add_all(users)
             db.session.commit()
 
             print("📖 Adding books...")
-            book1 = Book(
-                title="1984",
-                author="George Orwell",
-                genres=["Dystopian", "Political Fiction", "Science Fiction"],
-                rating=4.17,
-                synopsis="In a chilling dystopia where the Party maintains absolute control through pervasive surveillance and psychological manipulation, Winston Smith works at the Ministry of Truth rewriting history. When he begins a forbidden relationship with Julia and encounters the mysterious O'Brien, Winston dares to imagine rebellion against Big Brother. Orwell's masterpiece explores themes of totalitarianism, censorship, and the manipulation of truth that remain frighteningly relevant today. The novel introduces concepts like Newspeak, doublethink, and the Thought Police that have entered our cultural lexicon as warnings against government overreach.",
-                cover_image_url="https://m.media-amazon.com/images/I/71kXYs4tCvL._AC_UF1000,1000_QL80_.jpg",
-                date_published=datetime(1949, 6, 8),
-                language="English",
-                pages=328,
-                date_added=datetime.now()
-            )
-            book2 = Book(
-                title="To Kill a Mockingbird",
-                author="Harper Lee",
-                genres=["Classic", "Coming-of-Age", "Historical Fiction"],
-                rating=4.28,
-                synopsis="Set in the racially charged American South during the Great Depression, this Pulitzer Prize-winning novel follows young Scout Finch as her father, Atticus, defends Tom Robinson, a black man falsely accused of rape. Through Scout's innocent eyes, the story explores complex themes of racial injustice, moral growth, and the coexistence of good and evil. The novel's enduring wisdom about human nature and its powerful portrayal of integrity continue to resonate with readers worldwide. Memorable characters like Boo Radley and Calpurnia create a rich tapestry of small-town life and moral dilemmas.",
-                cover_image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg/1200px-To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
-                date_published=datetime(1960, 7, 11),
-                language="English",
-                pages=281,
-                date_added=datetime.now()
-            )
-            book3 = Book(
-                title="Dune",
-                author="Frank Herbert",
-                genres=["Science Fiction", "Adventure", "Space Opera"],
-                rating=4.25,
-                synopsis="Set in a distant future amidst a feudal interstellar society, Dune tells the story of young Paul Atreides as his family assumes control of the desert planet Arrakis, the only source of the universe's most valuable substance: the spice melange. This epic saga explores complex themes of politics, religion, ecology, and human evolution, creating one of the most detailed and immersive worlds in science fiction history. The novel's influence can be seen across the genre, from Star Wars to modern ecological science fiction. Its intricate world-building includes the Fremen culture, the Bene Gesserit sisterhood, and the giant sandworms that produce the spice.",
-                cover_image_url="https://5.imimg.com/data5/SELLER/Default/2022/3/TX/KN/VL/148839554/dune-book.jpg",
-                date_published=datetime(1965, 8, 1),
-                language="English",
-                pages=412,
-                date_added=datetime.now()
-            )
-            db.session.add_all([book1, book2, book3])
+            books = [
+                Book(
+                    title="1984",
+                    author="George Orwell",
+                    genres=["Dystopian", "Political Fiction", "Science Fiction"],
+                    rating=4.17,
+                    synopsis="In a chilling dystopia where the Party maintains absolute control through pervasive surveillance and psychological manipulation, Winston Smith works at the Ministry of Truth rewriting history. When he begins a forbidden relationship with Julia and encounters the mysterious O'Brien, Winston dares to imagine rebellion against Big Brother.",
+                    cover_image_url="https://m.media-amazon.com/images/I/71kXYs4tCvL._AC_UF1000,1000_QL80_.jpg",
+                    date_published=datetime(1949, 6, 8),
+                    language="English",
+                    pages=328,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="To Kill a Mockingbird",
+                    author="Harper Lee",
+                    genres=["Classic", "Coming-of-Age", "Historical Fiction"],
+                    rating=4.28,
+                    synopsis="Set in the racially charged American South during the Great Depression, this Pulitzer Prize-winning novel follows young Scout Finch as her father, Atticus, defends Tom Robinson, a black man falsely accused of rape.",
+                    cover_image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg/1200px-To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
+                    date_published=datetime(1960, 7, 11),
+                    language="English",
+                    pages=281,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="Dune",
+                    author="Frank Herbert",
+                    genres=["Science Fiction", "Adventure", "Space Opera"],
+                    rating=4.25,
+                    synopsis="Set in a distant future amidst a feudal interstellar society, Dune tells the story of young Paul Atreides as his family assumes control of the desert planet Arrakis, the only source of the universe's most valuable substance: the spice melange.",
+                    cover_image_url="https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?fit=720%2C720&ssl=1",
+                    date_published=datetime(1965, 8, 1),
+                    language="English",
+                    pages=412,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="The Great Gatsby",
+                    author="F. Scott Fitzgerald",
+                    genres=["Classic", "Literary Fiction", "Romance"],
+                    rating=3.93,
+                    synopsis="A portrait of the Jazz Age in all of its decadence and excess, The Great Gatsby captures the American Dream and its corruption through the tragic story of Jay Gatsby and his love for Daisy Buchanan.",
+                    cover_image_url="https://i.ebayimg.com/images/g/~WkAAOSwanRhXs5S/s-l960.webp",
+                    date_published=datetime(1925, 4, 10),
+                    language="English",
+                    pages=180,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="Pride and Prejudice",
+                    author="Jane Austen",
+                    genres=["Classic", "Romance", "Historical Fiction"],
+                    rating=4.28,
+                    synopsis="The romantic clash between the opinionated Elizabeth Bennet and the proud Mr. Darcy is a splendid performance of civilized sparring in this classic comedy of manners.",
+                    cover_image_url="https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
+                    date_published=datetime(1813, 1, 28),
+                    language="English",
+                    pages=279,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="The Hobbit",
+                    author="J.R.R. Tolkien",
+                    genres=["Fantasy", "Adventure", "Classic"],
+                    rating=4.28,
+                    synopsis="The adventure of Bilbo Baggins, a hobbit who embarks on an unexpected journey with a company of dwarves to reclaim their mountain home from the dragon Smaug.",
+                    cover_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHIzm56W-N4vQhJsDLWcsku0JUjqfaOPYapQ&s",
+                    date_published=datetime(1937, 9, 21),
+                    language="English",
+                    pages=310,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="The Catcher in the Rye",
+                    author="J.D. Salinger",
+                    genres=["Classic", "Coming-of-Age", "Literary Fiction"],
+                    rating=3.81,
+                    synopsis="The story of Holden Caulfield and his peculiar odyssey through the streets of New York, trying to come to terms with the 'phoniness' of the adult world.",
+                    cover_image_url="https://booksandyou.in/cdn/shop/files/TheCatcherintheRye_1.webp?v=1714498776&width=713",
+                    date_published=datetime(1951, 7, 16),
+                    language="English",
+                    pages=234,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="The Lord of the Rings",
+                    author="J.R.R. Tolkien",
+                    genres=["Fantasy", "Adventure", "Classic"],
+                    rating=4.52,
+                    synopsis="The epic tale of Frodo Baggins and his quest to destroy the One Ring, battling the forces of the Dark Lord Sauron.",
+                    cover_image_url="https://cdn.shoplightspeed.com/shops/611345/files/5297743/mariner-books-the-lord-of-the-rings-omnibus-1-3.jpg",
+                    date_published=datetime(1954, 7, 29),
+                    language="English",
+                    pages=1178,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="Brave New World",
+                    author="Aldous Huxley",
+                    genres=["Dystopian", "Science Fiction", "Classic"],
+                    rating=3.99,
+                    synopsis="A dystopian novel set in a futuristic World State, inhabited by genetically modified citizens and an intelligence-based social hierarchy.",
+                    cover_image_url="https://i.ebayimg.com/images/g/gWwAAeSwh5JoElb0/s-l1600.webp",
+                    date_published=datetime(1932, 1, 1),
+                    language="English",
+                    pages=288,
+                    date_added=datetime.now()
+                ),
+                Book(
+                    title="The Alchemist",
+                    author="Paulo Coelho",
+                    genres=["Fantasy", "Adventure", "Philosophical Fiction"],
+                    rating=3.86,
+                    synopsis="The story of Santiago, an Andalusian shepherd boy who dreams of finding a worldly treasure located somewhere in Egypt.",
+                    cover_image_url="https://i.ebayimg.com/images/g/uRoAAOSwFTpi2ke5/s-l1600.webp",
+                    date_published=datetime(1988, 1, 1),
+                    language="English",
+                    pages=208,
+                    date_added=datetime.now()
+                )
+            ]
+            db.session.add_all(books)
             db.session.commit()
 
-     
-            club1 = BookClub(
-                name="Classic Literature Circle",
-                owner_id=user1.id,
-                synopsis="A vibrant community dedicated to exploring and analyzing timeless literary classics from around the world. We meet weekly to discuss themes, historical contexts, and personal interpretations of works from authors like Shakespeare, Austen, Dickens, and more. Our group welcomes both casual readers and scholarly types, with discussions ranging from surface-level plot points to deep literary analysis.",
-                created_at=datetime(2023, 1, 15),
-                current_book={
-                    "title": "Pride and Prejudice",
-                    "author": "Jane Austen",
-                    "description": "A romantic novel that explores manners, upbringing, morality, and marriage in early 19th-century England.",
-                    "progress": 45,  # percent
-                    "cover": "https://example.com/pride_and_prejudice_cover.jpg",
-                    "pagesRead": 134
-                }
-            )
-
-            club2 = BookClub(
-                name="Sci-Fi & Fantasy Explorers",
-                owner_id=user2.id,
-                synopsis="A passionate group that journeys through galaxies, parallel dimensions, and enchanted lands via the pages of science fiction and fantasy books. From Asimov to Zelazny, we explore world-building, futuristic technologies, and magical systems. Each month we select a new book or series to discuss, with special meetings dedicated to comparing adaptations and analyzing genre trends.",
-                created_at=datetime(2023, 2, 20),
-                current_book={
-                    "title": "Dune",
-                    "author": "Frank Herbert",
-                    "description": "A science fiction epic that follows the story of Paul Atreides on the desert planet Arrakis.",
-                    "progress": 67,
-                    "cover": "https://example.com/dune_cover.jpg",
-                    "pagesRead": 412
-                }
-            )
-
-            club3 = BookClub(
-                name="Modern Reads Book Club",
-                owner_id=user3.id,
-                synopsis="Focusing on contemporary novels from the past decade, we examine trending authors, diverse voices, and thought-provoking themes in modern literature. Our discussions often extend beyond the books to current events and social issues they reflect. We prioritize works that challenge perspectives and introduce readers to new cultural experiences.",
-                created_at=datetime(2023, 3, 10),
-                current_book={
-                    "title": "The Night Circus",
-                    "author": "Erin Morgenstern",
-                    "description": "A phantasmagorical novel centered on a magical competition between two young illusionists.",
-                    "progress": 32,
-                    "cover": "https://example.com/night_circus_cover.jpg",
-                    "pagesRead": 110
-                }
-            )
-            
-            db.session.add_all([club1, club2, club3])
+            print("📚 Creating book clubs...")
+            clubs = [
+                BookClub(
+                    name="Classic Literature Circle",
+                    owner_id=users[0].id,
+                    synopsis="A vibrant community dedicated to exploring and analyzing timeless literary classics from around the world.",
+                    created_at=datetime(2023, 1, 15),
+                    current_book={
+                        "title": "Pride and Prejudice",
+                        "author": "Jane Austen",
+                        "description": "A romantic novel that explores manners, upbringing, morality, and marriage in early 19th-century England.",
+                        "progress": 45,
+                        "cover": "https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
+                        "pagesRead": 134
+                    }
+                ),
+                BookClub(
+                    name="Sci-Fi & Fantasy Explorers",
+                    owner_id=users[1].id,
+                    synopsis="A passionate group that journeys through galaxies, parallel dimensions, and enchanted lands via the pages of science fiction and fantasy books.",
+                    created_at=datetime(2023, 2, 20),
+                    current_book={
+                        "title": "Dune",
+                        "author": "Frank Herbert",
+                        "description": "A science fiction epic that follows the story of Paul Atreides on the desert planet Arrakis.",
+                        "progress": 67,
+                        "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?w=720&ssl=1",
+                        "pagesRead": 412
+                    }
+                ),
+                BookClub(
+                    name="Modern Reads Book Club",
+                    owner_id=users[2].id,
+                    synopsis="Focusing on contemporary novels from the past decade, we examine trending authors, diverse voices, and thought-provoking themes in modern literature.",
+                    created_at=datetime(2023, 3, 10),
+                    current_book={
+                        "title": "The Night Circus",
+                        "author": "Erin Morgenstern",
+                        "description": "A phantasmagorical novel centered on a magical competition between two young illusionists.",
+                        "progress": 32,
+                        "cover": "https://i.ebayimg.com/images/g/AWgAAeSwfMxoAtrm/s-l1600.webp",
+                        "pagesRead": 110
+                    }
+                ),
+                BookClub(
+                    name="Mystery & Thriller Enthusiasts",
+                    owner_id=users[3].id,
+                    synopsis="For fans of whodunits, psychological thrillers, and crime novels where we try to solve the mystery before the big reveal.",
+                    created_at=datetime(2023, 4, 5),
+                    current_book={
+                        "title": "Gone Girl",
+                        "author": "Gillian Flynn",
+                        "description": "A psychological thriller about a woman who disappears on her fifth wedding anniversary.",
+                        "progress": 58,
+                        "cover": "https://i.ebayimg.com/images/g/Z0cAAeSwOLZoFM3e/s-l1600.webp",
+                        "pagesRead": 210
+                    }
+                ),
+                BookClub(
+                    name="Historical Fiction Society",
+                    owner_id=users[4].id,
+                    synopsis="Exploring different eras through meticulously researched historical fiction that brings the past to life.",
+                    created_at=datetime(2023, 5, 12),
+                    current_book={
+                        "title": "The Book Thief",
+                        "author": "Markus Zusak",
+                        "description": "A story set in Nazi Germany about a young girl who steals books and shares them with others.",
+                        "progress": 72,
+                        "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/The-Book-Thief-by-Markus-Zusak.jpeg?fit=1024%2C1024&ssl=1",
+                        "pagesRead": 320
+                    }
+                ),
+                BookClub(
+                    name="Non-Fiction Readers",
+                    owner_id=users[5].id,
+                    synopsis="Exploring the real world through biographies, memoirs, science, history, and other non-fiction works.",
+                    created_at=datetime(2023, 6, 8),
+                    current_book={
+                        "title": "Sapiens",
+                        "author": "Yuval Noah Harari",
+                        "description": "A brief history of humankind, exploring the evolution of our species.",
+                        "progress": 39,
+                        "cover": "https://i.ebayimg.com/images/g/PWQAAeSwMt5oGdDv/s-l1600.webp",
+                        "pagesRead": 150
+                    }
+                ),
+                BookClub(
+                    name="Poetry & Short Stories",
+                    owner_id=users[6].id,
+                    synopsis="Appreciating the beauty of language through poetry collections and short story anthologies.",
+                    created_at=datetime(2023, 7, 15),
+                    current_book={
+                        "title": "Milk and Honey",
+                        "author": "Rupi Kaur",
+                        "description": "A collection of poetry and prose about survival, violence, abuse, love, and femininity.",
+                        "progress": 85,
+                        "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/11/Milk-and-Honey-By-Rupi-Kaur.jpeg?w=768&ssl=1",
+                        "pagesRead": 120
+                    }
+                ),
+                BookClub(
+                    name="Young Adult Bookworms",
+                    owner_id=users[7].id,
+                    synopsis="For fans of young adult fiction, discussing coming-of-age stories and teen perspectives.",
+                    created_at=datetime(2023, 8, 20),
+                    current_book={
+                        "title": "The Hunger Games",
+                        "author": "Suzanne Collins",
+                        "description": "A dystopian novel about a televised fight to the death between teenagers.",
+                        "progress": 63,
+                        "cover": "https://cdn.waterstones.com/bookjackets/large/9781/4071/9781407132082.jpg",
+                        "pagesRead": 250
+                    }
+                ),
+                BookClub(
+                    name="Business & Self-Improvement",
+                    owner_id=users[8].id,
+                    synopsis="Reading and discussing books that help us grow professionally and personally.",
+                    created_at=datetime(2023, 9, 10),
+                    current_book={
+                        "title": "Atomic Habits",
+                        "author": "James Clear",
+                        "description": "A guide to building good habits and breaking bad ones.",
+                        "progress": 47,
+                        "cover": "https://i.ebayimg.com/images/g/jOsAAOSwXWBmAnJo/s-l960.webp",
+                        "pagesRead": 130
+                    }
+                ),
+                BookClub(
+                    name="Science & Technology",
+                    owner_id=users[9].id,
+                    synopsis="Exploring the latest in scientific discoveries and technological advancements through books.",
+                    created_at=datetime(2023, 10, 5),
+                    current_book={
+                        "title": "The Gene",
+                        "author": "Siddhartha Mukherjee",
+                        "description": "An intimate history of the gene and the science of heredity.",
+                        "progress": 29,
+                        "cover": "https://i.ebayimg.com/images/g/~IcAAOSwgQJgI7St/s-l960.webp",
+                        "pagesRead": 90
+                    }
+                )
+            ]
+            db.session.add_all(clubs)
             db.session.commit()
-
-            
 
             print("🧾 Creating Memberships...")
-            memberships = [
-                Membership(user_id=user1.id, bookclub_id=club1.id, joined_at=datetime(2023, 1, 16)),
-                Membership(user_id=user2.id, bookclub_id=club2.id, joined_at=datetime(2023, 2, 21)),
-                Membership(user_id=user3.id, bookclub_id=club3.id, joined_at=datetime(2023, 3, 11)),
-                Membership(user_id=user1.id, bookclub_id=club2.id, joined_at=datetime(2023, 3, 15)),
-                Membership(user_id=user2.id, bookclub_id=club1.id, joined_at=datetime(2023, 4, 1)),
-                Membership(user_id=user3.id, bookclub_id=club1.id, joined_at=datetime(2023, 4, 3))
-            ]
+            memberships = []
+            for i in range(10):
+                # Each user joins 3 random clubs
+                for club in random.sample(clubs, 3):
+                    memberships.append(
+                        Membership(
+                            user_id=users[i].id,
+                            bookclub_id=club.id,
+                            joined_at=datetime.now() - timedelta(days=random.randint(1, 30))
+                        )
+                    )
             db.session.add_all(memberships)
             db.session.commit()
 
             print("✍ Adding summaries...")
-            summaries = [
-                Summary(
-                    content="1984 presents a terrifying vision of a totalitarian future where the government, led by the enigmatic Big Brother, controls every aspect of life. The protagonist Winston Smith secretly rebels by keeping a diary and having a forbidden relationship. The novel's concepts of Newspeak, doublethink, and the Thought Police have entered our cultural lexicon as warnings against government overreach and the manipulation of truth. Particularly chilling is the way the Party rewrites history to match its current narrative, demonstrating how control of information leads to control of thought itself.",
-                    book_id=book1.id, 
-                    user_id=user1.id, 
-                    bookclub_id=club1.id
-                ),
-                Summary(
-                    content="To Kill a Mockingbird is both a coming-of-age story and a powerful examination of racial injustice in the American South. Through Scout's narration, we see how her father Atticus Finch's courageous defense of Tom Robinson impacts their small town. The novel beautifully captures childhood innocence while confronting harsh realities about prejudice and moral courage. Memorable scenes like the Halloween pageant and the confrontation at the jailhouse create a nuanced portrait of a community grappling with its own contradictions.",
-                    book_id=book2.id, 
-                    user_id=user2.id, 
-                    bookclub_id=club2.id
-                ),
-                Summary(
-                    content="Dune creates an incredibly detailed universe where political intrigue, ecological concerns, and messianic themes intertwine. The desert planet Arrakis and its native Fremen culture are vividly realized, with the spice melange serving as both a valuable resource and a metaphor for the addictive nature of power. Paul Atreides' transformation into Muad'Dib raises profound questions about destiny and the consequences of leadership. The novel's ecological themes about desert adaptation and water conservation remain strikingly relevant today.",
-                    book_id=book3.id, 
-                    user_id=user3.id, 
-                    bookclub_id=club3.id
-                )
-            ]
+            summaries = []
+            for i in range(10):
+                for j in range(2):  # 2 summaries per book
+                    summaries.append(
+                        Summary(
+                            content=f"Detailed analysis of {books[i].title} by {books[i].author}. This book explores themes of {', '.join(books[i].genres[:2])} in a profound way. The characters are well-developed and the plot keeps you engaged throughout. The author's style is particularly noteworthy for its {['clarity', 'depth', 'humor', 'insight', 'originality'][i%5]}.",
+                            book_id=books[i].id,
+                            user_id=users[i].id,
+                            bookclub_id=clubs[i].id
+                        )
+                    )
             db.session.add_all(summaries)
             db.session.commit()
 
             print("⭐ Adding reviews...")
-            reviews = [
-                Review(
-                    content="Orwell's 1984 remains one of the most important books of the 20th century. Its depiction of surveillance, propaganda, and thought control grows more relevant with each passing year. The ending is particularly haunting - a sobering reminder of how easily truth can be manipulated and individuality crushed under authoritarian rule. What makes the novel truly terrifying is how plausible its vision of totalitarianism feels, with modern technology making many of Orwell's imagined surveillance methods actually possible today.",
-                    rating=5, 
-                    user_id=user1.id, 
-                    book_id=book1.id
-                ),
-                Review(
-                    content="Harper Lee's masterpiece is both heartbreaking and uplifting. Atticus Finch stands as one of literature's great moral heroes, while Scout's narration perfectly captures childhood wonder and confusion. The courtroom scenes are tense and powerful, but it's the small moments of human connection that make this book truly special. The novel's treatment of racism remains painfully relevant, and its lessons about empathy and standing up for what's right continue to inspire readers of all ages.",
-                    rating=5, 
-                    user_id=user2.id, 
-                    book_id=book2.id
-                ),
-                Review(
-                    content="Dune is science fiction at its most ambitious and philosophical. Herbert creates an entire ecosystem and culture that feels completely real. The political maneuvering is as tense as any thriller, while the ecological themes give the story deeper resonance. Paul's journey from noble son to messianic figure raises fascinating questions about power and destiny. The novel's intricate plotting and rich world-building set a standard that few sci-fi works have matched since its publication.",
-                    rating=5, 
-                    user_id=user3.id, 
-                    book_id=book3.id
-                )
-            ]
+            reviews = []
+            for i in range(10):
+                for j in range(2):  # 2 reviews per book
+                    reviews.append(
+                        Review(
+                            content=f"My thoughts on {books[i].title}: This book was {['amazing', 'thought-provoking', 'entertaining', 'challenging', 'inspiring'][i%5]}. I particularly enjoyed the way the author handled the theme of {books[i].genres[0]}. The ending was {['satisfying', 'unexpected', 'heartbreaking', 'open-ended', 'perfect'][i%5]}.",
+                            rating=random.randint(3, 5),
+                            user_id=users[i].id,
+                            book_id=books[i].id
+                        )
+                    )
             db.session.add_all(reviews)
             db.session.commit()
 
             print("📩 Creating invites...")
-            invites = [
-                Invite(
-                    sender_id=user1.id, 
-                    recipient_id=user2.id, 
-                    bookclub_id=club1.id, 
-                    status=InviteStatus.PENDING,
-                    token=generate_invite_token(user1.id, club1.id, user2.id)),
-                
-                Invite(
-                    sender_id=user2.id, 
-                    recipient_id=user3.id, 
-                    bookclub_id=club2.id, 
-                    status=InviteStatus.ACCEPTED,
-                    token=generate_invite_token(user1.id, club1.id, user2.id))
-                
-            ]
+            invites = []
+            for i in range(10):
+                for j in range(2):  # 2 invites per user
+                    sender = users[i]
+                    recipient = users[(i+1)%10]
+                    club = clubs[(i+j)%10]
+                    invites.append(
+                        Invite(
+                            sender_id=sender.id,
+                            recipient_id=recipient.id,
+                            bookclub_id=club.id,
+                            status=random.choice(list(InviteStatus)),
+                            token=generate_invite_token(sender.id, club.id, recipient.id)
+                        )
+                    )
             db.session.add_all(invites)
             db.session.commit()
 
             print("📅 Creating meetings...")
-            meetings = [
-                Meeting(
-                    bookclub_id=club1.id, 
-                    meeting_date=datetime.now() + timedelta(days=7), 
-                    creator_id=user1.id,
-                    agenda="Discussion of George Orwell's 1984:\n1. Opening thoughts (15 min)\n2. Themes of surveillance (30 min)\n3. Relevance to modern politics (30 min)\n4. Closing discussion (15 min)"
-                ),
-                Meeting(
-                    bookclub_id=club2.id, 
-                    meeting_date=datetime.now() + timedelta(days=10), 
-                    creator_id=user2.id,
-                    agenda="Sci-Fi Worldbuilding Workshop:\n1. Analyzing Dune's ecological systems (30 min)\n2. Comparing with other sci-fi worlds (30 min)\n3. Writing exercise (30 min)"
-                )
-            ]
+            meetings = []
+            for i in range(10):
+                for j in range(2):  # 2 meetings per club
+                    meetings.append(
+                        Meeting(
+                            bookclub_id=clubs[i].id,
+                            meeting_date=datetime.now() + timedelta(days=random.randint(1, 30)),
+                            creator_id=clubs[i].owner_id,
+                            agenda=f"Discussion of {clubs[i].current_book['title']}:\n1. Opening thoughts\n2. Character analysis\n3. Theme exploration\n4. Final thoughts"
+                        )
+                    )
             db.session.add_all(meetings)
             db.session.commit()
+
+            print("🤝 Creating follows...")
+            follows = []
+            for i in range(10):
+                for j in range(3):  # Each user follows 3 others
+                    follower = users[i]
+                    followed = users[(i+j+1)%10]
+                    if follower != followed:
+                        follows.append(
+                            {
+                                'follower_id': follower.id,
+                                'followed_id': followed.id,
+                                'created_at': datetime.now() - timedelta(days=random.randint(1, 30))
+                            }
+                        )
+            # Using SQLAlchemy core for bulk insert
+            if follows:
+                db.session.execute(follows_table.insert(), follows)
+                db.session.commit()
 
             print("🎉 Database successfully seeded with complete data!")
 
