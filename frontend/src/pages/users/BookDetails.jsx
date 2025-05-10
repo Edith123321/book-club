@@ -116,7 +116,7 @@ const BookDetails = () => {
 
           <div className="description-section">
             <h3>About This Book</h3>
-            <p>{book.description || 'No description available.'}</p>
+            <p>{book.synopsis || 'No description available.'}</p>
           </div>
         </div>
       </div>
@@ -130,7 +130,7 @@ const BookDetails = () => {
             {reviews.map((review, index) => (
               <div key={index} className="review-card">
                 <h4>{review.title}</h4>
-                <p className="review-text">{review.description}</p>
+                <p className="review-text">{review.content}</p>
                 <p className="reviewer">— {review.username}</p>
               </div>
             ))}
