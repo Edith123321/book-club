@@ -143,6 +143,7 @@ def seed_database():
                 )
             ]
             db.session.add_all(users)
+
             user1 = User(
                 username='admin',
                 email='admin@bookclub.com',
@@ -171,6 +172,7 @@ def seed_database():
                 is_admin=False # Add this line
             )
             db.session.add_all([user1, user2, user3])
+
             db.session.commit()
 
             print("📖 Adding books...")
