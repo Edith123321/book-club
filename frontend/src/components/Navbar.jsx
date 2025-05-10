@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaSignOutAlt, FaCog, FaPen, FaSignInAlt } from "react-icons/fa";
+import md5 from 'md5'; // For Gravatar hashing
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -51,13 +52,13 @@ const Navbar = () => {
 
   // Get user avatar or fallback to default
   const getUserAvatar = () => {
-    if (user?.avatar) return user.avatar;
+    if (user?.avatar_url) return user.avatar_url;
     if (user?.email) {
       // Generate Gravatar URL if email exists
       const hash = md5(user.email.trim().toLowerCase());
       return `https://www.gravatar.com/avatar/${hash}?d=identicon`;
     }
-    return 'https://www.gravatar.com/avatar/default?d=mp';
+    return '/default-avatar.png';
   };
 
   return (
@@ -96,7 +97,7 @@ const Navbar = () => {
                 className="avatar-image"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = 'https://www.gravatar.com/avatar/default?d=mp';
+                  e.target.src = '/default-avatar.png';
                 }}
               />
               <span className="username">{user.username || user.email.split('@')[0]}</span>
@@ -105,12 +106,12 @@ const Navbar = () => {
             {isDropdownOpen && (
               <div className="dropdown-menu">
                 <Link 
-                  to="/profile" 
+                  to={`/profile/${user.id}`} 
                   className="dropdown-item"
                   onClick={() => setIsDropdownOpen(false)}
                 >
-                  <FaPen className="dropdown-icon" />
-                  <span>Update Profile</span>
+                  <FaUserCircle className="dropdown-icon" />
+                  <span>My Profile</span>
                 </Link>
                 <Link 
                   to="/settings" 
@@ -119,6 +120,14 @@ const Navbar = () => {
                 >
                   <FaCog className="dropdown-icon" />
                   <span>Settings</span>
+                </Link>
+                <Link 
+                  to="/profile/edit" 
+                  className="dropdown-item"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  <FaPen className="dropdown-icon" />
+                  <span>Edit Profile</span>
                 </Link>
                 <button 
                   className="dropdown-item logout-button"

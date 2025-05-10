@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import '../../styles/login.css';
-
 import { FaGoogle, FaFacebook, FaApple, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
 import { BsPeople, BsBook, BsCalendarEvent, BsChatSquareText } from 'react-icons/bs';
 
 const Login = () => {
+  // State declarations
   const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -23,41 +23,31 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-  // const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-  
-  // Form validation
   const [errors, setErrors] = useState({});
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-  
-  const toggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
+  // Helper functions
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    // Reset errors when switching tabs
     setErrors({});
   };
-  
+
+  // Form validation
   const validateSignInForm = () => {
     const newErrors = {};
-    
     if (!email.trim()) newErrors.email = "Email is required";
     if (!password) newErrors.password = "Password is required";
-    
     return newErrors;
   };
   
   const validateCreateAccountForm = () => {
     const newErrors = {};
-    
     if (!firstName.trim()) newErrors.firstName = "First name is required";
     if (!lastName.trim()) newErrors.lastName = "Last name is required";
     if (!newEmail.trim()) newErrors.newEmail = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(newEmail)) newErrors.newEmail = "Email is invalid";
+    else if (!/^\S+@\S+\.\S+$/.test(newEmail)) newErrors.newEmail = "Email is invalid";
     
     if (!newPassword) newErrors.newPassword = "Password is required";
     else if (newPassword.length < 8) newErrors.newPassword = "Password must be at least 8 characters";
@@ -70,170 +60,361 @@ const Login = () => {
     return newErrors;
   };
 
- const handleSignInSubmit = async (e) => {
-  e.preventDefault();
-  const formErrors = validateSignInForm();
-  
-  if (Object.keys(formErrors).length === 0) {
-    setIsLoading(true);
-    
+  // API call handlers
+  const makeApiCall = async (url, method, body) => {
     try {
-      // Step 1: Authenticate user
-      const authResponse = await fetch('http://localhost:5000/auth/login', {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          password
-        }),
+        body: JSON.stringify(body),
       });
 
-      if (!authResponse.ok) {
-        const errorData = await authResponse.json();
-        throw new Error(errorData.message || 'Login failed');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Request failed');
       }
 
-      const authData = await authResponse.json();
-      
-      // Store the auth token
-      localStorage.setItem('authToken', authData.token);
-      
-      // Step 2: Fetch user details to check admin status
-      const userResponse = await fetch(`http://localhost:5000/users/${authData.user_id}`, {
-        headers: {
-          'Authorization': `Bearer ${authData.token}`
-        }
-      });
-
-      if (!userResponse.ok) {
-        throw new Error('Failed to fetch user details');
-      }
-
-      const userData = await userResponse.json();
-
-      // Combine and store user data
-      const completeUserData = {
-        ...authData,
-        ...userData
-      };
-      localStorage.setItem('userData', JSON.stringify(completeUserData));
-      
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-      }
-
-      // Notify all components of auth change
-      window.dispatchEvent(new Event('authChange'));
-      
-      // Redirect based on admin status
-      if (userData.is_admin) {
-        window.location.href = '/admin/dashboard';
-      } else {
-        window.location.href = '/';
-      }
-      
+      return await response.json();
     } catch (error) {
-      console.error('Login error:', error);
-      setErrors({ 
-        ...errors, 
-        apiError: error.message || 'An error occurred during login' 
+      console.error('API Error:', error);
+      throw error;
+    }
+  };
+
+  // Form submission handlers
+  const handleSignInSubmit = async (e) => {
+    e.preventDefault();
+    const formErrors = validateSignInForm();
+    
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const data = await makeApiCall('http://localhost:5000/auth/login', 'POST', {
+        email,
+        password
       });
+
+      localStorage.setItem('authToken', data.access_token);
+      localStorage.setItem('userData', JSON.stringify({
+        id: data.user_id,
+        username: data.username,
+        email: email,
+        firstName: firstName,
+        lastName: lastName
+      }));
       
-      // Clear any partial auth data on error
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userData');
+      if (rememberMe) localStorage.setItem('rememberMe', 'true');
+
       window.dispatchEvent(new Event('authChange'));
+      window.location.href = data.is_admin ? '/admin/dashboard' : '/';
+    } catch (error) {
+      setErrors({ ...errors, apiError: error.message });
     } finally {
       setIsLoading(false);
     }
-  } else {
-    setErrors(formErrors);
-  }
-};
-  
+  };
+
   const handleCreateAccountSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateCreateAccountForm();
     
-    if (Object.keys(formErrors).length === 0) {
-      setIsLoading(true);
-      
-      try {
-        const response = await fetch('http://127.0.0.1:5000/users', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            email: newEmail,
-            password: newPassword
-          }),
-        });
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Registration failed');
-        }
-  
-        const data = await response.json();
-        console.log('Registration successful:', data);
-    
-        
-      } catch (error) {
-        console.error('Registration error:', error);
-        setErrors({ 
-          ...errors, 
-          apiError: error.message || 'An error occurred during registration' 
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
+    if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Register the user
+      const registrationData = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        newEmail: newEmail.trim(),
+        newPassword: newPassword
+      };
+
+      console.log('Sending registration data:', registrationData); // Debug log
+
+      const data = await makeApiCall('http://localhost:5000/auth/register', 'POST', registrationData);
+      console.log('Registration successful:', data);
+      
+      // Auto-login after registration
+      const loginData = await makeApiCall('http://localhost:5000/auth/login', 'POST', {
+        email: newEmail.trim(),
+        password: newPassword
+      });
+
+      localStorage.setItem('authToken', loginData.access_token);
+      localStorage.setItem('userData', JSON.stringify({
+        id: loginData.user_id,
+        username: loginData.username,
+        email: newEmail.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim()
+      }));
+      
+      window.dispatchEvent(new Event('authChange'));
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Registration error:', error);
+      setErrors({ ...errors, apiError: error.message });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
   // Social login handlers
-  const handleGoogleSignIn = () => {
+  const handleSocialSignIn = (provider) => {
     setIsLoading(true);
-    console.log('Initiating Google Sign In');
-    
-    // This would normally redirect to Google OAuth
-    // For demonstration, we'll simulate the process
+    console.log(`Initiating ${provider} Sign In`);
     setTimeout(() => {
-      console.log('Google authentication completed');
+      console.log(`${provider} authentication completed`);
       setIsLoading(false);
-      // Redirect would happen here in a real app
     }, 1500);
   };
-  
-  const handleFacebookSignIn = () => {
-    setIsLoading(true);
-    console.log('Initiating Facebook Sign In');
-    
-    // This would normally redirect to Facebook OAuth
-    setTimeout(() => {
-      console.log('Facebook authentication completed');
-      setIsLoading(false);
-      // Redirect would happen here in a real app
-    }, 1500);
-  };
-  
-  const handleAppleSignIn = () => {
-    setIsLoading(true);
-    console.log('Initiating Apple Sign In');
-    
-    // This would normally redirect to Apple OAuth
-    setTimeout(() => {
-      console.log('Apple authentication completed');
-      setIsLoading(false);
-      // Redirect would happen here in a real app
-    }, 1500);
-  };
+
+  // Render methods
+  const renderSignInForm = () => (
+    <form onSubmit={handleSignInSubmit}>
+      <div className="form-group">
+        <label htmlFor="email">Email Address</label>
+        <div className="input-container">
+          <input
+            type="email"
+            id="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={errors.email ? 'error' : ''}
+          />
+          <FaEnvelope className="input-icon" />
+        </div>
+        {errors.email && <div className="error-message">{errors.email}</div>}
+      </div>
+      <div className="form-group">
+        <div className="password-label-container">
+          <label htmlFor="password">Password</label>
+          <a href="#" className="forgot-password">Forgot password?</a>
+        </div>
+        <div className="input-container">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            id="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={errors.password ? 'error' : ''}
+          />
+          <FaLock className="input-icon" />
+          <button 
+            type="button" 
+            className="toggle-password" 
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
+        {errors.password && <div className="error-message">{errors.password}</div>}
+      </div>
+      <div className="remember-me">
+        <input
+          type="checkbox"
+          id="remember"
+          checked={rememberMe}
+          onChange={() => setRememberMe(!rememberMe)}
+        />
+        <label htmlFor="remember">Remember me</label>
+      </div>
+      {errors.apiError && <div className="error-message api-error">{errors.apiError}</div>}
+      <button type="submit" className="submit-button" disabled={isLoading}>
+        {isLoading ? 'Signing in...' : 'Sign In'}
+      </button>
+      <div className="or-divider">
+        <span>Or continue with</span>
+      </div>
+      <div className="social-login">
+        <button 
+          type="button" 
+          className="social-button google"
+          onClick={() => handleSocialSignIn('Google')}
+          disabled={isLoading}
+        >
+          <FaGoogle />
+        </button>
+        <button 
+          type="button" 
+          className="social-button facebook"
+          onClick={() => handleSocialSignIn('Facebook')}
+          disabled={isLoading}
+        >
+          <FaFacebook />
+        </button>
+        <button 
+          type="button" 
+          className="social-button apple"
+          onClick={() => handleSocialSignIn('Apple')}
+          disabled={isLoading}
+        >
+          <FaApple />
+        </button>
+      </div>
+    </form>
+  );
+
+  const renderCreateAccountForm = () => (
+    <form onSubmit={handleCreateAccountSubmit}>
+      <div className="name-row">
+        <div className="form-group half">
+          <label htmlFor="firstName">First Name</label>
+          <div className="input-container">
+            <input
+              type="text"
+              id="firstName"
+              placeholder="John"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className={errors.firstName ? 'error' : ''}
+            />
+            <FaUser className="input-icon" />
+          </div>
+          {errors.firstName && <div className="error-message">{errors.firstName}</div>}
+        </div>
+        <div className="form-group half">
+          <label htmlFor="lastName">Last Name</label>
+          <div className="input-container">
+            <input
+              type="text"
+              id="lastName"
+              placeholder="Doe"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className={errors.lastName ? 'error' : ''}
+            />
+            <FaUser className="input-icon" />
+          </div>
+          {errors.lastName && <div className="error-message">{errors.lastName}</div>}
+        </div>
+      </div>
+      <div className="form-group">
+        <label htmlFor="newEmail">Email Address</label>
+        <div className="input-container">
+          <input
+            type="email"
+            id="newEmail"
+            placeholder="your@email.com"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            className={errors.newEmail ? 'error' : ''}
+          />
+          <FaEnvelope className="input-icon" />
+        </div>
+        {errors.newEmail && <div className="error-message">{errors.newEmail}</div>}
+      </div>
+      <div className="form-group">
+        <label htmlFor="newPassword">Password</label>
+        <div className="input-container">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            id="newPassword"
+            placeholder="••••••••"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className={errors.newPassword ? 'error' : ''}
+          />
+          <FaLock className="input-icon" />
+          <button 
+            type="button" 
+            className="toggle-password" 
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
+        {errors.newPassword && <div className="error-message">{errors.newPassword}</div>}
+        <div className="password-strength">
+          <div className={`strength-meter ${newPassword.length > 0 ? (newPassword.length >= 8 ? 'strong' : 'weak') : ''}`}></div>
+          <span className="strength-text">
+            {newPassword.length > 0 ? (newPassword.length >= 8 ? 'Strong password' : 'Password is too weak') : ''}
+          </span>
+        </div>
+      </div>
+      <div className="form-group">
+        <label htmlFor="confirmPassword">Confirm Password</label>
+        <div className="input-container">
+          <input
+            type={showConfirmPassword ? 'text' : 'password'}
+            id="confirmPassword"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className={errors.confirmPassword ? 'error' : ''}
+          />
+          <FaLock className="input-icon" />
+          <button 
+            type="button" 
+            className="toggle-password" 
+            onClick={toggleConfirmPasswordVisibility}
+          >
+            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
+        </div>
+        {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
+      </div>
+      <div className="terms-checkbox">
+        <input
+          type="checkbox"
+          id="agreeToTerms"
+          checked={agreeToTerms}
+          onChange={() => setAgreeToTerms(!agreeToTerms)}
+        />
+        <label htmlFor="agreeToTerms">
+          I agree to the <a href="#" className="terms-link">Terms of Service</a> and <a href="#" className="terms-link">Privacy Policy</a>
+        </label>
+      </div>
+      {errors.agreeToTerms && <div className="error-message terms-error">{errors.agreeToTerms}</div>}
+      {errors.apiError && <div className="error-message api-error">{errors.apiError}</div>}
+      <button type="submit" className="submit-button" disabled={isLoading}>
+        {isLoading ? 'Creating Account...' : 'Create Account'}
+      </button>
+      <div className="or-divider">
+        <span>Or continue with</span>
+      </div>
+      <div className="social-login">
+        <button 
+          type="button" 
+          className="social-button google"
+          onClick={() => handleSocialSignIn('Google')}
+          disabled={isLoading}
+        >
+          <FaGoogle />
+        </button>
+        <button 
+          type="button" 
+          className="social-button facebook"
+          onClick={() => handleSocialSignIn('Facebook')}
+          disabled={isLoading}
+        >
+          <FaFacebook />
+        </button>
+        <button 
+          type="button" 
+          className="social-button apple"
+          onClick={() => handleSocialSignIn('Apple')}
+          disabled={isLoading}
+        >
+          <FaApple />
+        </button>
+      </div>
+    </form>
+  );
 
   return (
     <div className="login-container">
@@ -256,233 +437,7 @@ const Login = () => {
           </button>
         </div>
         
-        {activeTab === 'signin' ? (
-          <form onSubmit={handleSignInSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <div className="input-container">
-                <input
-                  type="email"
-                  id="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={errors.email ? 'error' : ''}
-                />
-                <FaEnvelope className="input-icon" />
-              </div>
-              {errors.email && <div className="error-message">{errors.email}</div>}
-            </div>
-            <div className="form-group">
-              <div className="password-label-container">
-                <label htmlFor="password">Password</label>
-                <a href="#" className="forgot-password">Forgot password?</a>
-              </div>
-              <div className="input-container">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={errors.password ? 'error' : ''}
-                />
-                <FaLock className="input-icon" />
-                <button 
-                  type="button" 
-                  className="toggle-password" 
-                  onClick={togglePasswordVisibility}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {errors.password && <div className="error-message">{errors.password}</div>}
-            </div>
-            <div className="remember-me">
-              <input
-                type="checkbox"
-                id="remember"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              <label htmlFor="remember">Remember me</label>
-            </div>
-            <button type="submit" className="submit-button" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </button>
-            <div className="or-divider">
-              <span>Or continue with</span>
-            </div>
-            <div className="social-login">
-              <button 
-                type="button" 
-                className="social-button google"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-              >
-                <FaGoogle />
-              </button>
-              <button 
-                type="button" 
-                className="social-button facebook"
-                onClick={handleFacebookSignIn}
-                disabled={isLoading}
-              >
-                <FaFacebook />
-              </button>
-              <button 
-                type="button" 
-                className="social-button apple"
-                onClick={handleAppleSignIn}
-                disabled={isLoading}
-              >
-                <FaApple />
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleCreateAccountSubmit}>
-            <div className="name-row">
-              <div className="form-group half">
-                <label htmlFor="firstName">First Name</label>
-                <div className="input-container">
-                  <input
-                    type="text"
-                    id="firstName"
-                    placeholder="John"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className={errors.firstName ? 'error' : ''}
-                  />
-                  <FaUser className="input-icon" />
-                </div>
-                {errors.firstName && <div className="error-message">{errors.firstName}</div>}
-              </div>
-              <div className="form-group half">
-                <label htmlFor="lastName">Last Name</label>
-                <div className="input-container">
-                  <input
-                    type="text"
-                    id="lastName"
-                    placeholder="Doe"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className={errors.lastName ? 'error' : ''}
-                  />
-                  <FaUser className="input-icon" />
-                </div>
-                {errors.lastName && <div className="error-message">{errors.lastName}</div>}
-              </div>
-            </div>
-            <div className="form-group">
-              <label htmlFor="newEmail">Email Address</label>
-              <div className="input-container">
-                <input
-                  type="email"
-                  id="newEmail"
-                  placeholder="your@email.com"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className={errors.newEmail ? 'error' : ''}
-                />
-                <FaEnvelope className="input-icon" />
-              </div>
-              {errors.newEmail && <div className="error-message">{errors.newEmail}</div>}
-            </div>
-            <div className="form-group">
-              <label htmlFor="newPassword">Password</label>
-              <div className="input-container">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="newPassword"
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className={errors.newPassword ? 'error' : ''}
-                />
-                <FaLock className="input-icon" />
-                <button 
-                  type="button" 
-                  className="toggle-password" 
-                  onClick={togglePasswordVisibility}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {errors.newPassword && <div className="error-message">{errors.newPassword}</div>}
-              <div className="password-strength">
-                <div className={`strength-meter ${newPassword.length > 0 ? (newPassword.length >= 8 ? 'strong' : 'weak') : ''}`}></div>
-                <span className="strength-text">{newPassword.length > 0 ? (newPassword.length >= 8 ? 'Strong password' : 'Password is too weak') : ''}</span>
-              </div>
-            </div>
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <div className="input-container">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className={errors.confirmPassword ? 'error' : ''}
-                />
-                <FaLock className="input-icon" />
-                <button 
-                  type="button" 
-                  className="toggle-password" 
-                  onClick={toggleConfirmPasswordVisibility}
-                >
-                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
-            </div>
-            <div className="terms-checkbox">
-              <input
-                type="checkbox"
-                id="agreeToTerms"
-                checked={agreeToTerms}
-                onChange={() => setAgreeToTerms(!agreeToTerms)}
-              />
-              <label htmlFor="agreeToTerms">
-                I agree to the <a href="#" className="terms-link">Terms of Service</a> and <a href="#" className="terms-link">Privacy Policy</a>
-              </label>
-            </div>
-            {errors.agreeToTerms && <div className="error-message terms-error">{errors.agreeToTerms}</div>}
-            <button type="submit" className="submit-button" disabled={isLoading}>
-              {isLoading ? 'Creating Account...' : 'Create Account'}
-            </button>
-            <div className="or-divider">
-              <span>Or continue with</span>
-            </div>
-            <div className="social-login">
-              <button 
-                type="button" 
-                className="social-button google"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-              >
-                <FaGoogle />
-              </button>
-              <button 
-                type="button" 
-                className="social-button facebook"
-                onClick={handleFacebookSignIn}
-                disabled={isLoading}
-              >
-                <FaFacebook />
-              </button>
-              <button 
-                type="button" 
-                className="social-button apple"
-                onClick={handleAppleSignIn}
-                disabled={isLoading}
-              >
-                <FaApple />
-              </button>
-            </div>
-          </form>
-        )}
+        {activeTab === 'signin' ? renderSignInForm() : renderCreateAccountForm()}
       </div>
       
       <div className="features-card">
