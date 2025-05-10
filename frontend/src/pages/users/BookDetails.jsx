@@ -78,7 +78,7 @@ const BookDetails = () => {
         {/* Left Column - Book Cover */}
         <div className="book-cover-container">
           <img 
-            src={book.cover || '/default-book-cover.jpg'} 
+            src={book.cover_image_url || '/default-book-cover.jpg'} 
             alt={`${book.title} cover`} 
             className="book-cover" 
             onError={(e) => {
@@ -87,7 +87,7 @@ const BookDetails = () => {
             }}
           />
           <div className="quick-info">
-            <p><span className="info-label">Published:</span> {book.published || 'Unknown'}</p>
+            <p><span className="info-label">Published:</span> {book.author || 'Unknown'}</p>
             <p><span className="info-label">Pages:</span> {book.pages || 'Unknown'}</p>
             {book.rating && (
               <div className="rating-badge">

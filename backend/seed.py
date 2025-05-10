@@ -143,6 +143,34 @@ def seed_database():
                 )
             ]
             db.session.add_all(users)
+            user1 = User(
+                username='admin',
+                email='admin@bookclub.com',
+                password_hash=generate_password_hash('admin123'),
+                created_at=datetime.now(),
+                last_login=datetime.now(),
+                is_active=True,
+                is_admin = True
+            )
+            user2 = User(
+                username='booklover',
+                email='member@bookclub.com',
+                password_hash=generate_password_hash('password123'),
+                created_at=datetime.now(),
+                last_login=datetime.now() - timedelta(days=5),
+                is_active=True,
+                is_admin=False
+            )
+            user3 = User(
+                username='readerbee',
+                email='reader@bookclub.com',
+                password_hash=generate_password_hash('read1234'),
+                created_at=datetime.now(),
+                last_login=datetime.now() - timedelta(days=10),  # Example: last login 10 days ago
+                is_active=True ,
+                is_admin=False # Add this line
+            )
+            db.session.add_all([user1, user2, user3])
             db.session.commit()
 
             print("📖 Adding books...")
