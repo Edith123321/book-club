@@ -65,7 +65,8 @@ def seed_database():
                 password_hash=generate_password_hash('admin123'),
                 created_at=datetime.now(),
                 last_login=datetime.now(),
-                is_active=True
+                is_active=True,
+                is_admin = True
             )
             user2 = User(
                 username='booklover',
@@ -73,7 +74,8 @@ def seed_database():
                 password_hash=generate_password_hash('password123'),
                 created_at=datetime.now(),
                 last_login=datetime.now() - timedelta(days=5),
-                is_active=True
+                is_active=True,
+                is_admin=False
             )
             user3 = User(
                 username='readerbee',
@@ -81,7 +83,8 @@ def seed_database():
                 password_hash=generate_password_hash('read1234'),
                 created_at=datetime.now(),
                 last_login=datetime.now() - timedelta(days=10),  # Example: last login 10 days ago
-                is_active=True  # Add this line
+                is_active=True ,
+                is_admin=False # Add this line
             )
             db.session.add_all([user1, user2, user3])
             db.session.commit()

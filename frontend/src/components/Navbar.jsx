@@ -1,14 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { FaUserCircle, FaSignOutAlt, FaCog, FaPen } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt, FaCog, FaPen, FaSignInAlt } from "react-icons/fa";
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+
+  // Check for logged in user on component mount and when auth changes
+  useEffect(() => {
+    const storedUser = localStorage.getItem('userData');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+
+    // Listen for auth changes from other components
+    const handleAuthChange = () => {
+      const updatedUser = localStorage.getItem('userData');
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+
+    window.addEventListener('authChange', handleAuthChange);
+    return () => window.removeEventListener('authChange', handleAuthChange);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -25,8 +41,23 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+    setUser(null);
+    setIsDropdownOpen(false);
+    window.dispatchEvent(new Event('authChange')); // Notify other components
     navigate("/log-in");
+  };
+
+  // Get user avatar or fallback to default
+  const getUserAvatar = () => {
+    if (user?.avatar) return user.avatar;
+    if (user?.email) {
+      // Generate Gravatar URL if email exists
+      const hash = md5(user.email.trim().toLowerCase());
+      return `https://www.gravatar.com/avatar/${hash}?d=identicon`;
+    }
+    return 'https://www.gravatar.com/avatar/default?d=mp';
   };
 
   return (
@@ -59,8 +90,16 @@ const Navbar = () => {
               aria-haspopup="true"
               aria-expanded={isDropdownOpen}
             >
-              <FaUserCircle className="avatar-icon" />
-              <span className="username">{user.username || user.email}</span>
+              <img 
+                src={getUserAvatar()} 
+                alt="User Avatar"
+                className="avatar-image"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://www.gravatar.com/avatar/default?d=mp';
+                }}
+              />
+              <span className="username">{user.username || user.email.split('@')[0]}</span>
             </div>
             
             {isDropdownOpen && (
@@ -92,9 +131,10 @@ const Navbar = () => {
             )}
           </div>
         ) : (
-          <button className="navbar-login">
-            <Link to="/log-in" className="navbar-login-link">Log In</Link>
-          </button>
+          <Link to="/log-in" className="navbar-login">
+            <FaSignInAlt className="login-icon" />
+            <span>Log In</span>
+          </Link>
         )}
       </div>
     </nav>

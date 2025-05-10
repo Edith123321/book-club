@@ -70,63 +70,88 @@ const Login = () => {
     return newErrors;
   };
 
-  const handleSignInSubmit = async (e) => {
-    e.preventDefault();
-    const formErrors = validateSignInForm();
+ const handleSignInSubmit = async (e) => {
+  e.preventDefault();
+  const formErrors = validateSignInForm();
+  
+  if (Object.keys(formErrors).length === 0) {
+    setIsLoading(true);
     
-    if (Object.keys(formErrors).length === 0) {
-      setIsLoading(true);
-      
-      try {
-        const response = await fetch('http://localhost:5000/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            password
-          }),
-        });
-  
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Login failed');
-        }
-  
-        const userData = await response.json();
-        console.log('Login successful:', userData);
-        
-        // Store user data and token if available
-        if (userData.token) {
-          localStorage.setItem('authToken', userData.token);
-          localStorage.setItem('userData', JSON.stringify(userData));
-          
-          if (rememberMe) {
-            localStorage.setItem('rememberMe', 'true');
-          }
-        }
-        
-        // Redirect based on admin status
-        if (userData.is_admin) {
-          window.location.href = '/admin/dashboard';
-        } else {
-          window.location.href = '/';
-        }
-        
-      } catch (error) {
-        console.error('Login error:', error);
-        setErrors({ 
-          ...errors, 
-          apiError: error.message || 'An error occurred during login' 
-        });
-      } finally {
-        setIsLoading(false);
+    try {
+      // Step 1: Authenticate user
+      const authResponse = await fetch('http://localhost:5000/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      });
+
+      if (!authResponse.ok) {
+        const errorData = await authResponse.json();
+        throw new Error(errorData.message || 'Login failed');
       }
-    } else {
-      setErrors(formErrors);
+
+      const authData = await authResponse.json();
+      
+      // Store the auth token
+      localStorage.setItem('authToken', authData.token);
+      
+      // Step 2: Fetch user details to check admin status
+      const userResponse = await fetch(`http://localhost:5000/users/${authData.user_id}`, {
+        headers: {
+          'Authorization': `Bearer ${authData.token}`
+        }
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to fetch user details');
+      }
+
+      const userData = await userResponse.json();
+
+      // Combine and store user data
+      const completeUserData = {
+        ...authData,
+        ...userData
+      };
+      localStorage.setItem('userData', JSON.stringify(completeUserData));
+      
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      }
+
+      // Notify all components of auth change
+      window.dispatchEvent(new Event('authChange'));
+      
+      // Redirect based on admin status
+      if (userData.is_admin) {
+        window.location.href = '/admin/dashboard';
+      } else {
+        window.location.href = '/';
+      }
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ 
+        ...errors, 
+        apiError: error.message || 'An error occurred during login' 
+      });
+      
+      // Clear any partial auth data on error
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      window.dispatchEvent(new Event('authChange'));
+    } finally {
+      setIsLoading(false);
     }
-  };
+  } else {
+    setErrors(formErrors);
+  }
+};
   
   const handleCreateAccountSubmit = async (e) => {
     e.preventDefault();
@@ -156,9 +181,7 @@ const Login = () => {
   
         const data = await response.json();
         console.log('Registration successful:', data);
-        
-        // Optionally auto-login the user after registration
-        // Or redirect to login page with success message
+    
         
       } catch (error) {
         console.error('Registration error:', error);

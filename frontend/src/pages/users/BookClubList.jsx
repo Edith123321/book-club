@@ -128,11 +128,6 @@ const BookClubList = () => {
                 <div className="current-book">
                   <h4>Currently Reading:</h4>
                   <div className="book-info">
-                    <img
-                      src={club.currentBook.cover}
-                      alt={club.currentBook.title}
-                      className="book-cover"
-                    />
                     <div className="book-details">
                       <p className="book-title">{club.currentBook.title}</p>
                       <p className="book-author">by {club.currentBook.author}</p>

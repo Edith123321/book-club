@@ -7,11 +7,11 @@
 
   }
   
-  .section-container,
-  .my-bookclubs-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
+ .section-container,
+.my-bookclubs-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
   }
   
   .section-heading-container {
@@ -144,8 +144,10 @@
   .book-clubs-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 2rem;
-    padding: 0 1rem 3rem;
+    gap: 2rem; 
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
   }
   
   /* Individual Card */
@@ -188,7 +190,7 @@
     color: #555;
     font-size: 0.95rem;
     line-height: 1.5;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
   }
   
   .genres-container {
@@ -216,7 +218,7 @@
   
   .current-book {
     flex: 1;
-    background: #f9f9f9;
+    background: #fff;
     padding: 1rem;
     border-radius: 8px;
   }
@@ -242,9 +244,7 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
   
-  .book-details {
-    flex: 1;
-  }
+  
   
   .book-title {
     font-size: 0.9rem;
