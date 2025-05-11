@@ -6,7 +6,7 @@ from app.models.user import User
 from typing import Dict, Any
 from ..middleware import token_required
 
-user_bp = Blueprint('users', __name__, url_prefix='/api/users')
+user_bp = Blueprint('users', __name__)
 
 # Helper function for validation
 def validate_user_data(data: Dict[str, Any], is_update: bool = False) -> Dict[str, Any]:
