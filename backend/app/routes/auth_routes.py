@@ -20,28 +20,36 @@ def register():
     try:
         data = request.get_json()
 
-        required_fields = ['username', 'email', 'password']
-        if not all(field in data for field in required_fields):
+        # Map frontend fields to backend expectations
+        registration_data = {
+            'username': f"{data.get('firstName', '').lower()}_{data.get('lastName', '').lower()}",
+            'email': data.get('newEmail'),
+            'password': data.get('newPassword'),
+            'first_name': data.get('firstName'),
+            'last_name': data.get('lastName')
+        }
+
+        required_fields = ['email', 'password', 'first_name', 'last_name']
+        if not all(registration_data[field] for field in required_fields):
             return jsonify({
                 "error": "Missing fields",
                 "required": required_fields
             }), 400
 
-        # Validate using schema
-        user_create_schema.load(data)
+        # Validate using schema (update your schema accordingly)
+        user_create_schema.load(registration_data)
 
-        # Check if email or username already exists
-        if User.query.filter_by(email=data['email']).first():
+        # Check if email already exists
+        if User.query.filter_by(email=registration_data['email']).first():
             return jsonify({"error": "Email already registered"}), 409
 
-        if User.query.filter_by(username=data['username']).first():
-            return jsonify({"error": "Username already taken"}), 409
-
-        # Create user — model will hash password via setter
+        # Create user
         new_user = User(
-            username=data['username'],
-            email=data['email'],
-            password=data['password']  # auto-hashed in model
+            username=registration_data['username'],
+            email=registration_data['email'],
+            password=registration_data['password'],
+            first_name=registration_data['first_name'],
+            last_name=registration_data['last_name']
         )
 
         db.session.add(new_user)
@@ -60,8 +68,7 @@ def register():
         return jsonify({
             "error": "Registration failed",
             "details": str(e)
-        }), 500
-
+        }), 500 
 
 # ----------------------
 # Login Route

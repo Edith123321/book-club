@@ -12,7 +12,7 @@ class InviteStatus(Enum):
     DECLINED = 'DECLINED'
 
 class Invite(db.Model):
-    _tablename_ = 'invites'
+    __tablename__ = 'invites'
     
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'))
