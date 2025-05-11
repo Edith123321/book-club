@@ -8,21 +8,30 @@ const BookDetails = () => {
   const [error, setError] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({
-    title: '',
-    username: '',
-    description: ''
+    content: '',
+    rating: 5,
+    username: ''
   });
 
   useEffect(() => {
-    const fetchBook = async () => {
+    const fetchBookData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/books/${id}`);
-        if (!response.ok) {
+        setLoading(true);
+        
+        // Fetch book details
+        const bookResponse = await fetch(`http://localhost:5000/books/${id}`);
+        if (!bookResponse.ok) {
           throw new Error('Failed to fetch book');
         }
-        const data = await response.json();
-        setBook(data);
-        setReviews(data.reviews || []);
+        const bookData = await bookResponse.json();
+        setBook(bookData);
+
+        // Fetch reviews separately
+        const reviewsResponse = await fetch(`http://localhost:5000/reviews?book_id=${id}&_expand=user`);
+        if (reviewsResponse.ok) {
+          const reviewsData = await reviewsResponse.json();
+          setReviews(reviewsData);
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -30,7 +39,7 @@ const BookDetails = () => {
       }
     };
 
-    fetchBook();
+    fetchBookData();
   }, [id]);
 
   const handleInputChange = (e) => {
@@ -44,12 +53,19 @@ const BookDetails = () => {
   const handleAddReview = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/books/${id}/reviews`, {
+      const reviewToSubmit = {
+        content: newReview.content,
+        rating: Number(newReview.rating),
+        book_id: Number(id),
+        username: newReview.username // This should ideally be the logged-in user's name
+      };
+
+      const response = await fetch(`http://localhost:5000/reviews/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newReview)
+        body: JSON.stringify(reviewToSubmit)
       });
 
       if (!response.ok) {
@@ -57,11 +73,16 @@ const BookDetails = () => {
       }
 
       const addedReview = await response.json();
-      setReviews(prev => [...prev, addedReview]);
+      
+      // Fetch the newly added review with user details
+      const reviewWithUser = await fetch(`http://localhost:5000/reviews/${addedReview.id}?_expand=user`)
+        .then(res => res.json());
+      
+      setReviews(prev => [...prev, reviewWithUser]);
       setNewReview({
-        title: '',
-        username: '',
-        description: ''
+        content: '',
+        rating: 5,
+        username: ''
       });
     } catch (err) {
       setError(err.message);
@@ -78,7 +99,7 @@ const BookDetails = () => {
         {/* Left Column - Book Cover */}
         <div className="book-cover-container">
           <img 
-            src={book.cover || '/default-book-cover.jpg'} 
+            src={book.cover_image_url || '/default-book-cover.jpg'} 
             alt={`${book.title} cover`} 
             className="book-cover" 
             onError={(e) => {
@@ -87,7 +108,7 @@ const BookDetails = () => {
             }}
           />
           <div className="quick-info">
-            <p><span className="info-label">Published:</span> {book.published || 'Unknown'}</p>
+            <p><span className="info-label">Author:</span> {book.author || 'Unknown'}</p>
             <p><span className="info-label">Pages:</span> {book.pages || 'Unknown'}</p>
             {book.rating && (
               <div className="rating-badge">
@@ -116,7 +137,7 @@ const BookDetails = () => {
 
           <div className="description-section">
             <h3>About This Book</h3>
-            <p>{book.description || 'No description available.'}</p>
+            <p>{book.synopsis || 'No description available.'}</p>
           </div>
         </div>
       </div>
@@ -127,11 +148,22 @@ const BookDetails = () => {
         
         {reviews.length > 0 ? (
           <div className="reviews-grid">
-            {reviews.map((review, index) => (
-              <div key={index} className="review-card">
-                <h4>{review.title}</h4>
-                <p className="review-text">{review.description}</p>
-                <p className="reviewer">— {review.username}</p>
+            {reviews.map((review) => (
+              <div key={review.id} className="review-card">
+                <div className="review-header">
+                  <h4>{review.user?.username || review.username || 'Anonymous'}</h4>
+                  <div className="review-rating">
+                    {Array(5).fill().map((_, i) => (
+                      <span key={i} className={i < review.rating ? 'star-filled' : 'star-empty'}>
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <p className="review-text">{review.content}</p>
+                <p className="review-date">
+                  {new Date(review.created_at).toLocaleDateString()}
+                </p>
               </div>
             ))}
           </div>
@@ -144,17 +176,6 @@ const BookDetails = () => {
           <form onSubmit={handleAddReview}>
             <div className="form-row">
               <div className="form-group">
-                <label>Review Title</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={newReview.title}
-                  onChange={handleInputChange}
-                  required
-                  maxLength={100}
-                />
-              </div>
-              <div className="form-group">
                 <label>Your Name</label>
                 <input
                   type="text"
@@ -165,17 +186,30 @@ const BookDetails = () => {
                   maxLength={50}
                 />
               </div>
+              <div className="form-group">
+                <label>Rating</label>
+                <select
+                  name="rating"
+                  value={newReview.rating}
+                  onChange={handleInputChange}
+                >
+                  {[1, 2, 3, 4, 5].map(num => (
+                    <option key={num} value={num}>{num} ★</option>
+                  ))}
+                </select>
+              </div>
             </div>
             
             <div className="form-group">
               <label>Your Review</label>
               <textarea
-                name="description"
-                value={newReview.description}
+                name="content"
+                value={newReview.content}
                 onChange={handleInputChange}
                 required
                 minLength={20}
                 maxLength={1000}
+                placeholder="Share your thoughts about this book..."
               />
             </div>
             
@@ -205,7 +239,191 @@ const BookDetails = () => {
           align-items: start;
         }
 
-        /* [Rest of your CSS styles...] */
+        .book-cover {
+          width: 100%;
+          height: auto;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          border-radius: 4px;
+        }
+
+        .quick-info {
+          margin-top: 1rem;
+          font-size: 0.9rem;
+        }
+
+        .info-label {
+          font-weight: bold;
+          color: #555;
+        }
+
+        .rating-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+          padding: 0.3rem 0.6rem;
+          background-color: #f8f8f8;
+          border-radius: 20px;
+        }
+
+        .stars {
+          color: #ffc107;
+        }
+
+        .rating-value {
+          font-weight: bold;
+        }
+
+        .book-details h1 {
+          margin: 0;
+          font-size: 2rem;
+          color: #222;
+        }
+
+        .book-details h2 {
+          margin: 0.5rem 0 1.5rem;
+          font-size: 1.2rem;
+          font-weight: normal;
+          color: #666;
+        }
+
+        .genres-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          margin: 1rem 0;
+        }
+
+        .genre-tag {
+          padding: 0.3rem 0.8rem;
+          background-color: #e0e0e0;
+          border-radius: 20px;
+          font-size: 0.8rem;
+        }
+
+        .description-section {
+          margin-top: 2rem;
+        }
+
+        .description-section h3 {
+          margin-bottom: 0.5rem;
+          font-size: 1.2rem;
+        }
+
+        .reviews-section {
+          margin-top: 2rem;
+          border-top: 1px solid #eee;
+          padding-top: 2rem;
+        }
+
+        .reviews-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 1.5rem;
+          margin: 2rem 0;
+        }
+
+        .review-card {
+          padding: 1.5rem;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          background-color: #fafafa;
+        }
+
+        .review-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.5rem;
+        }
+
+        .review-card h4 {
+          margin: 0;
+          font-size: 1rem;
+        }
+
+        .review-rating {
+          color: #ffc107;
+        }
+
+        .star-filled {
+          color: #ffc107;
+        }
+
+        .star-empty {
+          color: #ddd;
+        }
+
+        .review-text {
+          margin: 1rem 0;
+          line-height: 1.5;
+        }
+
+        .review-date {
+          font-size: 0.8rem;
+          color: #999;
+          text-align: right;
+        }
+
+        .add-review-form {
+          margin-top: 3rem;
+          padding: 2rem;
+          background-color: #f8f8f8;
+          border-radius: 8px;
+        }
+
+        .add-review-form h4 {
+          margin-top: 0;
+          margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .form-group {
+          flex: 1;
+          margin-bottom: 1rem;
+        }
+
+        .form-group label {
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+          width: 100%;
+          padding: 0.75rem;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-family: inherit;
+          font-size: 1rem;
+        }
+
+        .form-group textarea {
+          min-height: 150px;
+          resize: vertical;
+        }
+
+        .submit-review-btn {
+          background-color: #4a6fa5;
+          color: white;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 4px;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+
+        .submit-review-btn:hover {
+          background-color: #3a5a8a;
+        }
       `}</style>
     </div>
   );

@@ -1,46 +1,86 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/AdminPages.css';
+import '../../styles/AddBook.css';
 
 const AddBookClub = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    bookClubName: '',
-    description: '',
-    genres: '',
-    currentBookTitle: '',
-    currentBookAuthor: '',
-    currentBookCover: '',
+    name: '',
+    synopsis: '',
+    owner_id: 1, // You should get this from your auth system or state
+    current_book: {
+      title: '',
+      author: '',
+      cover: ''
+    }
   });
 
   const [errors, setErrors] = useState({});
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.bookClubName.trim()) newErrors.bookClubName = 'Book Club Name is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.currentBookTitle.trim()) newErrors.currentBookTitle = 'Current Book Title is required';
-    if (!formData.currentBookAuthor.trim()) newErrors.currentBookAuthor = 'Current Book Author is required';
+    if (!formData.name.trim()) newErrors.name = 'Book Club Name is required';
+    if (!formData.synopsis.trim()) newErrors.synopsis = 'Description is required';
+    if (!formData.current_book.title.trim()) newErrors.currentBookTitle = 'Current Book Title is required';
+    if (!formData.current_book.author.trim()) newErrors.currentBookAuthor = 'Current Book Author is required';
     return newErrors;
   };
 
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+    const { name, value } = e.target;
+    
+    // Handle nested current_book fields
+    if (name.startsWith('current_book.')) {
+      const field = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        current_book: {
+          ...prev.current_book,
+          [field]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    // Simulate API call to create book club
-    console.log('Creating book club:', formData);
 
-    // After successful creation, navigate back to book clubs list
-    navigate('/bookclubs');
+    try {
+      const response = await fetch('http://127.0.0.1:5000/bookclubs/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          synopsis: formData.synopsis,
+          owner_id: formData.owner_id, // This should come from your auth system
+          current_book: formData.current_book.title ? formData.current_book : null
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create book club');
+      }
+
+      const data = await response.json();
+      console.log('Book club created:', data);
+
+      // Redirect after success
+      navigate('/bookclubs');
+    } catch (error) {
+      console.error('Error:', error);
+      alert(error.message || 'Failed to create book club. Please try again.');
+    }
   };
 
   const handleCancel = () => {
@@ -50,80 +90,69 @@ const AddBookClub = () => {
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <div className="header-section">
+        <div className="form-header-container">
+          
           <h1>Add a New Book Club</h1>
-          <p>More Than a Club—It’s a Reading Family, lets keep Turning Pages, Sharing Stories.</p>
+          <p>More Than a Club—It's a Reading Family, lets keep Turning Pages, Sharing Stories.</p>
         </div>
         <h3>Create a New Book Club</h3>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="bookClubName">Book Club Name *</label>
+            <label htmlFor="name">Book Club Name *</label>
             <input
               type="text"
-              id="bookClubName"
-              name="bookClubName"
-              value={formData.bookClubName}
+              id="name"
+              name="name"
+              value={formData.name}
               onChange={handleChange}
             />
-            {errors.bookClubName && <span className="error">{errors.bookClubName}</span>}
+            {errors.name && <span className="error">{errors.name}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="description">Description *</label>
+            <label htmlFor="synopsis">Description *</label>
             <textarea
-              id="description"
-              name="description"
-              value={formData.description}
+              id="synopsis"
+              name="synopsis"
+              value={formData.synopsis}
               onChange={handleChange}
             />
-            {errors.description && <span className="error">{errors.description}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="genres">Genres (comma separated)</label>
-            <input
-              type="text"
-              id="genres"
-              name="genres"
-              value={formData.genres}
-              onChange={handleChange}
-              placeholder="e.g. Fiction, Mystery, Fantasy"
-            />
+            {errors.synopsis && <span className="error">{errors.synopsis}</span>}
           </div>
 
           <h4>Current Book Details</h4>
 
           <div className="form-group">
-            <label htmlFor="currentBookTitle">Title *</label>
+            <label htmlFor="current_book.title">Title *</label>
             <input
               type="text"
-              id="currentBookTitle"
-              name="currentBookTitle"
-              value={formData.currentBookTitle}
+              id="current_book.title"
+              name="current_book.title"
+              value={formData.current_book.title}
               onChange={handleChange}
             />
             {errors.currentBookTitle && <span className="error">{errors.currentBookTitle}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="currentBookAuthor">Author *</label>
+            <label htmlFor="current_book.author">Author *</label>
             <input
               type="text"
-              id="currentBookAuthor"
-              name="currentBookAuthor"
-              value={formData.currentBookAuthor}
+              id="current_book.author"
+              name="current_book.author"
+              value={formData.current_book.author}
               onChange={handleChange}
             />
             {errors.currentBookAuthor && <span className="error">{errors.currentBookAuthor}</span>}
           </div>
 
           <div className="form-group">
-            <label htmlFor="currentBookCover">Cover Image URL</label>
+            <label htmlFor="current_book.cover">Cover Image URL</label>
             <input
               type="text"
-              id="currentBookCover"
-              name="currentBookCover"
-              value={formData.currentBookCover}
+              id="current_book.cover"
+              name="current_book.cover"
+              value={formData.current_book.cover}
               onChange={handleChange}
               placeholder="http://example.com/cover.jpg"
             />

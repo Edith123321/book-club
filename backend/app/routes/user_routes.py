@@ -1,11 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from werkzeug.security import generate_password_hash
 from datetime import datetime
-from app.extensions import db  # ✅ CORRECT
+from app.extensions import db
 from app.models.user import User
 from typing import Dict, Any
+from ..middleware import token_required
 
-user_bp = Blueprint('users', __name__, url_prefix='/users')
+user_bp = Blueprint('users', __name__, url_prefix='/api/users')
 
 # Helper function for validation
 def validate_user_data(data: Dict[str, Any], is_update: bool = False) -> Dict[str, Any]:
@@ -51,6 +52,8 @@ def create_user():
         new_user = User(
             username=data['username'],
             email=data['email'],
+            bio=data.get('bio', ''),
+            avatar_url=data.get('avatar_url', 'default-avatar.png'),
             is_admin=data.get('is_admin', False),
             is_active=data.get('is_active', True)
         )
@@ -70,11 +73,12 @@ def get_users():
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
+        include_rels = request.args.get('include_relationships', 'false').lower() == 'true'
         
         users = User.query.paginate(page=page, per_page=per_page, error_out=False)
         
         return jsonify({
-            'users': [user.to_dict() for user in users.items],
+            'users': [user.to_dict(include_relationships=include_rels) for user in users.items],
             'total': users.total,
             'pages': users.pages,
             'current_page': users.page
@@ -97,8 +101,13 @@ def get_user(user_id):
 
 # UPDATE - Update user
 @user_bp.route('/<int:user_id>', methods=['PUT'])
-def update_user(user_id):
+@token_required
+def update_user(current_user, user_id):
     try:
+        # Only allow users to update their own profile unless admin
+        if current_user.id != user_id and not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized to update this user'}), 403
+        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -126,10 +135,15 @@ def update_user(user_id):
             user.email = data['email']
         if 'password' in data:
             user.password = data['password']
-        if 'is_admin' in data:
-            user.is_admin = data['is_admin']
-        if 'is_active' in data:
-            user.is_active = data['is_active']
+        if 'bio' in data:
+            user.bio = data['bio']
+        if 'avatar_url' in data:
+            user.avatar_url = data['avatar_url']
+        if current_user.is_admin:
+            if 'is_admin' in data:
+                user.is_admin = data['is_admin']
+            if 'is_active' in data:
+                user.is_active = data['is_active']
         
         db.session.commit()
         return jsonify(user.to_dict()), 200
@@ -139,8 +153,13 @@ def update_user(user_id):
 
 # DELETE - Delete user
 @user_bp.route('/<int:user_id>', methods=['DELETE'])
-def delete_user(user_id):
+@token_required
+def delete_user(current_user, user_id):
     try:
+        # Only allow users to delete themselves or admin to delete any user
+        if current_user.id != user_id and not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized to delete this user'}), 403
+        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -154,8 +173,12 @@ def delete_user(user_id):
 
 # Additional endpoints for user management
 @user_bp.route('/<int:user_id>/activate', methods=['PATCH'])
-def activate_user(user_id):
+@token_required
+def activate_user(current_user, user_id):
     try:
+        if not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -168,8 +191,12 @@ def activate_user(user_id):
         return jsonify({'error': 'Activation failed', 'details': str(e)}), 500
 
 @user_bp.route('/<int:user_id>/deactivate', methods=['PATCH'])
-def deactivate_user(user_id):
+@token_required
+def deactivate_user(current_user, user_id):
     try:
+        if not current_user.is_admin:
+            return jsonify({'error': 'Unauthorized'}), 403
+        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -181,33 +208,45 @@ def deactivate_user(user_id):
         db.session.rollback()
         return jsonify({'error': 'Deactivation failed', 'details': str(e)}), 500
 
-# Follow/unfollow endpoints
-@user_bp.route('/<int:user_id>/follow/<int:target_id>', methods=['POST'])
-def follow_user(user_id, target_id):
-    try:
-        user = User.query.get(user_id)
-        target = User.query.get(target_id)
-        
-        if not user or not target:
-            return jsonify({'error': 'User not found'}), 404
-        
-        if user.follow(target):
-            return jsonify({'message': f'Now following {target.username}'}), 200
-        return jsonify({'message': 'Already following or cannot follow yourself'}), 400
-    except Exception as e:
-        return jsonify({'error': 'Follow action failed', 'details': str(e)}), 500
+# Serve default avatar
+@user_bp.route('/default-avatar', methods=['GET'])
+def get_default_avatar():
+    return send_from_directory('static', 'default-avatar.png')
 
-@user_bp.route('/<int:user_id>/unfollow/<int:target_id>', methods=['POST'])
-def unfollow_user(user_id, target_id):
+# Get user's followers
+@user_bp.route('/<int:user_id>/followers', methods=['GET'])
+def get_user_followers(user_id):
     try:
-        user = User.query.get(user_id)
-        target = User.query.get(target_id)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
         
-        if not user or not target:
-            return jsonify({'error': 'User not found'}), 404
-        
-        if user.unfollow(target):
-            return jsonify({'message': f'Unfollowed {target.username}'}), 200
-        return jsonify({'message': 'Not following this user'}), 400
+        user = User.query.get_or_404(user_id)
+        followers_paginated = user.followers.paginate(page=page, per_page=per_page, error_out=False)
+
+        return jsonify({
+            'followers': [follower.to_dict() for follower in followers_paginated.items],
+            'total': followers_paginated.total,
+            'pages': followers_paginated.pages,
+            'current_page': followers_paginated.page
+        }), 200
     except Exception as e:
-        return jsonify({'error': 'Unfollow action failed', 'details': str(e)}), 500
+        return jsonify({'error': 'Failed to fetch followers', 'details': str(e)}), 500
+
+# Get users followed by a user
+@user_bp.route('/<int:user_id>/following', methods=['GET'])
+def get_user_following(user_id):
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
+        user = User.query.get_or_404(user_id)
+        following_paginated = user.following.paginate(page=page, per_page=per_page, error_out=False)
+
+        return jsonify({
+            'following': [followed.to_dict() for followed in following_paginated.items],
+            'total': following_paginated.total,
+            'pages': following_paginated.pages,
+            'current_page': following_paginated.page
+        }), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch following', 'details': str(e)}), 500
