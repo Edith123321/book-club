@@ -19,8 +19,8 @@ from sqlalchemy import MetaData
 
 
 
-
 logger = logging.getLogger(__name__)
+
 
 
 def clear_database():
@@ -72,6 +72,8 @@ def clear_database():
        return False
 
 
+
+
 def seed_users():
    """Seed 10 test users with realistic data"""
    print("👤 Creating test users...")
@@ -87,7 +89,8 @@ def seed_users():
            is_active=True,
            is_admin=True,
            bio='System administrator and book enthusiast',
-           avatar_url='https://example.com/avatars/admin.jpg'
+           avatar_url='https://avatar.iran.liara.run/public/16'
+
        ),
        User(
            username='bookworm',
@@ -99,7 +102,8 @@ def seed_users():
            last_login=datetime.now() - timedelta(days=2),
            is_active=True,
            bio='Voracious reader of all genres',
-           avatar_url='https://example.com/avatars/bookworm.jpg'
+           avatar_url='https://avatar.iran.liara.run/public/36'
+
        ),
        User(
            username='literaturelover',
@@ -111,7 +115,8 @@ def seed_users():
            last_login=datetime.now() - timedelta(days=5),
            is_active=True,
            bio='Classic literature specialist',
-           avatar_url='https://example.com/avatars/literature.jpg'
+           avatar_url='https://avatar.iran.liara.run/public/94'
+
        ),
        User(
            username='scififan',
@@ -123,7 +128,9 @@ def seed_users():
            last_login=datetime.now() - timedelta(hours=12),
            is_active=True,
            bio='Science fiction and fantasy lover',
-           avatar_url='https://example.com/avatars/scifi.jpg'
+
+           avatar_url='https://avatar.iran.liara.run/public/95'
+
        ),
        User(
            username='mysteryreader',
@@ -133,7 +140,9 @@ def seed_users():
            last_login=datetime.now() - timedelta(days=1),
            is_active=True,
            bio='Always trying to solve the mystery first',
-           avatar_url='https://example.com/avatars/mystery.jpg'
+
+           avatar_url='https://avatar.iran.liara.run/public/72'
+
        ),
        User(
            username='historybuff',
@@ -143,7 +152,9 @@ def seed_users():
            last_login=datetime.now() - timedelta(days=3),
            is_active=True,
            bio='Historical fiction and non-fiction reader',
-           avatar_url='https://example.com/avatars/history.jpg'
+
+           avatar_url='https://avatar.iran.liara.run/public/26'
+
        ),
        User(
            username='poetrylover',
@@ -155,7 +166,10 @@ def seed_users():
            last_login=datetime.now() - timedelta(hours=6),
            is_active=True,
            bio='Contemporary and classic poetry',
-           avatar_url='https://example.com/avatars/poetry.jpg'
+
+           avatar_url='https://avatar.iran.liara.run/public/8'
+
+
        ),
        User(
            username='fantasyfan',
@@ -167,7 +181,10 @@ def seed_users():
            last_login=datetime.now() - timedelta(days=4),
            is_active=True,
            bio='Epic fantasy and worldbuilding enthusiast',
-           avatar_url='https://example.com/avatars/fantasy.jpg'
+
+           avatar_url='https://avatar.iran.liara.run/public/71'
+
+
        ),
        User(
            username='biographyreader',
@@ -177,7 +194,9 @@ def seed_users():
            last_login=datetime.now() - timedelta(hours=3),
            is_active=True,
            bio='Fascinated by people\'s life stories',
-           avatar_url='https://example.com/avatars/biography.jpg'
+
+           avatar_url='https://avatar.iran.liara.run/public/61'
+
        ),
        User(
            username='youngadult',
@@ -189,7 +208,10 @@ def seed_users():
            last_login=datetime.now(),
            is_active=True,
            bio='Young adult fiction specialist',
-           avatar_url='https://example.com/avatars/ya.jpg'
+
+           avatar_url='https://avatar.iran.liara.run/public/61'
+
+
        )
    ]
    db.session.add_all(users)
@@ -240,7 +262,8 @@ def seed_books():
            genres=["Classic", "Romance"],
            rating=4.28,
            synopsis="The romantic clash between Elizabeth Bennet and the proud Mr. Darcy.",
-           cover_image_url= "https://i.ebayimg.com/images/g/~WkAAOSwanRhXs5S/s-l960.webp",
+           cover_image_url= "https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
+
            date_published=datetime(1813, 1, 28),
            pages=279,
            language="English"
@@ -251,7 +274,9 @@ def seed_books():
            genres=["Classic", "Literary Fiction"],
            rating=3.93,
            synopsis="A portrait of the Jazz Age and the American Dream's corruption.",
-           cover_image_url="https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
+
+           cover_image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/The_Great_Gatsby_Cover_1925_Retouched.jpg/960px-The_Great_Gatsby_Cover_1925_Retouched.jpg",
+
            date_published=datetime(1925, 4, 10),
            pages=180,
            language="English"
@@ -262,7 +287,8 @@ def seed_books():
            genres=["Fantasy", "Adventure"],
            rating=4.28,
            synopsis="The adventure of Bilbo Baggins, a hobbit who embarks on an unexpected journey.",
-           cover_image_url="https://booksandyou.in/cdn/shop/files/TheCatcherintheRye_1.webp?v=1714498776&width=713",
+           cover_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMqejpZctU2XaQl_511Axfo94F2xLRpS9gig&s",
+
            date_published=datetime(1937, 9, 21),
            pages=310,
            language="English"
@@ -273,7 +299,9 @@ def seed_books():
            genres=["Dystopian", "Science Fiction"],
            rating=3.99,
            synopsis="A dystopian novel set in a futuristic World State with genetically modified citizens.",
-           cover_image_url="https://cdn.shoplightspeed.com/shops/611345/files/5297743/mariner-books-the-lord-of-the-rings-omnibus-1-3.jpg",
+
+           cover_image_url="https://i.ebayimg.com/images/g/gWwAAeSwh5JoElb0/s-l1600.webp",
+
            date_published=datetime(1932, 1, 1),
            pages=288,
            language="English"
@@ -284,7 +312,9 @@ def seed_books():
            genres=["Classic", "Coming-of-Age"],
            rating=3.81,
            synopsis="Holden Caulfield's peculiar odyssey through New York streets.",
-           cover_image_url="https://i.ebayimg.com/images/g/gWwAAeSwh5JoElb0/s-l1600.webp",
+
+           cover_image_url="https://booksandyou.in/cdn/shop/files/TheCatcherintheRye_1.webp?v=1714498776&width=713",
+
            date_published=datetime(1951, 7, 16),
            pages=234,
            language="English"
@@ -295,7 +325,9 @@ def seed_books():
            genres=["Fantasy", "Adventure"],
            rating=4.52,
            synopsis="The epic tale of Frodo Baggins and his quest to destroy the One Ring.",
-           cover_image_url="https://i.ebayimg.com/images/g/uRoAAOSwFTpi2ke5/s-l1600.webp",
+
+           cover_image_url="https://cdn.shoplightspeed.com/shops/611345/files/5297743/mariner-books-the-lord-of-the-rings-omnibus-1-3.jpg",
+
            date_published=datetime(1954, 7, 29),
            pages=1178,
            language="English"
@@ -457,6 +489,7 @@ def seed_book_clubs(users):
    return clubs
 
 
+
 def seed_memberships(users, clubs):
    """Seed club memberships with realistic join dates"""
    print("🧾 Creating Memberships...")
@@ -489,6 +522,9 @@ def seed_memberships(users, clubs):
    return memberships
 
 
+
+
+
 def seed_follows(users):
    """Seed follower relationships between users"""
    print("🤝 Creating follows...")
@@ -512,6 +548,9 @@ def seed_follows(users):
        db.session.execute(follows_table.insert(), follows_data)
        db.session.commit()
    return follows_data
+
+
+
 
 
 def seed_invites(users, clubs):
@@ -573,6 +612,7 @@ def seed_meetings(clubs):
    return meetings
 
 
+
 def seed_summaries(users, books, clubs):
    """Seed book summaries"""
    print("✍ Adding summaries...")
@@ -596,6 +636,7 @@ def seed_summaries(users, books, clubs):
    db.session.add_all(summaries)
    db.session.commit()
    return summaries
+
 
 
 def seed_reviews(users, books):
@@ -623,6 +664,7 @@ def seed_reviews(users, books):
    return reviews
 
 
+
 def seed_database():
    """Main function to seed all database tables"""
    app = create_app()
@@ -630,8 +672,6 @@ def seed_database():
        if not clear_database():
            print("❌ Database clearing failed - aborting seed")
            return
-
-
        try:
            # Seed core data
            users = seed_users()
@@ -657,7 +697,6 @@ def seed_database():
            print(f"  - {len(summaries)} summaries")
            print(f"  - {len(reviews)} reviews")
 
-
        except Exception as e:
            db.session.rollback()
            print(f"❌ Seeding failed: {e}")
@@ -666,4 +705,5 @@ def seed_database():
 
 if __name__ == "__main__":
    seed_database()
+
 
