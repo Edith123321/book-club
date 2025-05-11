@@ -42,7 +42,7 @@ def register_blueprints(app):
     from app.routes.membership_routes import membership_bp
     from app.routes.invite_routes import invite_bp
     from app.routes.following_routes import following_bp
-    from app.routes.profile_routes import profile_bp
+    #from app.routes.profile_routes import profile_bp
 
     app.register_blueprint(book_bp, url_prefix='/books')
     app.register_blueprint(summary_bp, url_prefix='/summaries')
@@ -55,7 +55,7 @@ def register_blueprints(app):
     app.register_blueprint(membership_bp, url_prefix='/memberships')
     app.register_blueprint(invite_bp, url_prefix='/invites')
     app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(profile_bp)
+   # app.register_blueprint(profile_bp)
 
     @app.route('/api/health')
     def health_check():

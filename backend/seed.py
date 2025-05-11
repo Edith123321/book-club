@@ -31,7 +31,7 @@ def clear_database():
        
         # Define tables in proper deletion order to respect foreign keys
         tables_to_clear = [
-            'invites', 'reviews', 'summaries',
+            'invite', 'reviews', 'summaries',
             'meetings', 'follows', 'memberships',
             'bookclubs', 'books', 'users'
         ]
@@ -202,7 +202,7 @@ def seed_books():
             genres=["Dystopian", "Political Fiction"],
             rating=4.17,
             synopsis="A dystopian novel set in a totalitarian regime where even thoughts are controlled.",
-            cover_image_url="https://example.com/covers/1984.jpg",
+            cover_image_url="https://m.media-amazon.com/images/I/71kXYs4tCvL._AC_UF1000,1000_QL80_.jpg",
             date_published=datetime(1949, 6, 8),
             pages=328,
             language="English"
@@ -213,7 +213,7 @@ def seed_books():
             genres=["Classic", "Southern Gothic"],
             rating=4.28,
             synopsis="A story of racial injustice and moral growth in the American South.",
-            cover_image_url="https://example.com/covers/mockingbird.jpg",
+            cover_image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg/1200px-To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
             date_published=datetime(1960, 7, 11),
             pages=281,
             language="English"
@@ -224,7 +224,7 @@ def seed_books():
             genres=["Science Fiction", "Space Opera"],
             rating=4.25,
             synopsis="A science fiction epic about politics, religion, and ecology on a desert planet.",
-            cover_image_url="https://example.com/covers/dune.jpg",
+            cover_image_url="https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?fit=720%2C720&ssl=1",
             date_published=datetime(1965, 8, 1),
             pages=412,
             language="English"
@@ -235,7 +235,7 @@ def seed_books():
             genres=["Classic", "Romance"],
             rating=4.28,
             synopsis="The romantic clash between Elizabeth Bennet and the proud Mr. Darcy.",
-            cover_image_url="https://example.com/covers/pride.jpg",
+            cover_image_url= "https://i.ebayimg.com/images/g/~WkAAOSwanRhXs5S/s-l960.webp",
             date_published=datetime(1813, 1, 28),
             pages=279,
             language="English"
@@ -246,7 +246,7 @@ def seed_books():
             genres=["Classic", "Literary Fiction"],
             rating=3.93,
             synopsis="A portrait of the Jazz Age and the American Dream's corruption.",
-            cover_image_url="https://example.com/covers/gatsby.jpg",
+            cover_image_url="https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
             date_published=datetime(1925, 4, 10),
             pages=180,
             language="English"
@@ -257,7 +257,7 @@ def seed_books():
             genres=["Fantasy", "Adventure"],
             rating=4.28,
             synopsis="The adventure of Bilbo Baggins, a hobbit who embarks on an unexpected journey.",
-            cover_image_url="https://example.com/covers/hobbit.jpg",
+            cover_image_url="https://booksandyou.in/cdn/shop/files/TheCatcherintheRye_1.webp?v=1714498776&width=713",
             date_published=datetime(1937, 9, 21),
             pages=310,
             language="English"
@@ -268,7 +268,7 @@ def seed_books():
             genres=["Dystopian", "Science Fiction"],
             rating=3.99,
             synopsis="A dystopian novel set in a futuristic World State with genetically modified citizens.",
-            cover_image_url="https://example.com/covers/brave.jpg",
+            cover_image_url="https://cdn.shoplightspeed.com/shops/611345/files/5297743/mariner-books-the-lord-of-the-rings-omnibus-1-3.jpg",
             date_published=datetime(1932, 1, 1),
             pages=288,
             language="English"
@@ -279,7 +279,7 @@ def seed_books():
             genres=["Classic", "Coming-of-Age"],
             rating=3.81,
             synopsis="Holden Caulfield's peculiar odyssey through New York streets.",
-            cover_image_url="https://example.com/covers/catcher.jpg",
+            cover_image_url="https://i.ebayimg.com/images/g/gWwAAeSwh5JoElb0/s-l1600.webp",
             date_published=datetime(1951, 7, 16),
             pages=234,
             language="English"
@@ -290,7 +290,7 @@ def seed_books():
             genres=["Fantasy", "Adventure"],
             rating=4.52,
             synopsis="The epic tale of Frodo Baggins and his quest to destroy the One Ring.",
-            cover_image_url="https://example.com/covers/lotr.jpg",
+            cover_image_url="https://i.ebayimg.com/images/g/uRoAAOSwFTpi2ke5/s-l1600.webp",
             date_published=datetime(1954, 7, 29),
             pages=1178,
             language="English"
@@ -301,7 +301,7 @@ def seed_books():
             genres=["Fantasy", "Philosophical Fiction"],
             rating=3.86,
             synopsis="The story of Santiago, an Andalusian shepherd boy who dreams of finding treasure.",
-            cover_image_url="https://example.com/covers/alchemist.jpg",
+            cover_image_url="https://i.ebayimg.com/images/g/uRoAAOSwFTpi2ke5/s-l1600.webp",
             date_published=datetime(1988, 1, 1),
             pages=208,
             language="English"
@@ -323,7 +323,7 @@ def seed_book_clubs(users):
                 "title": "Pride and Prejudice",
                 "author": "Jane Austen",
                 "progress": 45,
-                "cover": "https://example.com/covers/pride.jpg",
+                "cover": "https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
                 "pagesRead": 125
             },
             created_at=datetime.now() - timedelta(days=90)
@@ -336,7 +336,7 @@ def seed_book_clubs(users):
                 "title": "Dune",
                 "author": "Frank Herbert",
                 "progress": 67,
-                "cover": "https://example.com/covers/dune.jpg",
+                "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?w=720&ssl=1",
                 "pagesRead": 276
             },
             created_at=datetime.now() - timedelta(days=80)
@@ -349,7 +349,7 @@ def seed_book_clubs(users):
                 "title": "The Girl with the Dragon Tattoo",
                 "author": "Stieg Larsson",
                 "progress": 52,
-                "cover": "https://example.com/covers/dragon.jpg",
+                "cover": "https://i.ebayimg.com/images/g/Z0cAAeSwOLZoFM3e/s-l1600.webp",
                 "pagesRead": 210
             },
             created_at=datetime.now() - timedelta(days=70)
@@ -362,7 +362,7 @@ def seed_book_clubs(users):
                 "title": "The Name of the Wind",
                 "author": "Patrick Rothfuss",
                 "progress": 38,
-                "cover": "https://example.com/covers/wind.jpg",
+                "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/The-Book-Thief-by-Markus-Zusak.jpeg?fit=1024%2C1024&ssl=1",
                 "pagesRead": 180
             },
             created_at=datetime.now() - timedelta(days=60)
@@ -375,7 +375,7 @@ def seed_book_clubs(users):
                 "title": "The Book Thief",
                 "author": "Markus Zusak",
                 "progress": 72,
-                "cover": "https://example.com/covers/thief.jpg",
+                "cover": "https://i.ebayimg.com/images/g/PWQAAeSwMt5oGdDv/s-l1600.webp",
                 "pagesRead": 320
             },
             created_at=datetime.now() - timedelta(days=50)
@@ -388,7 +388,7 @@ def seed_book_clubs(users):
                 "title": "Sapiens",
                 "author": "Yuval Noah Harari",
                 "progress": 29,
-                "cover": "https://example.com/covers/sapiens.jpg",
+                "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/11/Milk-and-Honey-By-Rupi-Kaur.jpeg?w=768&ssl=1",
                 "pagesRead": 90
             },
             created_at=datetime.now() - timedelta(days=40)
@@ -401,7 +401,7 @@ def seed_book_clubs(users):
                 "title": "Milk and Honey",
                 "author": "Rupi Kaur",
                 "progress": 85,
-                "cover": "https://example.com/covers/milk.jpg",
+                "cover": "https://cdn.waterstones.com/bookjackets/large/9781/4071/9781407132082.jpg",
                 "pagesRead": 120
             },
             created_at=datetime.now() - timedelta(days=30)
@@ -414,7 +414,7 @@ def seed_book_clubs(users):
                 "title": "The Hunger Games",
                 "author": "Suzanne Collins",
                 "progress": 63,
-                "cover": "https://example.com/covers/hunger.jpg",
+                "cover": "https://i.ebayimg.com/images/g/jOsAAOSwXWBmAnJo/s-l960.webp",
                 "pagesRead": 250
             },
             created_at=datetime.now() - timedelta(days=20)
@@ -427,7 +427,7 @@ def seed_book_clubs(users):
                 "title": "Atomic Habits",
                 "author": "James Clear",
                 "progress": 47,
-                "cover": "https://example.com/covers/atomic.jpg",
+                "cover": "https://i.ebayimg.com/images/g/~IcAAOSwgQJgI7St/s-l960.webp",
                 "pagesRead": 130
             },
             created_at=datetime.now() - timedelta(days=10)
@@ -440,7 +440,7 @@ def seed_book_clubs(users):
                 "title": "Normal People",
                 "author": "Sally Rooney",
                 "progress": 55,
-                "cover": "https://example.com/covers/normal.jpg",
+                "cover": "https://i.ebayimg.com/images/g/AWgAAeSwfMxoAtrm/s-l1600.webp",
                 "pagesRead": 180
             },
             created_at=datetime.now() - timedelta(days=5)

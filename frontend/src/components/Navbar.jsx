@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/Navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaSignOutAlt, FaCog, FaPen, FaSignInAlt } from "react-icons/fa";
-import md5 from 'md5'; // For Gravatar hashing
+import md5 from 'md5';
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -46,19 +46,8 @@ const Navbar = () => {
     localStorage.removeItem('userData');
     setUser(null);
     setIsDropdownOpen(false);
-    window.dispatchEvent(new Event('authChange')); // Notify other components
+    window.dispatchEvent(new Event('authChange'));
     navigate("/log-in");
-  };
-
-  // Get user avatar or fallback to default
-  const getUserAvatar = () => {
-    if (user?.avatar_url) return user.avatar_url;
-    if (user?.email) {
-      // Generate Gravatar URL if email exists
-      const hash = md5(user.email.trim().toLowerCase());
-      return `https://www.gravatar.com/avatar/${hash}?d=identicon`;
-    }
-    return '/default-avatar.png';
   };
 
   return (
@@ -86,21 +75,12 @@ const Navbar = () => {
         {user ? (
           <div className="user-menu-container" ref={dropdownRef}>
             <div 
-              className="user-avatar" 
+              className="user-icon-wrapper"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               aria-haspopup="true"
               aria-expanded={isDropdownOpen}
             >
-              <img 
-                src={getUserAvatar()} 
-                alt="User Avatar"
-                className="avatar-image"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/default-avatar.png';
-                }}
-              />
-              <span className="username">{user.username || user.email.split('@')[0]}</span>
+              <FaUserCircle className="user-profile-icon" size={28} />
             </div>
             
             {isDropdownOpen && (

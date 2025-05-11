@@ -14,7 +14,8 @@ import MyBooks from './pages/users/MyBooks';
 import LogIn from './pages/users/LogIn';
 import UserProfile from './components/UserProfile';
 import ScheduleMeeting from './pages/users/ScheduleMeeting';
-
+import EditProfile from './components/EditProfile';
+import Settings from './components/Settings';
 // Admin pages
 import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -62,7 +63,8 @@ const App = () => {
       <Route path="/books/:id/edit-book" element={<EditBook />} />
       <Route path="/profile/:userId" element={<UserProfile />} />
       <Route path="/my-books" element={<MyBooks />} />
-
+      <Route path="/profile/edit" element={<EditProfile />} />      
+      <Route path="/settings" element={<Settings />} /> 
       {/* Protected Profile Route */}
       <Route 
         path="/profile" 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../styles/login.css';
 import { FaGoogle, FaFacebook, FaApple, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaUser } from 'react-icons/fa';
 import { BsPeople, BsBook, BsCalendarEvent, BsChatSquareText } from 'react-icons/bs';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  // State declarations
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -24,6 +25,14 @@ const Login = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const [errors, setErrors] = useState({});
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   // Helper functions
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
@@ -60,7 +69,7 @@ const Login = () => {
     return newErrors;
   };
 
-  // API call handlers
+  // API call handler
   const makeApiCall = async (url, method, body) => {
     try {
       const response = await fetch(url, {
@@ -83,7 +92,7 @@ const Login = () => {
     }
   };
 
-  // Form submission handlers
+  // Sign In handler
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateSignInForm();
@@ -112,8 +121,11 @@ const Login = () => {
       
       if (rememberMe) localStorage.setItem('rememberMe', 'true');
 
+      // Trigger auth change event for Navbar and other components
       window.dispatchEvent(new Event('authChange'));
-      window.location.href = data.is_admin ? '/admin/dashboard' : '/';
+      
+      // Redirect based on user role
+      navigate(data.is_admin ? '/admin/dashboard' : '/');
     } catch (error) {
       setErrors({ ...errors, apiError: error.message });
     } finally {
@@ -121,6 +133,7 @@ const Login = () => {
     }
   };
 
+  // Registration handler
   const handleCreateAccountSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateCreateAccountForm();
@@ -141,10 +154,7 @@ const Login = () => {
         newPassword: newPassword
       };
 
-      console.log('Sending registration data:', registrationData); // Debug log
-
       const data = await makeApiCall('http://localhost:5000/auth/register', 'POST', registrationData);
-      console.log('Registration successful:', data);
       
       // Auto-login after registration
       const loginData = await makeApiCall('http://localhost:5000/auth/login', 'POST', {
@@ -161,8 +171,9 @@ const Login = () => {
         lastName: lastName.trim()
       }));
       
+      // Trigger auth change event
       window.dispatchEvent(new Event('authChange'));
-      window.location.href = '/';
+      navigate('/');
     } catch (error) {
       console.error('Registration error:', error);
       setErrors({ ...errors, apiError: error.message });
