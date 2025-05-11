@@ -14,135 +14,623 @@ from sqlalchemy import text, inspect
 import traceback
 from app.utils import generate_invite_token
 import random
+import logging
+from sqlalchemy import MetaData
+
+
+
+
+logger = logging.getLogger(__name__)
+
 
 def clear_database():
-    print("🧹 Clearing existing data...")
-    try:
-        # Alternative approach without session_replication_role
-        # Get table names in proper deletion order
-        inspector = inspect(db.engine)
-        table_names = inspector.get_table_names()
-        
-        # Manually order tables based on dependencies
-        ordered_tables = tables = ['invites', 'reviews', 'summaries', 'books','meetings', 'follows', 'memberships', 'bookclubs', 'users']
+   """Clear all data from database while respecting foreign key constraints"""
+   print("🧹 Clearing existing data...")
+ 
+   try:
+       # Get metadata and reflect all tables
+       meta = MetaData()
+       meta.reflect(bind=db.engine)
+     
+       # Define tables in proper deletion order to respect foreign keys
+       tables_to_clear = [
+           'invite', 'reviews', 'summaries',
+           'meetings', 'follows', 'memberships',
+           'bookclubs', 'books', 'users'
+       ]
+     
+       # Disable foreign key checks (alternative approach)
+       db.session.execute(text('SET CONSTRAINTS ALL DEFERRED'))
+       db.session.commit()
+     
+       # Clear each table
+       for table_name in tables_to_clear:
+           if table_name not in meta.tables:
+               print(f"⚠ Table {table_name} not found - skipping")
+               continue
+         
+           print(f"  Clearing {table_name}...")
+           db.session.execute(text(f'DELETE FROM {table_name}'))
+           db.session.commit()
+     
+       print("✅ Database cleared successfully")
+       return True
+     
+   except Exception as e:
+       db.session.rollback()
+       print(f"❌ Error clearing database: {e}")
+       traceback.print_exc()
+       return False
+     
+       # Ensure foreign key checks are re-enabled
+       try:
+           db.session.execute(text('SET session_replication_role = DEFAULT;'))
+           db.session.commit()
+       except Exception as e:
+           print(f"⚠ Could not re-enable constraints: {e}")
+         
+       return False
 
-        
-        # Verify all tables exist
-        for table in ordered_tables:
-            if table not in table_names:
-                raise ValueError(f"Table {table} not found in database")
-        
-        # Disable triggers temporarily if possible (safer than session_replication_role)
-        try:
-            db.session.execute(text('SET CONSTRAINTS ALL DEFERRED'))
-        except:
-            pass  # Skip if not supported
-        
-        # Delete in proper order
-        for table in ordered_tables:
-            db.session.execute(text(f'DELETE FROM {table}'))
-        
-        db.session.commit()
-        return True
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"⚠ Error clearing data: {e}")
-        traceback.print_exc()
-        return False
+
+def seed_users():
+   """Seed 10 test users with realistic data"""
+   print("👤 Creating test users...")
+   users = [
+       User(
+           username='admin',
+           first_name='Caroline',
+           last_name='Syowai',
+           email='admin@bookclub.com',
+           password='admin123',  # Will be hashed automatically
+           created_at=datetime.now() - timedelta(days=100),
+           last_login=datetime.now(),
+           is_active=True,
+           is_admin=True,
+           bio='System administrator and book enthusiast',
+           avatar_url='https://example.com/avatars/admin.jpg'
+       ),
+       User(
+           username='bookworm',
+           first_name='Caroline',
+           last_name='Syowai',
+           email='bookworm@example.com',
+           password='readmore123',
+           created_at=datetime.now() - timedelta(days=90),
+           last_login=datetime.now() - timedelta(days=2),
+           is_active=True,
+           bio='Voracious reader of all genres',
+           avatar_url='https://example.com/avatars/bookworm.jpg'
+       ),
+       User(
+           username='literaturelover',
+           first_name='Caroline',
+           last_name='Syowai',
+           email='litlover@example.com',
+           password='classics456',
+           created_at=datetime.now() - timedelta(days=80),
+           last_login=datetime.now() - timedelta(days=5),
+           is_active=True,
+           bio='Classic literature specialist',
+           avatar_url='https://example.com/avatars/literature.jpg'
+       ),
+       User(
+           username='scififan',
+           email='scifi@example.com',
+           first_name='Caroline',
+           last_name='Syowai',
+           password='spacetravel1',
+           created_at=datetime.now() - timedelta(days=70),
+           last_login=datetime.now() - timedelta(hours=12),
+           is_active=True,
+           bio='Science fiction and fantasy lover',
+           avatar_url='https://example.com/avatars/scifi.jpg'
+       ),
+       User(
+           username='mysteryreader',
+           email='mystery@example.com',
+           password='whodunit789',
+           created_at=datetime.now() - timedelta(days=60),
+           last_login=datetime.now() - timedelta(days=1),
+           is_active=True,
+           bio='Always trying to solve the mystery first',
+           avatar_url='https://example.com/avatars/mystery.jpg'
+       ),
+       User(
+           username='historybuff',
+           email='history@example.com',
+           password='pasttimes2',
+           created_at=datetime.now() - timedelta(days=50),
+           last_login=datetime.now() - timedelta(days=3),
+           is_active=True,
+           bio='Historical fiction and non-fiction reader',
+           avatar_url='https://example.com/avatars/history.jpg'
+       ),
+       User(
+           username='poetrylover',
+           email='poetry@example.com',
+           first_name='Caroline',
+           last_name='Syowai',
+           password='verses456',
+           created_at=datetime.now() - timedelta(days=40),
+           last_login=datetime.now() - timedelta(hours=6),
+           is_active=True,
+           bio='Contemporary and classic poetry',
+           avatar_url='https://example.com/avatars/poetry.jpg'
+       ),
+       User(
+           username='fantasyfan',
+           email='fantasy@example.com',
+           first_name='Caroline',
+           last_name='Syowai',
+           password='dragons123',
+           created_at=datetime.now() - timedelta(days=30),
+           last_login=datetime.now() - timedelta(days=4),
+           is_active=True,
+           bio='Epic fantasy and worldbuilding enthusiast',
+           avatar_url='https://example.com/avatars/fantasy.jpg'
+       ),
+       User(
+           username='biographyreader',
+           email='bio@example.com',
+           password='lifestories7',
+           created_at=datetime.now() - timedelta(days=20),
+           last_login=datetime.now() - timedelta(hours=3),
+           is_active=True,
+           bio='Fascinated by people\'s life stories',
+           avatar_url='https://example.com/avatars/biography.jpg'
+       ),
+       User(
+           username='youngadult',
+           email='ya@example.com',
+           first_name='Caroline',
+           last_name='Syowai',
+           password='teenreads8',
+           created_at=datetime.now() - timedelta(days=10),
+           last_login=datetime.now(),
+           is_active=True,
+           bio='Young adult fiction specialist',
+           avatar_url='https://example.com/avatars/ya.jpg'
+       )
+   ]
+   db.session.add_all(users)
+   db.session.commit()
+   return users
+
+
+def seed_books():
+   """Seed 10 books with complete details"""
+   print("📖 Adding books...")
+   books = [
+       Book(
+           title="1984",
+           author="George Orwell",
+           genres=["Dystopian", "Political Fiction"],
+           rating=4.17,
+           synopsis="A dystopian novel set in a totalitarian regime where even thoughts are controlled.",
+           cover_image_url="https://m.media-amazon.com/images/I/71kXYs4tCvL._AC_UF1000,1000_QL80_.jpg",
+           date_published=datetime(1949, 6, 8),
+           pages=328,
+           language="English"
+       ),
+       Book(
+           title="To Kill a Mockingbird",
+           author="Harper Lee",
+           genres=["Classic", "Southern Gothic"],
+           rating=4.28,
+           synopsis="A story of racial injustice and moral growth in the American South.",
+           cover_image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg/1200px-To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
+           date_published=datetime(1960, 7, 11),
+           pages=281,
+           language="English"
+       ),
+       Book(
+           title="Dune",
+           author="Frank Herbert",
+           genres=["Science Fiction", "Space Opera"],
+           rating=4.25,
+           synopsis="A science fiction epic about politics, religion, and ecology on a desert planet.",
+           cover_image_url="https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?fit=720%2C720&ssl=1",
+           date_published=datetime(1965, 8, 1),
+           pages=412,
+           language="English"
+       ),
+       Book(
+           title="Pride and Prejudice",
+           author="Jane Austen",
+           genres=["Classic", "Romance"],
+           rating=4.28,
+           synopsis="The romantic clash between Elizabeth Bennet and the proud Mr. Darcy.",
+           cover_image_url= "https://i.ebayimg.com/images/g/~WkAAOSwanRhXs5S/s-l960.webp",
+           date_published=datetime(1813, 1, 28),
+           pages=279,
+           language="English"
+       ),
+       Book(
+           title="The Great Gatsby",
+           author="F. Scott Fitzgerald",
+           genres=["Classic", "Literary Fiction"],
+           rating=3.93,
+           synopsis="A portrait of the Jazz Age and the American Dream's corruption.",
+           cover_image_url="https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
+           date_published=datetime(1925, 4, 10),
+           pages=180,
+           language="English"
+       ),
+       Book(
+           title="The Hobbit",
+           author="J.R.R. Tolkien",
+           genres=["Fantasy", "Adventure"],
+           rating=4.28,
+           synopsis="The adventure of Bilbo Baggins, a hobbit who embarks on an unexpected journey.",
+           cover_image_url="https://booksandyou.in/cdn/shop/files/TheCatcherintheRye_1.webp?v=1714498776&width=713",
+           date_published=datetime(1937, 9, 21),
+           pages=310,
+           language="English"
+       ),
+       Book(
+           title="Brave New World",
+           author="Aldous Huxley",
+           genres=["Dystopian", "Science Fiction"],
+           rating=3.99,
+           synopsis="A dystopian novel set in a futuristic World State with genetically modified citizens.",
+           cover_image_url="https://cdn.shoplightspeed.com/shops/611345/files/5297743/mariner-books-the-lord-of-the-rings-omnibus-1-3.jpg",
+           date_published=datetime(1932, 1, 1),
+           pages=288,
+           language="English"
+       ),
+       Book(
+           title="The Catcher in the Rye",
+           author="J.D. Salinger",
+           genres=["Classic", "Coming-of-Age"],
+           rating=3.81,
+           synopsis="Holden Caulfield's peculiar odyssey through New York streets.",
+           cover_image_url="https://i.ebayimg.com/images/g/gWwAAeSwh5JoElb0/s-l1600.webp",
+           date_published=datetime(1951, 7, 16),
+           pages=234,
+           language="English"
+       ),
+       Book(
+           title="The Lord of the Rings",
+           author="J.R.R. Tolkien",
+           genres=["Fantasy", "Adventure"],
+           rating=4.52,
+           synopsis="The epic tale of Frodo Baggins and his quest to destroy the One Ring.",
+           cover_image_url="https://i.ebayimg.com/images/g/uRoAAOSwFTpi2ke5/s-l1600.webp",
+           date_published=datetime(1954, 7, 29),
+           pages=1178,
+           language="English"
+       ),
+       Book(
+           title="The Alchemist",
+           author="Paulo Coelho",
+           genres=["Fantasy", "Philosophical Fiction"],
+           rating=3.86,
+           synopsis="The story of Santiago, an Andalusian shepherd boy who dreams of finding treasure.",
+           cover_image_url="https://i.ebayimg.com/images/g/uRoAAOSwFTpi2ke5/s-l1600.webp",
+           date_published=datetime(1988, 1, 1),
+           pages=208,
+           language="English"
+       )
+   ]
+   db.session.add_all(books)
+   db.session.commit()
+   return books
+
+
+def seed_book_clubs(users):
+   """Seed 10 book clubs with realistic data"""
+   print("📚 Creating book clubs...")
+   clubs = [
+       BookClub(
+           name="Classic Literature Circle",
+           owner_id=users[0].id,
+           synopsis="A club for classic literature enthusiasts to discuss timeless works.",
+           current_book={
+               "title": "Pride and Prejudice",
+               "author": "Jane Austen",
+               "progress": 45,
+               "cover": "https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
+               "pagesRead": 125
+           },
+           created_at=datetime.now() - timedelta(days=90)
+       ),
+       BookClub(
+           name="Sci-Fi Explorers",
+           owner_id=users[1].id,
+           synopsis="For fans of science fiction to explore futuristic worlds and ideas.",
+           current_book={
+               "title": "Dune",
+               "author": "Frank Herbert",
+               "progress": 67,
+               "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?w=720&ssl=1",
+               "pagesRead": 276
+           },
+           created_at=datetime.now() - timedelta(days=80)
+       ),
+       BookClub(
+           name="Mystery & Thriller Readers",
+           owner_id=users[2].id,
+           synopsis="Solving mysteries and discussing thrilling plots together.",
+           current_book={
+               "title": "The Girl with the Dragon Tattoo",
+               "author": "Stieg Larsson",
+               "progress": 52,
+               "cover": "https://i.ebayimg.com/images/g/Z0cAAeSwOLZoFM3e/s-l1600.webp",
+               "pagesRead": 210
+           },
+           created_at=datetime.now() - timedelta(days=70)
+       ),
+       BookClub(
+           name="Fantasy Book Club",
+           owner_id=users[3].id,
+           synopsis="Exploring magical worlds and epic fantasy stories.",
+           current_book={
+               "title": "The Name of the Wind",
+               "author": "Patrick Rothfuss",
+               "progress": 38,
+               "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/The-Book-Thief-by-Markus-Zusak.jpeg?fit=1024%2C1024&ssl=1",
+               "pagesRead": 180
+           },
+           created_at=datetime.now() - timedelta(days=60)
+       ),
+       BookClub(
+           name="Historical Fiction Society",
+           owner_id=users[4].id,
+           synopsis="Bringing history to life through well-researched fiction.",
+           current_book={
+               "title": "The Book Thief",
+               "author": "Markus Zusak",
+               "progress": 72,
+               "cover": "https://i.ebayimg.com/images/g/PWQAAeSwMt5oGdDv/s-l1600.webp",
+               "pagesRead": 320
+           },
+           created_at=datetime.now() - timedelta(days=50)
+       ),
+       BookClub(
+           name="Non-Fiction Readers",
+           owner_id=users[5].id,
+           synopsis="Exploring the real world through well-written non-fiction.",
+           current_book={
+               "title": "Sapiens",
+               "author": "Yuval Noah Harari",
+               "progress": 29,
+               "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/11/Milk-and-Honey-By-Rupi-Kaur.jpeg?w=768&ssl=1",
+               "pagesRead": 90
+           },
+           created_at=datetime.now() - timedelta(days=40)
+       ),
+       BookClub(
+           name="Poetry Appreciation",
+           owner_id=users[6].id,
+           synopsis="Reading and discussing poetry from around the world.",
+           current_book={
+               "title": "Milk and Honey",
+               "author": "Rupi Kaur",
+               "progress": 85,
+               "cover": "https://cdn.waterstones.com/bookjackets/large/9781/4071/9781407132082.jpg",
+               "pagesRead": 120
+           },
+           created_at=datetime.now() - timedelta(days=30)
+       ),
+       BookClub(
+           name="Young Adult Bookworms",
+           owner_id=users[7].id,
+           synopsis="For fans of young adult fiction and coming-of-age stories.",
+           current_book={
+               "title": "The Hunger Games",
+               "author": "Suzanne Collins",
+               "progress": 63,
+               "cover": "https://i.ebayimg.com/images/g/jOsAAOSwXWBmAnJo/s-l960.webp",
+               "pagesRead": 250
+           },
+           created_at=datetime.now() - timedelta(days=20)
+       ),
+       BookClub(
+           name="Business & Self-Improvement",
+           owner_id=users[8].id,
+           synopsis="Reading books that help us grow professionally and personally.",
+           current_book={
+               "title": "Atomic Habits",
+               "author": "James Clear",
+               "progress": 47,
+               "cover": "https://i.ebayimg.com/images/g/~IcAAOSwgQJgI7St/s-l960.webp",
+               "pagesRead": 130
+           },
+           created_at=datetime.now() - timedelta(days=10)
+       ),
+       BookClub(
+           name="Contemporary Fiction",
+           owner_id=users[9].id,
+           synopsis="Discussing modern fiction and its relevance to today's world.",
+           current_book={
+               "title": "Normal People",
+               "author": "Sally Rooney",
+               "progress": 55,
+               "cover": "https://i.ebayimg.com/images/g/AWgAAeSwfMxoAtrm/s-l1600.webp",
+               "pagesRead": 180
+           },
+           created_at=datetime.now() - timedelta(days=5)
+       )
+   ]
+   db.session.add_all(clubs)
+   db.session.commit()
+   return clubs
+
+
+def seed_memberships(users, clubs):
+   """Seed club memberships with realistic join dates"""
+   print("🧾 Creating Memberships...")
+   memberships = []
+ 
+   # Ensure each club has at least 3 members
+   for club in clubs:
+       # Owner is automatically a member
+       memberships.append(
+           Membership(
+               user_id=club.owner_id,
+               bookclub_id=club.id,
+               joined_at=club.created_at
+           )
+       )
+     
+       # Add 2-4 additional random members
+       potential_members = [u for u in users if u.id != club.owner_id]
+       for user in random.sample(potential_members, min(4, len(potential_members))):
+           memberships.append(
+               Membership(
+                   user_id=user.id,
+                   bookclub_id=club.id,
+                   joined_at=club.created_at + timedelta(days=random.randint(1, 14))
+               )
+           )
+ 
+   db.session.add_all(memberships)
+   db.session.commit()
+   return memberships
+
+
+def seed_follows(users):
+   """Seed follower relationships between users"""
+   print("🤝 Creating follows...")
+   follows_data = []
+ 
+   for user in users:
+       # Each user follows 3-5 others
+       to_follow = random.sample(
+           [u for u in users if u != user],
+           min(5, len(users)-1)
+       )
+     
+       for followed in to_follow:
+           follows_data.append({
+               'follower_id': user.id,
+               'followed_id': followed.id,
+               'created_at': datetime.now() - timedelta(days=random.randint(1, 90))
+           })
+ 
+   if follows_data:
+       db.session.execute(follows_table.insert(), follows_data)
+       db.session.commit()
+   return follows_data
+
+
+def seed_invites(users, clubs):
+   """Seed invitations between users and clubs"""
+   print("📩 Creating invites...")
+   invites = []
+   statuses = list(InviteStatus)
+ 
+   for _ in range(20):  # Create 20 invites
+       sender = random.choice(users)
+       recipient = random.choice([u for u in users if u != sender])
+       club = random.choice(clubs)
+     
+       invites.append(
+           Invite(
+               sender_id=sender.id,
+               recipient_id=recipient.id,
+               bookclub_id=club.id,
+               status=random.choice(statuses),
+               token=generate_invite_token(sender.id, club.id, recipient.id),
+               created_at=datetime.now() - timedelta(days=random.randint(1, 30))
+           )
+       )
+ 
+   db.session.add_all(invites)
+   db.session.commit()
+   return invites
+
+
+def seed_meetings(clubs):
+   """Seed past and upcoming meetings for clubs"""
+   print("📅 Creating meetings...")
+   meetings = []
+ 
+   for club in clubs:
+       # Create 2 past meetings
+       for i in range(1, 3):
+           meetings.append(
+               Meeting(
+                   bookclub_id=club.id,
+                   meeting_date=datetime.now() - timedelta(days=7*i),
+                   creator_id=club.owner_id,
+                   agenda=f"Discussion of {club.current_book['title']}:\n1. Initial impressions\n2. Character analysis\n3. Themes discussion\n4. Final thoughts"
+               )
+           )
+     
+       # Create 1 upcoming meeting
+       meetings.append(
+           Meeting(
+               bookclub_id=club.id,
+               meeting_date=datetime.now() + timedelta(days=7),
+               creator_id=club.owner_id,
+               agenda=f"Upcoming discussion of {club.current_book['title']}:\n1. Progress check\n2. Key chapters analysis\n3. Predictions\n4. Next reading assignment"
+           )
+       )
+ 
+   db.session.add_all(meetings)
+   db.session.commit()
+   return meetings
+
+
+def seed_summaries(users, books, clubs):
+   """Seed book summaries"""
+   print("✍ Adding summaries...")
+   summaries = []
+ 
+   for book in books:
+       # Create 2-3 summaries per book
+       for _ in range(random.randint(2, 3)):
+           user = random.choice(users)
+           club = random.choice(clubs)
+         
+           summaries.append(
+               Summary(
+                   content=f"A comprehensive summary of {book.title} focusing on its themes of {', '.join(book.genres)}. The book explores...",
+                   book_id=book.id,
+                   user_id=user.id,
+                   bookclub_id=club.id
+               )
+           )
+ 
+   db.session.add_all(summaries)
+   db.session.commit()
+   return summaries
+
+
+def seed_reviews(users, books):
+   """Seed book reviews"""
+   print("⭐ Adding reviews...")
+   reviews = []
+ 
+   for book in books:
+       # Create 2-4 reviews per book
+       for _ in range(random.randint(2, 4)):
+           user = random.choice(users)
+         
+           reviews.append(
+               Review(
+                   content=f"My review of {book.title}: This book was {random.choice(['amazing', 'thought-provoking', 'entertaining', 'challenging', 'inspiring'])}. I particularly enjoyed...",
+                   rating=random.randint(3, 5),
+                   user_id=user.id,
+                   book_id=book.id,
+                   created_at=datetime.now() - timedelta(days=random.randint(1, 60))
+               )
+           )
+ 
+   db.session.add_all(reviews)
+   db.session.commit()
+   return reviews
+
 
 def seed_database():
-    app = create_app()
-    with app.app_context():
-        if not clear_database():
-            print("❌ Database clearing failed - aborting seed")
-            return
+   """Main function to seed all database tables"""
+   app = create_app()
+   with app.app_context():
+       if not clear_database():
+           print("❌ Database clearing failed - aborting seed")
+           return
 
-        try:
-            print("👤 Creating test users...")
-            users = [
-                User(
-                    username='admin',
-                    email='admin@bookclub.com',
-                    password_hash=generate_password_hash('admin123'),
-                    created_at=datetime.now(),
-                    last_login=datetime.now(),
-                    is_active=True
-                ),
-                User(
-                    username='booklover',
-                    email='member@bookclub.com',
-                    password_hash=generate_password_hash('password123'),
-                    created_at=datetime.now(),
-                    last_login=datetime.now() - timedelta(days=5),
-                    is_active=True
-                ),
-                User(
-                    username='readerbee',
-                    email='reader@bookclub.com',
-                    password_hash=generate_password_hash('read1234'),
-                    created_at=datetime.now(),
-                    last_login=datetime.now() - timedelta(days=10),
-                    is_active=True
-                ),
-                User(
-                    username='literaturefan',
-                    email='litfan@bookclub.com',
-                    password_hash=generate_password_hash('lit12345'),
-                    created_at=datetime.now() - timedelta(days=15),
-                    last_login=datetime.now() - timedelta(days=2),
-                    is_active=True
-                ),
-                User(
-                    username='scifigeek',
-                    email='scifi@bookclub.com',
-                    password_hash=generate_password_hash('scifi123'),
-                    created_at=datetime.now() - timedelta(days=20),
-                    last_login=datetime.now() - timedelta(days=1),
-                    is_active=True
-                ),
-                User(
-                    username='mysteryreader',
-                    email='mystery@bookclub.com',
-                    password_hash=generate_password_hash('mystery123'),
-                    created_at=datetime.now() - timedelta(days=25),
-                    last_login=datetime.now() - timedelta(hours=12),
-                    is_active=True
-                ),
-                User(
-                    username='fantasylover',
-                    email='fantasy@bookclub.com',
-                    password_hash=generate_password_hash('fantasy123'),
-                    created_at=datetime.now() - timedelta(days=30),
-                    last_login=datetime.now() - timedelta(hours=6),
-                    is_active=True
-                ),
-                User(
-                    username='historybuff',
-                    email='history@bookclub.com',
-                    password_hash=generate_password_hash('history123'),
-                    created_at=datetime.now() - timedelta(days=35),
-                    last_login=datetime.now() - timedelta(days=3),
-                    is_active=True
-                ),
-                User(
-                    username='poetryenthusiast',
-                    email='poetry@bookclub.com',
-                    password_hash=generate_password_hash('poetry123'),
-                    created_at=datetime.now() - timedelta(days=40),
-                    last_login=datetime.now() - timedelta(days=7),
-                    is_active=True
-                ),
-                User(
-                    username='biographyfan',
-                    email='biofan@bookclub.com',
-                    password_hash=generate_password_hash('bio12345'),
-                    created_at=datetime.now() - timedelta(days=45),
-                    last_login=datetime.now() - timedelta(days=4),
-                    is_active=True
-                )
-            ]
-            db.session.add_all(users)
 
             user1 = User(
                 username='admin1',
@@ -173,386 +661,13 @@ def seed_database():
             )
             db.session.add_all([user1, user2, user3])
 
-            db.session.commit()
 
-            print("📖 Adding books...")
-            books = [
-                Book(
-                    title="1984",
-                    author="George Orwell",
-                    genres=["Dystopian", "Political Fiction", "Science Fiction"],
-                    rating=4.17,
-                    synopsis="In a chilling dystopia where the Party maintains absolute control through pervasive surveillance and psychological manipulation, Winston Smith works at the Ministry of Truth rewriting history. When he begins a forbidden relationship with Julia and encounters the mysterious O'Brien, Winston dares to imagine rebellion against Big Brother.",
-                    cover_image_url="https://m.media-amazon.com/images/I/71kXYs4tCvL._AC_UF1000,1000_QL80_.jpg",
-                    date_published=datetime(1949, 6, 8),
-                    language="English",
-                    pages=328,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="To Kill a Mockingbird",
-                    author="Harper Lee",
-                    genres=["Classic", "Coming-of-Age", "Historical Fiction"],
-                    rating=4.28,
-                    synopsis="Set in the racially charged American South during the Great Depression, this Pulitzer Prize-winning novel follows young Scout Finch as her father, Atticus, defends Tom Robinson, a black man falsely accused of rape.",
-                    cover_image_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg/1200px-To_Kill_a_Mockingbird_%28first_edition_cover%29.jpg",
-                    date_published=datetime(1960, 7, 11),
-                    language="English",
-                    pages=281,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="Dune",
-                    author="Frank Herbert",
-                    genres=["Science Fiction", "Adventure", "Space Opera"],
-                    rating=4.25,
-                    synopsis="Set in a distant future amidst a feudal interstellar society, Dune tells the story of young Paul Atreides as his family assumes control of the desert planet Arrakis, the only source of the universe's most valuable substance: the spice melange.",
-                    cover_image_url="https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?fit=720%2C720&ssl=1",
-                    date_published=datetime(1965, 8, 1),
-                    language="English",
-                    pages=412,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="The Great Gatsby",
-                    author="F. Scott Fitzgerald",
-                    genres=["Classic", "Literary Fiction", "Romance"],
-                    rating=3.93,
-                    synopsis="A portrait of the Jazz Age in all of its decadence and excess, The Great Gatsby captures the American Dream and its corruption through the tragic story of Jay Gatsby and his love for Daisy Buchanan.",
-                    cover_image_url="https://i.ebayimg.com/images/g/~WkAAOSwanRhXs5S/s-l960.webp",
-                    date_published=datetime(1925, 4, 10),
-                    language="English",
-                    pages=180,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="Pride and Prejudice",
-                    author="Jane Austen",
-                    genres=["Classic", "Romance", "Historical Fiction"],
-                    rating=4.28,
-                    synopsis="The romantic clash between the opinionated Elizabeth Bennet and the proud Mr. Darcy is a splendid performance of civilized sparring in this classic comedy of manners.",
-                    cover_image_url="https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
-                    date_published=datetime(1813, 1, 28),
-                    language="English",
-                    pages=279,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="The Hobbit",
-                    author="J.R.R. Tolkien",
-                    genres=["Fantasy", "Adventure", "Classic"],
-                    rating=4.28,
-                    synopsis="The adventure of Bilbo Baggins, a hobbit who embarks on an unexpected journey with a company of dwarves to reclaim their mountain home from the dragon Smaug.",
-                    cover_image_url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHIzm56W-N4vQhJsDLWcsku0JUjqfaOPYapQ&s",
-                    date_published=datetime(1937, 9, 21),
-                    language="English",
-                    pages=310,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="The Catcher in the Rye",
-                    author="J.D. Salinger",
-                    genres=["Classic", "Coming-of-Age", "Literary Fiction"],
-                    rating=3.81,
-                    synopsis="The story of Holden Caulfield and his peculiar odyssey through the streets of New York, trying to come to terms with the 'phoniness' of the adult world.",
-                    cover_image_url="https://booksandyou.in/cdn/shop/files/TheCatcherintheRye_1.webp?v=1714498776&width=713",
-                    date_published=datetime(1951, 7, 16),
-                    language="English",
-                    pages=234,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="The Lord of the Rings",
-                    author="J.R.R. Tolkien",
-                    genres=["Fantasy", "Adventure", "Classic"],
-                    rating=4.52,
-                    synopsis="The epic tale of Frodo Baggins and his quest to destroy the One Ring, battling the forces of the Dark Lord Sauron.",
-                    cover_image_url="https://cdn.shoplightspeed.com/shops/611345/files/5297743/mariner-books-the-lord-of-the-rings-omnibus-1-3.jpg",
-                    date_published=datetime(1954, 7, 29),
-                    language="English",
-                    pages=1178,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="Brave New World",
-                    author="Aldous Huxley",
-                    genres=["Dystopian", "Science Fiction", "Classic"],
-                    rating=3.99,
-                    synopsis="A dystopian novel set in a futuristic World State, inhabited by genetically modified citizens and an intelligence-based social hierarchy.",
-                    cover_image_url="https://i.ebayimg.com/images/g/gWwAAeSwh5JoElb0/s-l1600.webp",
-                    date_published=datetime(1932, 1, 1),
-                    language="English",
-                    pages=288,
-                    date_added=datetime.now()
-                ),
-                Book(
-                    title="The Alchemist",
-                    author="Paulo Coelho",
-                    genres=["Fantasy", "Adventure", "Philosophical Fiction"],
-                    rating=3.86,
-                    synopsis="The story of Santiago, an Andalusian shepherd boy who dreams of finding a worldly treasure located somewhere in Egypt.",
-                    cover_image_url="https://i.ebayimg.com/images/g/uRoAAOSwFTpi2ke5/s-l1600.webp",
-                    date_published=datetime(1988, 1, 1),
-                    language="English",
-                    pages=208,
-                    date_added=datetime.now()
-                )
-            ]
-            db.session.add_all(books)
-            db.session.commit()
+       except Exception as e:
+           db.session.rollback()
+           print(f"❌ Seeding failed: {e}")
+           traceback.print_exc()
 
-            print("📚 Creating book clubs...")
-            clubs = [
-                BookClub(
-                    name="Classic Literature Circle",
-                    owner_id=users[0].id,
-                    synopsis="A vibrant community dedicated to exploring and analyzing timeless literary classics from around the world.",
-                    created_at=datetime(2023, 1, 15),
-                    current_book={
-                        "title": "Pride and Prejudice",
-                        "author": "Jane Austen",
-                        "description": "A romantic novel that explores manners, upbringing, morality, and marriage in early 19th-century England.",
-                        "progress": 45,
-                        "cover": "https://eachdaykart.com/cdn/shop/files/36_a1f6255b-f9cd-45f9-a89e-653667ac8bc2_457x707.webp?v=1729874774",
-                        "pagesRead": 134
-                    }
-                ),
-                BookClub(
-                    name="Sci-Fi & Fantasy Explorers",
-                    owner_id=users[1].id,
-                    synopsis="A passionate group that journeys through galaxies, parallel dimensions, and enchanted lands via the pages of science fiction and fantasy books.",
-                    created_at=datetime(2023, 2, 20),
-                    current_book={
-                        "title": "Dune",
-                        "author": "Frank Herbert",
-                        "description": "A science fiction epic that follows the story of Paul Atreides on the desert planet Arrakis.",
-                        "progress": 67,
-                        "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/Dune-book-by-Frank-Herbert1716096236.jpg?w=720&ssl=1",
-                        "pagesRead": 412
-                    }
-                ),
-                BookClub(
-                    name="Modern Reads Book Club",
-                    owner_id=users[2].id,
-                    synopsis="Focusing on contemporary novels from the past decade, we examine trending authors, diverse voices, and thought-provoking themes in modern literature.",
-                    created_at=datetime(2023, 3, 10),
-                    current_book={
-                        "title": "The Night Circus",
-                        "author": "Erin Morgenstern",
-                        "description": "A phantasmagorical novel centered on a magical competition between two young illusionists.",
-                        "progress": 32,
-                        "cover": "https://i.ebayimg.com/images/g/AWgAAeSwfMxoAtrm/s-l1600.webp",
-                        "pagesRead": 110
-                    }
-                ),
-                BookClub(
-                    name="Mystery & Thriller Enthusiasts",
-                    owner_id=users[3].id,
-                    synopsis="For fans of whodunits, psychological thrillers, and crime novels where we try to solve the mystery before the big reveal.",
-                    created_at=datetime(2023, 4, 5),
-                    current_book={
-                        "title": "Gone Girl",
-                        "author": "Gillian Flynn",
-                        "description": "A psychological thriller about a woman who disappears on her fifth wedding anniversary.",
-                        "progress": 58,
-                        "cover": "https://i.ebayimg.com/images/g/Z0cAAeSwOLZoFM3e/s-l1600.webp",
-                        "pagesRead": 210
-                    }
-                ),
-                BookClub(
-                    name="Historical Fiction Society",
-                    owner_id=users[4].id,
-                    synopsis="Exploring different eras through meticulously researched historical fiction that brings the past to life.",
-                    created_at=datetime(2023, 5, 12),
-                    current_book={
-                        "title": "The Book Thief",
-                        "author": "Markus Zusak",
-                        "description": "A story set in Nazi Germany about a young girl who steals books and shares them with others.",
-                        "progress": 72,
-                        "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/12/The-Book-Thief-by-Markus-Zusak.jpeg?fit=1024%2C1024&ssl=1",
-                        "pagesRead": 320
-                    }
-                ),
-                BookClub(
-                    name="Non-Fiction Readers",
-                    owner_id=users[5].id,
-                    synopsis="Exploring the real world through biographies, memoirs, science, history, and other non-fiction works.",
-                    created_at=datetime(2023, 6, 8),
-                    current_book={
-                        "title": "Sapiens",
-                        "author": "Yuval Noah Harari",
-                        "description": "A brief history of humankind, exploring the evolution of our species.",
-                        "progress": 39,
-                        "cover": "https://i.ebayimg.com/images/g/PWQAAeSwMt5oGdDv/s-l1600.webp",
-                        "pagesRead": 150
-                    }
-                ),
-                BookClub(
-                    name="Poetry & Short Stories",
-                    owner_id=users[6].id,
-                    synopsis="Appreciating the beauty of language through poetry collections and short story anthologies.",
-                    created_at=datetime(2023, 7, 15),
-                    current_book={
-                        "title": "Milk and Honey",
-                        "author": "Rupi Kaur",
-                        "description": "A collection of poetry and prose about survival, violence, abuse, love, and femininity.",
-                        "progress": 85,
-                        "cover": "https://i0.wp.com/kibangabooks.com/wp-content/uploads/2023/11/Milk-and-Honey-By-Rupi-Kaur.jpeg?w=768&ssl=1",
-                        "pagesRead": 120
-                    }
-                ),
-                BookClub(
-                    name="Young Adult Bookworms",
-                    owner_id=users[7].id,
-                    synopsis="For fans of young adult fiction, discussing coming-of-age stories and teen perspectives.",
-                    created_at=datetime(2023, 8, 20),
-                    current_book={
-                        "title": "The Hunger Games",
-                        "author": "Suzanne Collins",
-                        "description": "A dystopian novel about a televised fight to the death between teenagers.",
-                        "progress": 63,
-                        "cover": "https://cdn.waterstones.com/bookjackets/large/9781/4071/9781407132082.jpg",
-                        "pagesRead": 250
-                    }
-                ),
-                BookClub(
-                    name="Business & Self-Improvement",
-                    owner_id=users[8].id,
-                    synopsis="Reading and discussing books that help us grow professionally and personally.",
-                    created_at=datetime(2023, 9, 10),
-                    current_book={
-                        "title": "Atomic Habits",
-                        "author": "James Clear",
-                        "description": "A guide to building good habits and breaking bad ones.",
-                        "progress": 47,
-                        "cover": "https://i.ebayimg.com/images/g/jOsAAOSwXWBmAnJo/s-l960.webp",
-                        "pagesRead": 130
-                    }
-                ),
-                BookClub(
-                    name="Science & Technology",
-                    owner_id=users[9].id,
-                    synopsis="Exploring the latest in scientific discoveries and technological advancements through books.",
-                    created_at=datetime(2023, 10, 5),
-                    current_book={
-                        "title": "The Gene",
-                        "author": "Siddhartha Mukherjee",
-                        "description": "An intimate history of the gene and the science of heredity.",
-                        "progress": 29,
-                        "cover": "https://i.ebayimg.com/images/g/~IcAAOSwgQJgI7St/s-l960.webp",
-                        "pagesRead": 90
-                    }
-                )
-            ]
-            db.session.add_all(clubs)
-            db.session.commit()
-
-            print("🧾 Creating Memberships...")
-            memberships = []
-            for i in range(10):
-                # Each user joins 3 random clubs
-                for club in random.sample(clubs, 3):
-                    memberships.append(
-                        Membership(
-                            user_id=users[i].id,
-                            bookclub_id=club.id,
-                            joined_at=datetime.now() - timedelta(days=random.randint(1, 30))
-                        )
-                    )
-            db.session.add_all(memberships)
-            db.session.commit()
-
-            print("✍ Adding summaries...")
-            summaries = []
-            for i in range(10):
-                for j in range(2):  # 2 summaries per book
-                    summaries.append(
-                        Summary(
-                            content=f"Detailed analysis of {books[i].title} by {books[i].author}. This book explores themes of {', '.join(books[i].genres[:2])} in a profound way. The characters are well-developed and the plot keeps you engaged throughout. The author's style is particularly noteworthy for its {['clarity', 'depth', 'humor', 'insight', 'originality'][i%5]}.",
-                            book_id=books[i].id,
-                            user_id=users[i].id,
-                            bookclub_id=clubs[i].id
-                        )
-                    )
-            db.session.add_all(summaries)
-            db.session.commit()
-
-            print("⭐ Adding reviews...")
-            reviews = []
-            for i in range(10):
-                for j in range(2):  # 2 reviews per book
-                    reviews.append(
-                        Review(
-                            content=f"My thoughts on {books[i].title}: This book was {['amazing', 'thought-provoking', 'entertaining', 'challenging', 'inspiring'][i%5]}. I particularly enjoyed the way the author handled the theme of {books[i].genres[0]}. The ending was {['satisfying', 'unexpected', 'heartbreaking', 'open-ended', 'perfect'][i%5]}.",
-                            rating=random.randint(3, 5),
-                            user_id=users[i].id,
-                            book_id=books[i].id
-                        )
-                    )
-            db.session.add_all(reviews)
-            db.session.commit()
-
-            print("📩 Creating invites...")
-            invites = []
-            for i in range(10):
-                for j in range(2):  # 2 invites per user
-                    sender = users[i]
-                    recipient = users[(i+1)%10]
-                    club = clubs[(i+j)%10]
-                    invites.append(
-                        Invite(
-                            sender_id=sender.id,
-                            recipient_id=recipient.id,
-                            bookclub_id=club.id,
-                            status=random.choice(list(InviteStatus)),
-                            token=generate_invite_token(sender.id, club.id, recipient.id)
-                        )
-                    )
-            db.session.add_all(invites)
-            db.session.commit()
-
-            print("📅 Creating meetings...")
-            meetings = []
-            for i in range(10):
-                for j in range(2):  # 2 meetings per club
-                    meetings.append(
-                        Meeting(
-                            bookclub_id=clubs[i].id,
-                            meeting_date=datetime.now() + timedelta(days=random.randint(1, 30)),
-                            creator_id=clubs[i].owner_id,
-                            agenda=f"Discussion of {clubs[i].current_book['title']}:\n1. Opening thoughts\n2. Character analysis\n3. Theme exploration\n4. Final thoughts"
-                        )
-                    )
-            db.session.add_all(meetings)
-            db.session.commit()
-
-            print("🤝 Creating follows...")
-            follows = []
-            for i in range(10):
-                for j in range(3):  # Each user follows 3 others
-                    follower = users[i]
-                    followed = users[(i+j+1)%10]
-                    if follower != followed:
-                        follows.append(
-                            {
-                                'follower_id': follower.id,
-                                'followed_id': followed.id,
-                                'created_at': datetime.now() - timedelta(days=random.randint(1, 30))
-                            }
-                        )
-            # Using SQLAlchemy core for bulk insert
-            if follows:
-                db.session.execute(follows_table.insert(), follows)
-                db.session.commit()
-
-            print("🎉 Database successfully seeded with complete data!")
-
-        except Exception as e:
-            db.session.rollback()
-            print(f"❌ Seeding failed: {e}")
-            traceback.print_exc()
 
 if __name__ == "__main__":
-    app = create_app()
-    with app.app_context():
-        seed_database()
+   seed_database()
+
