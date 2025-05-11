@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { CiSearch } from 'react-icons/ci';
 import Navbar from '../../components/Navbar';
-import "../../styles/BookList.css"
+import "../../styles/BookList.css";
 
 const BookList = () => {
   const [books, setBooks] = useState([]);
+  const [myBooks, setMyBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [sortOption, setSortOption] = useState('rating-desc');
@@ -20,17 +21,58 @@ const BookList = () => {
         const data = await response.json();
         setBooks(data);
 
-        // Extract all unique genres
         const genres = new Set();
         data.forEach(book => book.genres.forEach(g => genres.add(g)));
         setAllGenres(['All', ...Array.from(genres)]);
+
+        if (!localStorage.getItem('allBooks')) {
+          localStorage.setItem('allBooks', JSON.stringify(data));
+        }
+
       } catch (err) {
         console.error('Error fetching books:', err);
       }
     };
 
     fetchBooks();
+
+    const savedMyBooks = localStorage.getItem('myBooks');
+    if (savedMyBooks) {
+      setMyBooks(JSON.parse(savedMyBooks));
+    }
   }, []);
+
+  const handleReadBook = (book, e) => {
+    e.stopPropagation();
+    const exists = myBooks.find(b => b.id === book.id);
+    if (!exists) {
+      const updatedMyBooks = [...myBooks, { 
+        ...book, 
+        progress: 0,
+        currentPage: 0,
+        totalPages: book.totalPages || 300 // Default if not specified
+      }];
+      setMyBooks(updatedMyBooks);
+      localStorage.setItem('myBooks', JSON.stringify(updatedMyBooks));
+    }
+  };
+
+  const handlePageUpdate = (id, currentPage, totalPages, e) => {
+    e.stopPropagation();
+    const progress = Math.min(Math.round((currentPage / totalPages) * 100), 100);
+    const updatedBooks = myBooks.map(book => 
+      book.id === id ? { ...book, currentPage, progress } : book
+    );
+    setMyBooks(updatedBooks);
+    localStorage.setItem('myBooks', JSON.stringify(updatedBooks));
+  };
+
+  const handleDelete = (id, e) => {
+    e.stopPropagation();
+    const updatedBooks = myBooks.filter(book => book.id !== id);
+    setMyBooks(updatedBooks);
+    localStorage.setItem('myBooks', JSON.stringify(updatedBooks));
+  };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -42,7 +84,7 @@ const BookList = () => {
     setSortOption('rating-desc');
   };
 
-  const filteredBooks = books
+  const filteredBooks = (activeTab === 'all' ? books : myBooks)
     .filter(book => {
       const matchesSearch = book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         book.author.toLowerCase().includes(searchTerm.toLowerCase());
@@ -51,20 +93,13 @@ const BookList = () => {
     })
     .sort((a, b) => {
       switch (sortOption) {
-        case 'rating-desc':
-          return b.rating - a.rating;
-        case 'rating-asc':
-          return a.rating - b.rating;
-        case 'title-asc':
-          return a.title.localeCompare(b.title);
-        case 'title-desc':
-          return b.title.localeCompare(a.title);
-        case 'author-asc':
-          return a.author.localeCompare(b.author);
-        case 'author-desc':
-          return b.author.localeCompare(a.author);
-        default:
-          return 0;
+        case 'rating-desc': return b.rating - a.rating;
+        case 'rating-asc': return a.rating - b.rating;
+        case 'title-asc': return a.title.localeCompare(b.title);
+        case 'title-desc': return b.title.localeCompare(a.title);
+        case 'author-asc': return a.author.localeCompare(b.author);
+        case 'author-desc': return b.author.localeCompare(a.author);
+        default: return 0;
       }
     });
 
@@ -112,9 +147,7 @@ const BookList = () => {
             <label>Genre:</label>
             <select value={selectedGenre} onChange={(e) => setSelectedGenre(e.target.value)}>
               {allGenres.map(genre => (
-                <option key={genre} value={genre}>
-                  {genre}
-                </option>
+                <option key={genre} value={genre}>{genre}</option>
               ))}
             </select>
           </div>
@@ -135,68 +168,94 @@ const BookList = () => {
         <div className="book-grid">
           {filteredBooks.length > 0 ? (
             filteredBooks.map((book) => {
-              const {
-                id,
-                title = 'Untitled Book',
-                author = 'Unknown Author',
-                cover_image_url,
-                rating = 0,
-                genres = [],
-              } = book;
-
-              const displayedGenres = genres.slice(0, 2);
-              const extraGenres = genres.length > 2 ? genres.length - 2 : 0;
-
+              const isMine = myBooks.some(b => b.id === book.id);
+              const completed = book.progress === 100;
+              const totalPages = book.totalPages || 300;
+              const currentPage = book.currentPage || 0;
+              
               return (
-                <div key={id} className="book-card">
-                  <Link to={`/book/${id}`}>
+                <div
+                  key={book.id}
+                  className={`book-card ${completed ? 'completed' : ''}`}
+                  onClick={() => navigate(`/book/${book.id}`)}
+                >
+                  
+
+                  <div className="book-details">
+                    <div>
                     <img
-                      src={cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
-                      alt={`${title} cover`}
+                      src={book.cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
+                      alt={`${book.title} cover`}
                       className="book-cover"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = 'https://via.placeholder.com/150x200?text=No+Cover';
                       }}
                     />
-                    <div className="book-info">
-                      <h3>{title}</h3>
-                      <p className="author">{author}</p>
-                      <div className="rating">
-                        <span className="stars">
-                          {'★'.repeat(Math.floor(rating))}
-                          {'☆'.repeat(5 - Math.floor(rating))}
-                        </span>
-                        <span>({rating.toFixed(1)})</span>
-                      </div>
-                      <div className="genres">
-                        {displayedGenres.map((genre) => (
-                          <span key={genre} className="genre-tag">
-                            {genre}
-                          </span>
-                        ))}
-                        {extraGenres > 0 && (
-                          <span className="more-tag">+{extraGenres}</span>
-                        )}
-                      </div>
+                    {completed && <div className="completed-badge">Completed</div>}
+                  </div>
+                    <h3 className="book-title">{book.title}</h3>
+                    <p className="book-author">by {book.author}</p>
+                    
+                    <div className="book-rating">
+                      <span className="stars">
+                        {'★'.repeat(Math.floor(book.rating))}
+                        {'☆'.repeat(5 - Math.floor(book.rating))}
+                      </span>
+                      <span className="rating-value">{book.rating.toFixed(1)}</span>
                     </div>
-                    <div className="read-book-button-div">
-                      <button className="read-book-button">Read book</button>
-                    </div>
-                  </Link>
+
+                    {activeTab === 'all' ? (
+                      <button
+                        className={`read-book-button ${isMine ? 'added' : ''}`}
+                        onClick={(e) => handleReadBook(book, e)}
+                        disabled={isMine}
+                      >
+                        {isMine ? '✓ In Your Library' : '+ Add to Library'}
+                      </button>
+                    ) : (
+                      <div className="progress-section" onClick={e => e.stopPropagation()}>
+                        <div className="progress-bar-container">
+                          <input
+                            type="range"
+                            min="0"
+                            max={totalPages}
+                            value={currentPage}
+                            onChange={(e) => handlePageUpdate(book.id, parseInt(e.target.value), totalPages, e)}
+                            className={`progress-slider ${completed ? 'completed' : ''}`}
+                          />
+                          <div className="page-input-container">
+                            <span>Page: </span>
+                            <input
+                              type="number"
+                              min="0"
+                              max={totalPages}
+                              value={currentPage}
+                              onChange={(e) => handlePageUpdate(book.id, parseInt(e.target.value), totalPages, e)}
+                              className="page-input"
+                            />
+                            <span> / {totalPages}</span>
+                          </div>
+                        </div>
+                        <button 
+                          className="delete-button"
+                          onClick={(e) => handleDelete(book.id, e)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })
           ) : (
             <div className="no-results">
               <p>No books found matching your criteria</p>
-              <button onClick={resetFilters} className="reset-btn">
-                Reset Filters
-              </button>
+              <button onClick={resetFilters} className="reset-btn">Reset Filters</button>
             </div>
           )}
         </div>
-
       </div>
     </>
   );
