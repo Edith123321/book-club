@@ -109,84 +109,90 @@ const BookClubList = () => {
 
   // Render club card
   const renderClubCard = (club) => (
-  <div 
-    key={club.id}
-    className="book-club-card"
-    onClick={() => navigate(`/bookclub/${club.id}`)}
-    role="button"
-    tabIndex={0}
-    aria-label={`View ${club.name} details`}
-  >
-    <div className="club-header">
-      <h2 className="club-name">{club.name}</h2>
-      <span className="member-count">{club.member_count} members</span>
-      <span className={`status-badge ${club.status.toLowerCase()}`}>
-        {club.status}
-      </span>
-    </div>
+  <div
+  key={club.id}
+  className="book-club-card"
+  onClick={() => navigate(`/bookclub/${club.id}`)}
+  role="button"
+  tabIndex={0}
+  aria-label={`View ${club.name} details`}
+>
+  {/* Club Header */}
+  <div className="club-header">
+    <h2 className="club-name">{club.name}</h2>
+    <span className="member-count">{club.member_count} members</span>
+  </div>
 
-    <p className="club-synopsis">
-      {club.synopsis?.slice(0, 150)}...
-    </p>
+  {/* Club Synopsis */}
+  <p className="club-synopsis">
+    {club.synopsis?.slice(0, 150)}...
+  </p>
 
-    {/* Side-by-side layout for 'Currently Reading' */}
-    <div className="current-reading-container" style={{ display: 'flex', gap: '1rem' }}>
-      <h4 style={{ flexShrink: 0 }}>Currently Reading:</h4>
-      <div className="book-details">
-        <p className="book-title">{club.current_book?.title}</p>
-        <p className="book-author">by {club.current_book?.author}</p>
-        {club.current_book?.progress && (
-          <div className="progress-container">
-            <div 
-              className="progress-bar" 
-              style={{ width: `${club.current_book.progress}%` }}
-            ></div>
-            <span>{club.current_book.progress}% complete</span>
+  {/* Currently Reading */}
+  {club.current_book && (
+    <div className="currently-reading">
+      <h4>📖 Currently Reading</h4>
+      <div className="book-info">
+        <div>
+          <p className="book-title">{club.current_book.title}</p>
+          <p className="book-author">by {club.current_book.author}</p>
+        </div>
+        {club.current_book.progress !== undefined && (
+          <div className="progress-wrapper">
+            <div className="progress-bar-bg">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${club.current_book.progress}%` }}
+              ></div>
+            </div>
+            <span className="progress-text">{club.current_book.progress}% complete</span>
           </div>
         )}
       </div>
     </div>
+  )}
 
-    {/* Bottom actions */}
-    <div className="club-actions">
-      <button
-        className={`join-button ${isClubJoined(club.id) ? 'joined' : ''}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClubMembership(club.id, isClubJoined(club.id) ? 'leave' : 'join');
-        }}
-        aria-label={isClubJoined(club.id) ? 'Leave club' : 'Join club'}
-      >
-        {isClubJoined(club.id) ? 'Joined' : 'Join now'}
-      </button>
+  {/* Club Actions */}
+  <div className="club-actions">
+    <button
+      className={`join-button ${isClubJoined(club.id) ? 'joined' : ''}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        handleClubMembership(club.id, isClubJoined(club.id) ? 'leave' : 'join');
+      }}
+      aria-label={isClubJoined(club.id) ? 'Leave club' : 'Join club'}
+    >
+      {isClubJoined(club.id) ? '✓ Joined' : 'Join Now'}
+    </button>
 
-      {isOwner(club) && (
-        <>
-          <button
-            className="edit-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/edit-bookclub/${club.id}`);
-            }}
-            aria-label={`Edit ${club.name}`}
-          >
-            Edit
-          </button>
-          <button
-            className="delete-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setClubToDelete(club.id);
-              setShowDeleteConfirmation(true);
-            }}
-            aria-label={`Delete ${club.name}`}
-          >
-            Delete
-          </button>
-        </>
-      )}
-    </div>
+    {isOwner(club) && (
+      <>
+        <button
+          className="edit-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/edit-bookclub/${club.id}`);
+          }}
+          aria-label={`Edit ${club.name}`}
+        >
+          ✏️ Edit
+        </button>
+        <button
+          className="delete-button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setClubToDelete(club.id);
+            setShowDeleteConfirmation(true);
+          }}
+          aria-label={`Delete ${club.name}`}
+        >
+          🗑️ Delete
+        </button>
+      </>
+    )}
   </div>
+</div>
+
 );
 
 
@@ -215,20 +221,20 @@ const BookClubList = () => {
 
         <div className="search-sort-heading">
           <div className="two-p">
-            <button
+            <p
               className={`tab-button ${activeTab === 'all' ? 'active-tab' : ''}`}
               onClick={() => setActiveTab('all')}
               aria-label="View all book clubs"
             >
               All Book Clubs
-            </button>
-            <button
+            </p>
+            <p
               className={`tab-button ${activeTab === 'my' ? 'active-tab' : ''}`}
               onClick={() => setActiveTab('my')}
               aria-label="View my book clubs"
             >
               My Book Clubs
-            </button>
+            </p>
           </div>
         </div>
 
