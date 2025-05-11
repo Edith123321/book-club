@@ -86,14 +86,7 @@ const App = () => {
             </AdminLayout>
           }
         />
-        <Route
-          path="/admin/schedules"
-          element={
-            <AdminLayout>
-              <AdminSchedules />
-            </AdminLayout>
-          }
-        />
+        
       </Routes>
    
   );

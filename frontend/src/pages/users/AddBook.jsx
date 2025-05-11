@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import '../../styles/AddBook.css';
 import { useNavigate } from 'react-router-dom';
 
-
-// const navigate = useNavigate();
-
 const AddBook = () => {
+  const navigate = useNavigate();
   const [bookData, setBookData] = useState({
     title: '',
     author: '',
-    cover: '',
+    cover_image_url: '',
     rating: '',
     genres: [],
     synopsis: '',
@@ -32,19 +30,12 @@ const AddBook = () => {
   };
 
   const handleGenreChange = (genre) => {
-    setBookData(prev => {
-      if (prev.genres.includes(genre)) {
-        return {
-          ...prev,
-          genres: prev.genres.filter(g => g !== genre)
-        };
-      } else {
-        return {
-          ...prev,
-          genres: [...prev.genres, genre]
-        };
-      }
-    });
+    setBookData(prev => ({
+      ...prev,
+      genres: prev.genres.includes(genre)
+        ? prev.genres.filter(g => g !== genre)
+        : [...prev.genres, genre]
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -53,25 +44,21 @@ const AddBook = () => {
     try {
       const response = await fetch('http://127.0.0.1:5000/books/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookData)
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to add book: ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error(`Failed to add book: ${response.statusText}`);
 
       const result = await response.json();
       console.log('Book successfully submitted:', result);
       alert('Book added successfully!');
-      navigate('/books')
-      
+      navigate('/books');
+
       setBookData({
         title: '',
         author: '',
-        cover: '',
+        cover_image_url: '',
         rating: '',
         genres: [],
         synopsis: '',
@@ -83,20 +70,17 @@ const AddBook = () => {
       console.error('Error:', error);
       alert('Failed to submit book. Please try again.');
     }
-    
   };
-
 
   return (
     <div className="add-book-page">
-      
       <div className="form-container">
-      <div className="form-header-container">
-        <div className="form-header">
-          <h1>Add a New Book</h1>
-          <p>Contribute to our growing library by adding your favorite reads</p>
+        <div className="form-header-container">
+          <div className="form-header">
+            <h1>Add a New Book</h1>
+            <p>Contribute to our growing library by adding your favorite reads</p>
+          </div>
         </div>
-      </div>
 
         <form onSubmit={handleSubmit} className="book-form">
           <div className="form-group">
@@ -126,19 +110,19 @@ const AddBook = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="cover">Cover Image URL*</label>
+            <label htmlFor="cover_image_url">Cover Image URL*</label>
             <input
               type="url"
-              id="cover"
-              name="cover"
-              value={bookData.cover}
+              id="cover_image_url"
+              name="cover_image_url"
+              value={bookData.cover_image_url}
               onChange={handleChange}
               placeholder="https://example.com/book-cover.jpg"
               required
             />
-            {bookData.cover && (
+            {bookData.cover_image_url && (
               <div className="cover-preview">
-                <img src={bookData.cover} alt="Cover preview" />
+                <img src={bookData.cover_image_url} alt="Cover preview" />
                 <span>Cover Preview</span>
               </div>
             )}
@@ -220,7 +204,7 @@ const AddBook = () => {
               name="synopsis"
               value={bookData.synopsis}
               onChange={handleChange}
-              placeholder="Between life and death there is a library, and within that library, the shelves go on forever..."
+              placeholder="Between life and death there is a library..."
               rows="5"
               required
             />
