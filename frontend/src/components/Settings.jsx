@@ -4,7 +4,7 @@ import axios from 'axios';
 import { FaKey, FaSave, FaTimes } from 'react-icons/fa';
 import '../styles/Settings.css';
 
-const SettingsPage = () => {
+const Settings = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [passwordData, setPasswordData] = useState({
@@ -119,4 +119,4 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage;
+export default Settings;

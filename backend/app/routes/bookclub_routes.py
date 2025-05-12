@@ -70,44 +70,58 @@ def create_club():
 
     try:
         # Verify owner exists
-        owner = get_or_404(User, data['owner_id'], 'Owner user')
+        owner = User.query.get(data['owner_id'])
         if not owner:
             return jsonify({'message': 'Owner user not found'}), 404
 
         # Create new club
         new_club = BookClub(
             name=data['name'],
-            synopsis=data.get('synopsis'),
+            synopsis=data.get('synopsis', ''),
             status=data.get('status', 'Active'),
             owner_id=data['owner_id'],
-            current_book=data.get('current_book')
+            current_book=data.get('current_book', None),
+            created_at=datetime.utcnow()
         )
         
         db.session.add(new_club)
         db.session.flush()  # Get the ID before commit
 
         # Add owner as admin member
-        db.session.add(Membership(
+        membership = Membership(
             user_id=data['owner_id'],
             bookclub_id=new_club.id,
-            role='admin'
-        ))
+            role='admin',
+            joined_at=datetime.utcnow()
+        )
+        db.session.add(membership)
 
         # Add other members if specified
-        if 'members' in data:
+        if 'members' in data and isinstance(data['members'], list):
             for member_data in data['members']:
-                if member_data.get('user_id') != data['owner_id']:
-                    db.session.add(Membership(
-                        user_id=member_data['user_id'],
-                        bookclub_id=new_club.id,
-                        role=member_data.get('role', 'member')
-                    ))
+                if 'user_id' in member_data and member_data['user_id'] != data['owner_id']:
+                    user = User.query.get(member_data['user_id'])
+                    if user:  # Only add if user exists
+                        db.session.add(Membership(
+                            user_id=member_data['user_id'],
+                            bookclub_id=new_club.id,
+                            role=member_data.get('role', 'member'),
+                            joined_at=datetime.utcnow()
+                        ))
 
         db.session.commit()
         
         return jsonify({
             'message': 'Book club created successfully',
-            'club': new_club.to_dict()
+            'club': {
+                'id': new_club.id,
+                'name': new_club.name,
+                'synopsis': new_club.synopsis,
+                'status': new_club.status,
+                'owner_id': new_club.owner_id,
+                'current_book': new_club.current_book,
+                'created_at': new_club.created_at.isoformat() if new_club.created_at else None
+            }
         }), 201
 
     except Exception as e:
@@ -117,7 +131,6 @@ def create_club():
             'message': 'Failed to create club',
             'error': str(e) if current_app.config['DEBUG'] else None
         }), 500
-
 @bookclub_bp.route('/<int:club_id>', methods=['GET'])
 def get_club(club_id):
     """Get detailed information about a specific club"""
@@ -156,6 +169,7 @@ def get_club(club_id):
         current_app.logger.error(f"Error fetching club {club_id}: {str(e)}", exc_info=True)
         return jsonify({'message': 'Failed to fetch club'}), 500
 
+
 @bookclub_bp.route('/<int:club_id>', methods=['PUT'])
 def update_club(club_id):
     """Update book club details"""
@@ -181,8 +195,16 @@ def update_club(club_id):
                 return jsonify({'message': 'New owner not found'}), 404
             club.owner_id = data['owner_id']
 
+        # ✅ Handle current_book WITHOUT requiring book ID
         if 'current_book' in data:
-            club.current_book = data['current_book']
+            book_data = data['current_book']
+            club.current_book = {
+                'title': book_data.get('title'),
+                'author': book_data.get('author'),
+                'cover': book_data.get('cover'),
+                'pagesRead': book_data.get('pagesRead', 0),
+                'progress': book_data.get('progress', 0)
+            }
 
         club.updated_at = datetime.utcnow()
         db.session.commit()
@@ -191,14 +213,16 @@ def update_club(club_id):
             'message': 'Club updated successfully',
             'club': club.to_dict()
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error updating club {club_id}: {str(e)}", exc_info=True)
         return jsonify({
             'message': 'Failed to update club',
-            'error': str(e) if current_app.config['DEBUG'] else None
+            'error': str(e) if current_app.config.get('DEBUG') else None
         }), 500
+
+
 
 @bookclub_bp.route('/<int:club_id>', methods=['DELETE'])
 def delete_club(club_id):
@@ -223,4 +247,3 @@ def delete_club(club_id):
             'error': str(e) if current_app.config['DEBUG'] else None
         }), 500
 
-# ... (keep current_book specific routes as they are)

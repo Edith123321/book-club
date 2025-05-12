@@ -4,15 +4,13 @@ import axios from 'axios';
 import { FaUserCircle, FaSave, FaTimes } from 'react-icons/fa';
 import '../styles/EditProfile.css';
 
-// Create axios instance with base config
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5000/api',
+  baseURL: 'http://127.0.0.1:5000',
   headers: {
     'Content-Type': 'application/json',
   }
 });
 
-// Add request interceptor to include token
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('authToken');
   if (token) {
@@ -23,7 +21,6 @@ api.interceptors.request.use(config => {
   return Promise.reject(error);
 });
 
-// Add response interceptor to handle 401 errors
 api.interceptors.response.use(response => response, error => {
   if (error.response?.status === 401) {
     localStorage.removeItem('authToken');
@@ -47,24 +44,15 @@ const EditProfilePage = () => {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    const checkAuth = () => {
-      const currentUser = JSON.parse(localStorage.getItem('userData'));
-      const token = localStorage.getItem('authToken');
-      
-      if (!currentUser || !token) {
-        navigate('/log-in');
-        return false;
-      }
-      return true;
-    };
-
     const fetchUserProfile = async () => {
-      if (!checkAuth()) return;
+      const currentUser = JSON.parse(localStorage.getItem('userData'));
+      if (!currentUser) {
+        navigate('/log-in');
+        return;
+      }
 
       try {
-        const currentUser = JSON.parse(localStorage.getItem('userData'));
         const response = await api.get(`/users/${currentUser.id}`);
-        
         setUser(response.data);
         setFormData({
           username: response.data.username || '',
@@ -80,17 +68,7 @@ const EditProfilePage = () => {
       }
     };
 
-    // Listen for unauthorized events
-    const handleUnauthorized = () => {
-      navigate('/log-in');
-    };
-    
-    window.addEventListener('unauthorized', handleUnauthorized);
     fetchUserProfile();
-    
-    return () => {
-      window.removeEventListener('unauthorized', handleUnauthorized);
-    };
   }, [navigate]);
 
   const handleChange = (e) => {
@@ -116,21 +94,28 @@ const EditProfilePage = () => {
       const response = await api.put(`/users/${currentUser.id}`, formData);
       
       setSuccess('Profile updated successfully');
-      // Update local storage
-      localStorage.setItem('userData', JSON.stringify({
+      
+      // Update local storage with new data
+      const updatedUser = {
         ...currentUser,
         username: formData.username,
         email: formData.email,
         bio: formData.bio,
         avatar_url: formData.avatar_url
-      }));
-      window.dispatchEvent(new Event('authChange'));
+      };
+      localStorage.setItem('userData', JSON.stringify(updatedUser));
+      
+      // Navigate to home page after 2 seconds
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+      
     } catch (err) {
       console.error('Error updating profile:', err);
-      if (err.response) {
-        setError(err.response.data.error || 'Failed to update profile');
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
       } else {
-        setError('Network error. Please try again.');
+        setError('Failed to update profile. Please try again.');
       }
     }
   };
@@ -143,7 +128,11 @@ const EditProfilePage = () => {
       <h2>Edit Profile</h2>
       
       {error && <div className="alert alert-danger">{error}</div>}
-      {success && <div className="alert alert-success">{success}</div>}
+      {success && (
+        <div className="alert alert-success">
+          {success} Redirecting to home page...
+        </div>
+      )}
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -154,6 +143,7 @@ const EditProfilePage = () => {
             value={formData.username}
             onChange={handleChange}
             required
+            minLength="3"
           />
         </div>
         
@@ -175,6 +165,7 @@ const EditProfilePage = () => {
             value={formData.bio}
             onChange={handleChange}
             rows="4"
+            maxLength="500"
           />
         </div>
         
@@ -201,7 +192,7 @@ const EditProfilePage = () => {
           <button 
             type="button" 
             className="btn-cancel"
-            onClick={() => navigate(`/profile/${user.id}`)}
+            onClick={() => navigate('/')}
           >
             <FaTimes /> Cancel
           </button>
