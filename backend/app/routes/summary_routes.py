@@ -95,3 +95,16 @@ def delete_summary(id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "Failed to delete summary", "details": str(e)}), 500
+    
+
+@summary_bp.route('/book/<int:book_id>', methods=['GET'])
+def get_summary_by_book(book_id):
+    try:
+        summaries = Summary.query.filter_by(book_id=book_id).all()
+        if not summaries:
+            return jsonify({'error': 'No summaries found for this book'}), 404
+        return summaries_schema.jsonify(summaries), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch summaries for the book', 'details': str(e)}), 500
+
+

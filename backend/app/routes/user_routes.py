@@ -4,9 +4,8 @@ from datetime import datetime
 from app.extensions import db
 from app.models.user import User
 from typing import Dict, Any
-from ..middleware import token_required
 
-user_bp = Blueprint('users', __name__)
+user_bp = Blueprint('users', __name__, url_prefix='/api/users')
 
 # Helper function for validation
 def validate_user_data(data: Dict[str, Any], is_update: bool = False) -> Dict[str, Any]:
@@ -101,13 +100,8 @@ def get_user(user_id):
 
 # UPDATE - Update user
 @user_bp.route('/<int:user_id>', methods=['PUT'])
-@token_required
-def update_user(current_user, user_id):
+def update_user(user_id):
     try:
-        # Only allow users to update their own profile unless admin
-        if current_user.id != user_id and not current_user.is_admin:
-            return jsonify({'error': 'Unauthorized to update this user'}), 403
-        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -139,11 +133,10 @@ def update_user(current_user, user_id):
             user.bio = data['bio']
         if 'avatar_url' in data:
             user.avatar_url = data['avatar_url']
-        if current_user.is_admin:
-            if 'is_admin' in data:
-                user.is_admin = data['is_admin']
-            if 'is_active' in data:
-                user.is_active = data['is_active']
+        if 'is_admin' in data:
+            user.is_admin = data['is_admin']
+        if 'is_active' in data:
+            user.is_active = data['is_active']
         
         db.session.commit()
         return jsonify(user.to_dict()), 200
@@ -153,13 +146,8 @@ def update_user(current_user, user_id):
 
 # DELETE - Delete user
 @user_bp.route('/<int:user_id>', methods=['DELETE'])
-@token_required
-def delete_user(current_user, user_id):
+def delete_user(user_id):
     try:
-        # Only allow users to delete themselves or admin to delete any user
-        if current_user.id != user_id and not current_user.is_admin:
-            return jsonify({'error': 'Unauthorized to delete this user'}), 403
-        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -173,12 +161,8 @@ def delete_user(current_user, user_id):
 
 # Additional endpoints for user management
 @user_bp.route('/<int:user_id>/activate', methods=['PATCH'])
-@token_required
-def activate_user(current_user, user_id):
+def activate_user(user_id):
     try:
-        if not current_user.is_admin:
-            return jsonify({'error': 'Unauthorized'}), 403
-        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -191,12 +175,8 @@ def activate_user(current_user, user_id):
         return jsonify({'error': 'Activation failed', 'details': str(e)}), 500
 
 @user_bp.route('/<int:user_id>/deactivate', methods=['PATCH'])
-@token_required
-def deactivate_user(current_user, user_id):
+def deactivate_user(user_id):
     try:
-        if not current_user.is_admin:
-            return jsonify({'error': 'Unauthorized'}), 403
-        
         user = User.query.get(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404

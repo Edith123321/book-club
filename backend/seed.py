@@ -101,6 +101,7 @@ def seed_users():
            created_at=datetime.now() - timedelta(days=90),
            last_login=datetime.now() - timedelta(days=2),
            is_active=True,
+           is_admin=True,
            bio='Voracious reader of all genres',
            avatar_url='https://avatar.iran.liara.run/public/36'
 
@@ -114,6 +115,7 @@ def seed_users():
            created_at=datetime.now() - timedelta(days=80),
            last_login=datetime.now() - timedelta(days=5),
            is_active=True,
+           is_admin=False,
            bio='Classic literature specialist',
            avatar_url='https://avatar.iran.liara.run/public/94'
 
@@ -127,6 +129,7 @@ def seed_users():
            created_at=datetime.now() - timedelta(days=70),
            last_login=datetime.now() - timedelta(hours=12),
            is_active=True,
+           is_admin=False,
            bio='Science fiction and fantasy lover',
 
            avatar_url='https://avatar.iran.liara.run/public/95'
@@ -139,6 +142,7 @@ def seed_users():
            created_at=datetime.now() - timedelta(days=60),
            last_login=datetime.now() - timedelta(days=1),
            is_active=True,
+           is_admin=False,
            bio='Always trying to solve the mystery first',
 
            avatar_url='https://avatar.iran.liara.run/public/72'
@@ -151,6 +155,7 @@ def seed_users():
            created_at=datetime.now() - timedelta(days=50),
            last_login=datetime.now() - timedelta(days=3),
            is_active=True,
+           is_admin=False,
            bio='Historical fiction and non-fiction reader',
 
            avatar_url='https://avatar.iran.liara.run/public/26'
@@ -161,6 +166,7 @@ def seed_users():
            email='poetry@example.com',
            first_name='Caroline',
            last_name='Syowai',
+           is_admin=False,
            password='verses456',
            created_at=datetime.now() - timedelta(days=40),
            last_login=datetime.now() - timedelta(hours=6),
@@ -177,6 +183,7 @@ def seed_users():
            first_name='Caroline',
            last_name='Syowai',
            password='dragons123',
+           is_admin=False,
            created_at=datetime.now() - timedelta(days=30),
            last_login=datetime.now() - timedelta(days=4),
            is_active=True,
@@ -193,6 +200,7 @@ def seed_users():
            created_at=datetime.now() - timedelta(days=20),
            last_login=datetime.now() - timedelta(hours=3),
            is_active=True,
+           is_admin=False,
            bio='Fascinated by people\'s life stories',
 
            avatar_url='https://avatar.iran.liara.run/public/61'
@@ -202,6 +210,7 @@ def seed_users():
            username='youngadult',
            email='ya@example.com',
            first_name='Caroline',
+           is_admin=False,
            last_name='Syowai',
            password='teenreads8',
            created_at=datetime.now() - timedelta(days=10),
