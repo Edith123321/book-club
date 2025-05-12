@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { CiSearch } from 'react-icons/ci';
 import Navbar from '../../components/Navbar';
 import "../../styles/BookList.css";
+import { FaEdit, FaCheck } from 'react-icons/fa';
+
 
 const BookList = () => {
   const [books, setBooks] = useState([]);
@@ -46,8 +48,8 @@ const BookList = () => {
     e.stopPropagation();
     const exists = myBooks.find(b => b.id === book.id);
     if (!exists) {
-      const updatedMyBooks = [...myBooks, { 
-        ...book, 
+      const updatedMyBooks = [...myBooks, {
+        ...book,
         progress: 0,
         currentPage: 0,
         totalPages: book.totalPages || 300 // Default if not specified
@@ -60,7 +62,7 @@ const BookList = () => {
   const handlePageUpdate = (id, currentPage, totalPages, e) => {
     e.stopPropagation();
     const progress = Math.min(Math.round((currentPage / totalPages) * 100), 100);
-    const updatedBooks = myBooks.map(book => 
+    const updatedBooks = myBooks.map(book =>
       book.id === id ? { ...book, currentPage, progress } : book
     );
     setMyBooks(updatedBooks);
@@ -172,31 +174,31 @@ const BookList = () => {
               const completed = book.progress === 100;
               const totalPages = book.totalPages || 300;
               const currentPage = book.currentPage || 0;
-              
+
               return (
                 <div
                   key={book.id}
                   className={`book-card ${completed ? 'completed' : ''}`}
                   onClick={() => navigate(`/book/${book.id}`)}
                 >
-                  
+
 
                   <div className="book-details">
                     <div>
-                    <img
-                      src={book.cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
-                      alt={`${book.title} cover`}
-                      className="book-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/150x200?text=No+Cover';
-                      }}
-                    />
-                    {completed && <div className="completed-badge">Completed</div>}
-                  </div>
+                      <img
+                        src={book.cover_image_url || 'https://via.placeholder.com/150x200?text=No+Cover'}
+                        alt={`${book.title} cover`}
+                        className="book-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/150x200?text=No+Cover';
+                        }}
+                      />
+                      {completed && <div className="completed-badge">Completed</div>}
+                    </div>
                     <h3 className="book-title">{book.title}</h3>
                     <p className="book-author">by {book.author}</p>
-                    
+
                     <div className="book-rating">
                       <span className="stars">
                         {'★'.repeat(Math.floor(book.rating))}
@@ -234,10 +236,16 @@ const BookList = () => {
                               onChange={(e) => handlePageUpdate(book.id, parseInt(e.target.value), totalPages, e)}
                               className="page-input"
                             />
+                            <FaEdit className="edit-icon" title="Edit page" />
+
                             <span> / {totalPages}</span>
                           </div>
+                          <p className="progress-text">{Math.round((currentPage / totalPages) * 100)}% completed</p>
+
                         </div>
-                        <button 
+
+
+                        <button
                           className="delete-button"
                           onClick={(e) => handleDelete(book.id, e)}
                         >
