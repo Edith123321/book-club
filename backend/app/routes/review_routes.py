@@ -65,3 +65,52 @@ def delete_review(id):
         return jsonify({"message": "Review deleted"}), 200
     except Exception as e:
         return jsonify({"error": "Failed to delete review", "details": str(e)}), 500
+    
+
+@review_bp.route('/book/<int:book_id>', methods=['POST'])
+def create_review_for_book(book_id):
+    data = request.get_json()
+
+    # Validate required fields
+    if not data or 'content' not in data or 'rating' not in data or 'user_id' not in data:
+        return jsonify({'error': 'Missing required fields: content, rating, user_id'}), 400
+
+    # Verify the book exists
+    from app.models.book import Book  # Import only if not already imported at the top
+    book = Book.query.get(book_id)
+    if not book:
+        return jsonify({'error': 'Book not found'}), 404
+
+    # Optional: validate user exists
+    from app.models.user import User
+    user = User.query.get(data['user_id'])
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    try:
+        new_review = Review(
+            content=data['content'],
+            rating=data['rating'],
+            user_id=data['user_id'],
+            book_id=book_id
+        )
+        db.session.add(new_review)
+        db.session.commit()
+        return review_schema.jsonify(new_review), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to create review', 'details': str(e)}), 500
+
+
+@review_bp.route('/book/<int:book_id>', methods=['GET'])
+def get_reviews_for_book(book_id):
+    from app.models.book import Book  # Only import if not already at the top
+    book = Book.query.get(book_id)
+    if not book:
+        return jsonify({'error': 'Book not found'}), 404
+
+    try:
+        reviews = Review.query.filter_by(book_id=book_id).all()
+        return reviews_schema.jsonify(reviews), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch reviews', 'details': str(e)}), 500
