@@ -106,7 +106,11 @@ def follow_user(user_id):
     db.session.execute(insert_stmt)
     db.session.commit()
 
+    print("DELETE /follow called")
+    print("Request data:", request.get_json(force=True, silent=True))
+
     return jsonify({'message': 'Successfully followed user'}), 201
+    
 
 @profile_bp.route('/<int:user_id>/follow', methods=['DELETE'])
 @jwt_required()

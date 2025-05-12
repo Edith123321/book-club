@@ -59,6 +59,7 @@ const BookClubDetails = () => {
       try {
         const userId = localStorage.getItem('userId');
         
+        
         const response = await fetch(`${BASE_URL}/reviews/`, {
           method: 'POST',
           headers: {
@@ -89,32 +90,107 @@ const BookClubDetails = () => {
     e.preventDefault();
     if (newSummary.content.trim()) {
       try {
-        const userId = localStorage.getItem('userId');
+        // Debug localStorage
+        console.log('All localStorage items:');
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          console.log(`${key}: ${localStorage.getItem(key)}`);
+        }
         
+        // Get userId from localStorage with verbose debugging
+        let userId = localStorage.getItem('userId');
+        console.log('Raw userId from localStorage:', userId, typeof userId);
+        
+        // Check the ACTUAL key being used for user ID (it might be different)
+        // Common variations to check
+        const possibleKeys = ['userId', 'user_id', 'id', 'userID', 'user', 'uid'];
+        let foundUserId = null;
+        
+        for (const key of possibleKeys) {
+          const value = localStorage.getItem(key);
+          if (value) {
+            console.log(`Found potential user ID in key "${key}": ${value}`);
+            foundUserId = foundUserId || value;
+          }
+        }
+        
+        // If we found a user ID in a different key, use that
+        if (!userId && foundUserId) {
+          console.log(`Using user ID from alternative key: ${foundUserId}`);
+          userId = foundUserId;
+        }
+        
+        // If still no user ID, look for any user-related object that might contain the ID
+        if (!userId) {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            
+            // Try to parse as JSON and look for user ID
+            try {
+              const parsedValue = JSON.parse(value);
+              if (parsedValue && (parsedValue.id || parsedValue.userId || parsedValue.user_id)) {
+                console.log(`Found user ID in JSON object at key "${key}":`, parsedValue);
+                userId = parsedValue.id || parsedValue.userId || parsedValue.user_id;
+                break;
+              }
+            } catch (e) {
+              // Not valid JSON, continue
+            }
+          }
+        }
+        
+        // Check if userId exists at all after our best efforts
+        if (!userId) {
+          console.warn('No userId found in localStorage after extensive search');
+          setError('You must be logged in to add a summary. No user ID found.');
+          return;
+        }
+        
+        console.log('Final userId being used:', userId);
+        
+        const bookclubId = id;
+        
+        // Log the request body for debugging
+        const requestBody = {
+          bookclub_id: bookclubId,
+          user_id: parseInt(userId, 10) || userId, // Try to convert to number but fall back to original
+          content: newSummary.content.trim(),
+        };
+        console.log('Sending request body:', requestBody);
+  
         const response = await fetch(`${BASE_URL}/summaries/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            bookclub_id: id,
-            user_id: userId,
-            content: newSummary.content,
-          }),
+          body: JSON.stringify(requestBody),
         });
-
+  
+        console.log('Response status:', response.status);
+        let responseData;
+        
+        try {
+          responseData = await response.json();
+          console.log('Response data:', responseData);
+        } catch (err) {
+          console.error('Failed to parse response as JSON:', err);
+        }
+  
         if (response.ok) {
-          const addedSummary = await response.json();
-          setSummaries([...summaries, addedSummary]);
+          setSummaries([...summaries, responseData]);
           setNewSummary({ content: '' });
+          setError(''); // Clear any previous errors
         } else {
-          throw new Error('Failed to add summary');
+          throw new Error(responseData?.error || 'Failed to add summary');
         }
       } catch (err) {
+        console.error("Add Summary Error:", err);
         setError(err.message);
       }
     }
   };
+  
 
   if (loading) return <div className="loading">Loading book club details...</div>;
   if (error) return <div className="error">Error: {error}</div>;

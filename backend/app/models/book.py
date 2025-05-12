@@ -19,7 +19,7 @@ class Book(db.Model):
     pages = db.Column(db.Integer, nullable=True)
 
     # Define relationships here after both classes have been defined
-    summaries = db.relationship('Summary', back_populates='book', cascade='all, delete-orphan')
+    #summaries = db.relationship('Summary', back_populates='book', cascade='all, delete-orphan')
 
     # Use a string reference to the 'Review' class to avoid circular imports
     reviews = db.relationship('Review', back_populates='book', cascade='all, delete-orphan')

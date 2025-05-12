@@ -9,6 +9,8 @@ const AdminUsers = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+
   const [newUser, setNewUser] = useState({
     name: '',
     email: '',
@@ -149,34 +151,57 @@ const AdminUsers = () => {
     }
   };
 
-  // Edit user
   const handleEditUser = async () => {
     try {
+      const token = localStorage.getItem('token'); // ✅ define token here
+  
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+  
+      // Validate inputs before sending
+      if (!currentUser.username?.trim()) {
+        throw new Error('Username is required');
+      }
+      if (!currentUser.email?.trim()) {
+        throw new Error('Email is required');
+      }
+  
       const response = await fetch(`http://localhost:5000/users/${currentUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // ✅ token now defined
         },
         body: JSON.stringify({
-          username: currentUser.name,
-          email: currentUser.email,
+          username: currentUser.username.trim(),
+          email: currentUser.email.trim(),
           is_admin: currentUser.role === 'Admin',
-          is_active: currentUser.status === 'Active'
-        })
+          is_active: currentUser.status === 'Active',
+        }),
       });
-
-      if (!response.ok) throw new Error('Failed to update user');
-
-      const result = await response.json();
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update user');
+      }
+  
       setUsers(prev => prev.map(user => 
-        user.id === currentUser.id ? result : user
+        user.id === currentUser.id ? data.user : user
       ));
+  
       setShowEditForm(false);
+      setSuccessMessage('User updated successfully');
+      setTimeout(() => setSuccessMessage(''), 3000);
+  
     } catch (error) {
       console.error('Error updating user:', error);
+      setErrorMessage(error.message);
+      setTimeout(() => setErrorMessage(''), 5000);
     }
   };
-
+  
   // Delete user
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
