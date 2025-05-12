@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // User pages
 import Home from './pages/users/Home';
@@ -16,6 +16,8 @@ import UserProfile from './components/UserProfile';
 import ScheduleMeeting from './pages/users/ScheduleMeeting';
 import EditProfile from './components/EditProfile';
 import Settings from './components/Settings';
+import ProfilePage from './components/ProfilePage';
+import FollowList from './components/FollowList';
 // Admin pages
 import Dashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -61,19 +63,24 @@ const App = () => {
       <Route path="/book/:id" element={<BookDetails />} />
       <Route path="/add-book" element={<AddBook />} />
       <Route path="/books/:id/edit-book" element={<EditBook />} />
-      <Route path="/profile/:userId" element={<UserProfile />} />
+      
       <Route path="/my-books" element={<MyBooks />} />
       <Route path="/profile/edit" element={<EditProfile />} />      
       <Route path="/settings" element={<Settings />} /> 
+      <Route path="/users/:userId" element={<ProfilePage />}>
+    <Route path="followers" element={<FollowList type="followers" />} />
+    <Route path="following" element={<FollowList type="following" />} />
+  </Route>
       {/* Protected Profile Route */}
       <Route 
-        path="/profile" 
-        element={
-          <RequireAuth>
-            <UserProfile />
-          </RequireAuth>
-        } 
-      />
+  path="/profile/:userId" 
+  element={
+    <RequireAuth>
+      <UserProfile />
+    </RequireAuth>
+  } 
+/>
+
 
       {/* Admin Routes with Layout */}
       <Route
@@ -121,3 +128,5 @@ const App = () => {
 };
 
 export default App;
+
+

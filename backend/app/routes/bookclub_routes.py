@@ -169,6 +169,7 @@ def get_club(club_id):
         current_app.logger.error(f"Error fetching club {club_id}: {str(e)}", exc_info=True)
         return jsonify({'message': 'Failed to fetch club'}), 500
 
+
 @bookclub_bp.route('/<int:club_id>', methods=['PUT'])
 def update_club(club_id):
     """Update book club details"""
@@ -194,8 +195,16 @@ def update_club(club_id):
                 return jsonify({'message': 'New owner not found'}), 404
             club.owner_id = data['owner_id']
 
+        # ✅ Handle current_book WITHOUT requiring book ID
         if 'current_book' in data:
-            club.current_book = data['current_book']
+            book_data = data['current_book']
+            club.current_book = {
+                'title': book_data.get('title'),
+                'author': book_data.get('author'),
+                'cover': book_data.get('cover'),
+                'pagesRead': book_data.get('pagesRead', 0),
+                'progress': book_data.get('progress', 0)
+            }
 
         club.updated_at = datetime.utcnow()
         db.session.commit()
@@ -204,14 +213,16 @@ def update_club(club_id):
             'message': 'Club updated successfully',
             'club': club.to_dict()
         }), 200
-        
+
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error updating club {club_id}: {str(e)}", exc_info=True)
         return jsonify({
             'message': 'Failed to update club',
-            'error': str(e) if current_app.config['DEBUG'] else None
+            'error': str(e) if current_app.config.get('DEBUG') else None
         }), 500
+
+
 
 @bookclub_bp.route('/<int:club_id>', methods=['DELETE'])
 def delete_club(club_id):
@@ -236,4 +247,3 @@ def delete_club(club_id):
             'error': str(e) if current_app.config['DEBUG'] else None
         }), 500
 
-# ... (keep current_book specific routes as they are)

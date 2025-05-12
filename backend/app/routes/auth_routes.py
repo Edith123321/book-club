@@ -73,6 +73,9 @@ def register():
 # ----------------------
 # Login Route
 # ----------------------
+# ----------------------
+# Login Route
+# ----------------------
 @auth_bp.route('/login', methods=['POST'])
 def login():
     if not request.is_json:
@@ -101,7 +104,8 @@ def login():
         user.update_last_login()
         db.session.commit()
 
-        access_token = create_access_token(identity=user.id)
+        # ✅ FIX: ensure identity is a string
+        access_token = create_access_token(identity=str(user.id))
 
         return jsonify({
             "message": "Login successful",

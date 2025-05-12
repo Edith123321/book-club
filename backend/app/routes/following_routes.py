@@ -10,6 +10,20 @@ following_bp = Blueprint('following', __name__, url_prefix='/api/following')
 # --------------------------
 # Follow a user
 # --------------------------
+
+@following_bp.route('/users/<int:user_id>/followers/id', methods=['GET'])
+def get_followers_count_by_id(user_id):
+    user = User.query.get_or_404(user_id)
+    count = user.user.followers.count()
+    return jsonify({"count": count})
+
+@following_bp.route('/users/<int:user_id>/following/id', methods=['GET'])
+def get_following_count_by_id(user_id):
+    user = User.query.get_or_404(user_id)
+    count = user.following.count()
+    return jsonify({"count": count})
+
+
 @following_bp.route('/<int:user_id>', methods=['POST'])
 @token_required
 def follow_user(current_user, user_id):
@@ -30,16 +44,17 @@ def follow_user(current_user, user_id):
                 'code': 'ALREADY_FOLLOWING'
             }), 400
 
-        if current_user.follow(user_to_follow):
-            db.session.commit()
-            logger.info(f"User {current_user.id} started following {user_id}")
-            return jsonify({
-                'message': f'You are now following {user_to_follow.username}',
-                'following': True,
-                'followers_count': user_to_follow.followers.count(),
-                'following_count': user_to_follow.following.count(),
-                'user': user_to_follow.to_public_dict()
-            }), 200
+        current_user.follow(user_to_follow)
+        db.session.commit()
+
+        logger.info(f"User {current_user.id} started following {user_id}")
+        return jsonify({
+            'message': f'You are now following {user_to_follow.username}',
+            'following': True,
+            'followers_count': user_to_follow.followers.count(),
+            'following_count': user_to_follow.following.count(),
+            'user': user_to_follow.to_public_dict()
+        }), 200
 
     except Exception as e:
         logger.error(f"Error following user: {str(e)}")
@@ -48,6 +63,7 @@ def follow_user(current_user, user_id):
             'error': 'Failed to follow user',
             'details': str(e)
         }), 500
+
 
 # --------------------------
 # Unfollow a user

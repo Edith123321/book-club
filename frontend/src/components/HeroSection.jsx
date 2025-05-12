@@ -10,7 +10,7 @@ const HeroSection = () => {
     };
 
     const handleJoinNow = () => {
-        navigate('/log-in'); 
+        navigate('/log-in', { state: { showSignUp: true } }); 
     };
 
     return (
@@ -23,7 +23,6 @@ const HeroSection = () => {
                 </p>
                 <div className="hero-buttons">
                     <button onClick={handleExplore} className="btn btn-primary">Explore Book Clubs</button>
-                    <button onClick={handleJoinNow} className="btn btn-secondary">Join Now</button>
                 </div>
             </div>
             

@@ -4,18 +4,19 @@ import { FaGoogle, FaFacebook, FaApple, FaEnvelope, FaLock, FaEye, FaEyeSlash, F
 import { BsPeople, BsBook, BsCalendarEvent, BsChatSquareText } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 
+
 const Login = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+ 
   // Sign In form fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  
+ 
   // Create Account form fields
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -24,24 +25,32 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
+
   const [errors, setErrors] = useState({});
+
 
   // Check if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      navigate('/');
+    const userData = JSON.parse(localStorage.getItem('userData'));
+   
+    if (token && userData) {
+      // Redirect based on user role
+      navigate(userData.isAdmin ? '/admin/dashboard' : '/');
     }
   }, [navigate]);
+
 
   // Helper functions
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
 
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setErrors({});
   };
+
 
   // Form validation
   const validateSignInForm = () => {
@@ -50,129 +59,233 @@ const Login = () => {
     if (!password) newErrors.password = "Password is required";
     return newErrors;
   };
-  
-  const validateCreateAccountForm = () => {
-    const newErrors = {};
-    if (!firstName.trim()) newErrors.firstName = "First name is required";
-    if (!lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!newEmail.trim()) newErrors.newEmail = "Email is required";
-    else if (!/^\S+@\S+\.\S+$/.test(newEmail)) newErrors.newEmail = "Email is invalid";
-    
-    if (!newPassword) newErrors.newPassword = "Password is required";
-    else if (newPassword.length < 8) newErrors.newPassword = "Password must be at least 8 characters";
-    
-    if (!confirmPassword) newErrors.confirmPassword = "Confirm your password";
-    else if (newPassword !== confirmPassword) newErrors.confirmPassword = "Passwords don't match";
-    
-    if (!agreeToTerms) newErrors.agreeToTerms = "You must agree to the terms";
-    
-    return newErrors;
-  };
+ 
+  // Form validation function
+const validateCreateAccountForm = () => {
+  const errors = {};
 
-  // API call handler
-  const makeApiCall = async (url, method, body) => {
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Request failed');
-      }
+  if (!firstName.trim()) {
+    errors.firstName = "First name is required";
+  }
 
-      return await response.json();
-    } catch (error) {
-      console.error('API Error:', error);
-      throw error;
+
+  if (!lastName.trim()) {
+    errors.lastName = "Last name is required";
+  }
+
+
+  if (!newEmail.trim()) {
+    errors.newEmail = "Email is required";
+  } else if (!/^\S+@\S+\.\S+$/.test(newEmail)) {
+    errors.newEmail = "Email is invalid";
+  }
+
+
+  if (!newPassword) {
+    errors.newPassword = "Password is required";
+  } else if (newPassword.length < 8) {
+    errors.newPassword = "Password must be at least 8 characters";
+  }
+
+
+  if (!confirmPassword) {
+    errors.confirmPassword = "Confirm your password";
+  } else if (newPassword !== confirmPassword) {
+    errors.confirmPassword = "Passwords don't match";
+  }
+
+
+  if (!agreeToTerms) {
+    errors.agreeToTerms = "You must agree to the terms";
+  }
+
+
+  return errors;
+};
+
+
+// Generic API call function
+const makeApiCall = async (url, method = 'GET', body = null) => {
+  try {
+    const options = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+
+
+    // Only include body for methods that allow it
+    if (body && method !== 'GET' && method !== 'HEAD') {
+      options.body = JSON.stringify(body);
     }
-  };
+
+
+    const response = await fetch(url, options);
+
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Request failed');
+    }
+
+
+    return await response.json();
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
+};
+
+
+
 
   // Sign In handler
-  const handleSignInSubmit = async (e) => {
-    e.preventDefault();
-    const formErrors = validateSignInForm();
-    
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      return;
+ const handleSignInSubmit = async (e) => {
+  e.preventDefault();
+  const formErrors = validateSignInForm();
+ 
+  if (Object.keys(formErrors).length > 0) {
+    setErrors(formErrors);
+    return;
+  }
+
+
+  setIsLoading(true);
+
+
+  try {
+    // 1. Authenticate the user
+    const authData = await makeApiCall('http://localhost:5000/auth/login', 'POST', {
+      email,
+      password
+    });
+
+
+    // Store the auth token
+    localStorage.setItem('authToken', authData.access_token);
+
+
+    // 2. Fetch user details, including admin status
+    const userDataResponse = await makeApiCall(`http://localhost:5000/users/`, 'GET', null, true);
+
+
+    // Debugging: Log the full user data to see what is returned from API
+    console.log('Auth Data from API:', authData);
+    console.log('User Data Response from API:', userDataResponse);
+
+
+    // 3. Extract the actual user from the response (it’s inside the users array)
+    const userData = userDataResponse.users.find(user => user.email === email);
+
+
+    // Debugging: Log the extracted user data
+    console.log('Extracted User Data:', userData);
+
+
+    if (!userData) {
+      throw new Error('User not found');
     }
 
-    setIsLoading(true);
-    
-    try {
-      const data = await makeApiCall('http://localhost:5000/auth/login', 'POST', {
-        email,
-        password
-      });
 
-      localStorage.setItem('authToken', data.access_token);
-      localStorage.setItem('userData', JSON.stringify({
-        id: data.user_id,
-        username: data.username,
-        email: email,
-        firstName: firstName,
-        lastName: lastName
-      }));
-      
-      if (rememberMe) localStorage.setItem('rememberMe', 'true');
+    // 4. Prepare complete user data
+    const completeUserData = {
+      id: authData.user_id,
+      username: userData.username || 'DefaultUsername', // Fallback to a default username if missing
+      email: email,
+      firstName: userData.first_name || '',
+      lastName: userData.last_name || '',
+      is_admin: userData.is_admin || false // Ensure it's a boolean
+    };
 
-      // Trigger auth change event for Navbar and other components
-      window.dispatchEvent(new Event('authChange'));
-      
-      // Redirect based on user role
-      navigate(data.is_admin ? '/admin/dashboard' : '/');
-    } catch (error) {
-      setErrors({ ...errors, apiError: error.message });
-    } finally {
-      setIsLoading(false);
+
+    // Debugging: Log the complete user data
+    console.log('Complete User Data:', completeUserData);
+
+
+    // Store complete user data
+    localStorage.setItem('userData', JSON.stringify(completeUserData));
+
+
+    if (rememberMe) localStorage.setItem('rememberMe', 'true');
+
+
+    // Trigger auth change event
+    window.dispatchEvent(new Event('authChange'));
+
+
+    // Debugging: Check the value of is_admin
+    console.log('Is Admin:', completeUserData.is_admin);
+
+
+    // Redirect based on admin status
+    if (completeUserData.is_admin) {
+      console.log('Redirecting to /admin/dashboard');
+      navigate('/admin/dashboard'); // Redirects to admin dashboard for admins
+    } else {
+      console.log('Redirecting to homepage');
+      navigate('/'); // Redirects to homepage for regular users
     }
-  };
 
+
+  } catch (error) {
+    // Handle errors
+    setErrors({ ...errors, apiError: error.message });
+  } finally {
+    setIsLoading(false);
+  }
+};
   // Registration handler
   const handleCreateAccountSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateCreateAccountForm();
-    
+   
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
 
+
     setIsLoading(true);
-    
+   
     try {
       // Register the user
       const registrationData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        newEmail: newEmail.trim(),
-        newPassword: newPassword
+        email: newEmail.trim(),
+        password: newPassword
       };
 
+
       const data = await makeApiCall('http://localhost:5000/auth/register', 'POST', registrationData);
-      
+     
       // Auto-login after registration
       const loginData = await makeApiCall('http://localhost:5000/auth/login', 'POST', {
         email: newEmail.trim(),
         password: newPassword
       });
 
+
       localStorage.setItem('authToken', loginData.access_token);
-      localStorage.setItem('userData', JSON.stringify({
+     
+      // Store user data (new users are not admins by default)
+      const userData = {
         id: loginData.user_id,
         username: loginData.username,
         email: newEmail.trim(),
         firstName: firstName.trim(),
-        lastName: lastName.trim()
-      }));
-      
+        lastName: lastName.trim(),
+        is_admin: false
+      };
+     
+      localStorage.setItem('userData', JSON.stringify(userData));
+     
       // Trigger auth change event
       window.dispatchEvent(new Event('authChange'));
+     
+      // Redirect regular users to home page
       navigate('/');
     } catch (error) {
       console.error('Registration error:', error);
@@ -181,6 +294,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+
 
   // Social login handlers
   const handleSocialSignIn = (provider) => {
@@ -191,6 +305,7 @@ const Login = () => {
       setIsLoading(false);
     }, 1500);
   };
+
 
   // Render methods
   const renderSignInForm = () => (
@@ -225,9 +340,9 @@ const Login = () => {
             className={errors.password ? 'error' : ''}
           />
           <FaLock className="input-icon" />
-          <button 
-            type="button" 
-            className="toggle-password" 
+          <button
+            type="button"
+            className="toggle-password"
             onClick={togglePasswordVisibility}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -252,24 +367,24 @@ const Login = () => {
         <span>Or continue with</span>
       </div>
       <div className="social-login">
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="social-button google"
           onClick={() => handleSocialSignIn('Google')}
           disabled={isLoading}
         >
           <FaGoogle />
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="social-button facebook"
           onClick={() => handleSocialSignIn('Facebook')}
           disabled={isLoading}
         >
           <FaFacebook />
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="social-button apple"
           onClick={() => handleSocialSignIn('Apple')}
           disabled={isLoading}
@@ -279,6 +394,7 @@ const Login = () => {
       </div>
     </form>
   );
+
 
   const renderCreateAccountForm = () => (
     <form onSubmit={handleCreateAccountSubmit}>
@@ -341,9 +457,9 @@ const Login = () => {
             className={errors.newPassword ? 'error' : ''}
           />
           <FaLock className="input-icon" />
-          <button 
-            type="button" 
-            className="toggle-password" 
+          <button
+            type="button"
+            className="toggle-password"
             onClick={togglePasswordVisibility}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -369,9 +485,9 @@ const Login = () => {
             className={errors.confirmPassword ? 'error' : ''}
           />
           <FaLock className="input-icon" />
-          <button 
-            type="button" 
-            className="toggle-password" 
+          <button
+            type="button"
+            className="toggle-password"
             onClick={toggleConfirmPasswordVisibility}
           >
             {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
@@ -399,24 +515,24 @@ const Login = () => {
         <span>Or continue with</span>
       </div>
       <div className="social-login">
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="social-button google"
           onClick={() => handleSocialSignIn('Google')}
           disabled={isLoading}
         >
           <FaGoogle />
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="social-button facebook"
           onClick={() => handleSocialSignIn('Facebook')}
           disabled={isLoading}
         >
           <FaFacebook />
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="social-button apple"
           onClick={() => handleSocialSignIn('Apple')}
           disabled={isLoading}
@@ -427,6 +543,7 @@ const Login = () => {
     </form>
   );
 
+
   return (
     <div className="login-container">
       <div className="login-card">
@@ -434,23 +551,23 @@ const Login = () => {
           <h2>Welcome to BookClub</h2>
         </div>
         <div className="login-tabs">
-          <button 
+          <button
             className={`tab-button ${activeTab === 'signin' ? 'active' : ''}`}
             onClick={() => handleTabChange('signin')}
           >
             Sign In
           </button>
-          <button 
+          <button
             className={`tab-button ${activeTab === 'create' ? 'active' : ''}`}
             onClick={() => handleTabChange('create')}
           >
             Create Account
           </button>
         </div>
-        
+       
         {activeTab === 'signin' ? renderSignInForm() : renderCreateAccountForm()}
       </div>
-      
+     
       <div className="features-card">
         <div className="features-content">
           <div className="book-icon">
@@ -458,7 +575,7 @@ const Login = () => {
           </div>
           <h2>Join Our Reading Community</h2>
           <p>Connect with fellow book lovers, discover new titles, and engage in meaningful discussions.</p>
-          
+         
           <div className="features-list">
             <div className="feature-item">
               <BsPeople className="feature-icon" />
@@ -483,4 +600,6 @@ const Login = () => {
   );
 };
 
+
 export default Login;
+

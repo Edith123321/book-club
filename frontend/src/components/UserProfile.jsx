@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import md5 from 'md5';
 import '../styles/UserProfile.css';
 
 const UserProfile = () => {
     const { userId } = useParams();
+    const navigate = useNavigate();
     const [currentUser, setCurrentUser] = useState(null);
     const [profileUser, setProfileUser] = useState(null);
     const [isFollowing, setIsFollowing] = useState(false);
@@ -14,10 +15,9 @@ const UserProfile = () => {
     const [followers, setFollowers] = useState([]);
     const [following, setFollowing] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('posts'); // Default to showing posts
+    const [activeTab, setActiveTab] = useState('posts');
 
     useEffect(() => {
-        // Get current user from localStorage
         const storedUser = localStorage.getItem('userData');
         if (storedUser) {
             setCurrentUser(JSON.parse(storedUser));
@@ -30,51 +30,38 @@ const UserProfile = () => {
                 setLoading(true);
                 const token = localStorage.getItem('authToken');
                 
-                // Fetch basic profile data
-                const profileResponse = await axios.get(`http://localhost:5000/api/users/${userId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                // Corrected endpoints to match your Flask routes exactly
+                const [
+                    profileResponse,
+                    followersResponse,
+                    followingResponse
+                ] = await Promise.all([
+                    // Using profile.get_user_profile route
+                    axios.get(`http://localhost:5000/api/users/${userId}`, {
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                    }),
+                    // Using following.get_user_followers route
+                    axios.get(`http://localhost:5000/follow/${userId}/followers`),
+                    // Using following.get_user_following route
+                    axios.get(`http://localhost:5000/follow/${userId}/following`)
+                ]);
+
                 setProfileUser(profileResponse.data);
+                setFollowers(followersResponse.data.followers || followersResponse.data);
+                setFollowing(followingResponse.data.following || followingResponse.data);
+                
+                // Get counts from the lists since we don't have separate count endpoints
+                setFollowersCount(followersResponse.data.followers?.length || followersResponse.data.length || 0);
+                setFollowingCount(followingResponse.data.following?.length || followingResponse.data.length || 0);
 
-                // Fetch follow status and counts (only if viewing another user's profile)
-                if (currentUser && currentUser.id !== parseInt(userId)) {
+                if (currentUser && currentUser.id !== parseInt(userId) && token) {
+                    // Using following.check_following route
                     const followStatusResponse = await axios.get(
-                        `http://localhost:5000/api/users/${userId}/follow-status`,
-                        {
-                            headers: {
-                                'Authorization': `Bearer ${token}`
-                            }
-                        }
+                        `http://localhost:5000/follow/${userId}`,
+                        { headers: { 'Authorization': `Bearer ${token}` } }
                     );
-                    setIsFollowing(followStatusResponse.data.isFollowing);
+                    setIsFollowing(followStatusResponse.data.is_following);
                 }
-
-                // Fetch followers count
-                const followersCountResponse = await axios.get(
-                    `http://localhost:5000/api/users/${userId}/followers/count`
-                );
-                setFollowersCount(followersCountResponse.data.count);
-
-                // Fetch following count
-                const followingCountResponse = await axios.get(
-                    `http://localhost:5000/api/users/${userId}/following/count`
-                );
-                setFollowingCount(followingCountResponse.data.count);
-
-                // Fetch followers list
-                const followersResponse = await axios.get(
-                    `http://localhost:5000/api/users/${userId}/followers`
-                );
-                setFollowers(followersResponse.data);
-
-                // Fetch following list
-                const followingResponse = await axios.get(
-                    `http://localhost:5000/api/users/${userId}/following`
-                );
-                setFollowing(followingResponse.data);
-
             } catch (error) {
                 console.error('Error fetching profile data:', error);
             } finally {
@@ -92,22 +79,25 @@ const UserProfile = () => {
             if (!currentUser) return;
 
             const token = localStorage.getItem('authToken');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
             if (isFollowing) {
+                // Using following.unfollow_user route
                 await axios.delete(
-                    `http://localhost:5000/api/users/${userId}/follow`,
-                    {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }
+                    `http://localhost:5000/follow/${userId}`,
+                    { headers: { 'Authorization': `Bearer ${token}` } }
                 );
                 setIsFollowing(false);
                 setFollowersCount(prev => prev - 1);
             } else {
+                // Using following.follow_user route
                 await axios.post(
-                    `http://localhost:5000/api/users/${userId}/follow`,
+                    `http://localhost:5000/follow/${userId}`,
                     {},
-                    {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }
+                    { headers: { 'Authorization': `Bearer ${token}` } }
                 );
                 setIsFollowing(true);
                 setFollowersCount(prev => prev + 1);
@@ -115,6 +105,10 @@ const UserProfile = () => {
         } catch (error) {
             console.error('Error toggling follow:', error);
         }
+    };
+
+    const handleUserClick = (userId) => {
+        navigate(`/users/${userId}`);
     };
 
     if (loading) return <div className="profile-loading">Loading profile...</div>;
@@ -195,7 +189,6 @@ const UserProfile = () => {
             <div className="profile-content">
                 {activeTab === 'posts' && (
                     <div className="posts-container">
-                        {/* Render user posts here */}
                         {profileUser.posts && profileUser.posts.length > 0 ? (
                             profileUser.posts.map(post => (
                                 <div key={post.id} className="post-item">
@@ -212,7 +205,11 @@ const UserProfile = () => {
                     <div className="followers-container">
                         {followers.length > 0 ? (
                             followers.map(user => (
-                                <div key={user.id} className="follower-item">
+                                <div 
+                                    key={user.id} 
+                                    className="follower-item"
+                                    onClick={() => handleUserClick(user.id)}
+                                >
                                     <img 
                                         src={user.avatar_url || `https://www.gravatar.com/avatar/${md5(user.email || '')}?d=identicon`}
                                         alt={`${user.username}'s avatar`}
@@ -235,7 +232,11 @@ const UserProfile = () => {
                     <div className="following-container">
                         {following.length > 0 ? (
                             following.map(user => (
-                                <div key={user.id} className="following-item">
+                                <div 
+                                    key={user.id} 
+                                    className="following-item"
+                                    onClick={() => handleUserClick(user.id)}
+                                >
                                     <img 
                                         src={user.avatar_url || `https://www.gravatar.com/avatar/${md5(user.email || '')}?d=identicon`}
                                         alt={`${user.username}'s avatar`}

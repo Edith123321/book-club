@@ -636,7 +636,7 @@ def seed_summaries(users, books, clubs):
            summaries.append(
                Summary(
                    content=f"A comprehensive summary of {book.title} focusing on its themes of {', '.join(book.genres)}. The book explores...",
-                   book_id=book.id,
+                   #book_id=book.id,
                    user_id=user.id,
                    bookclub_id=club.id
                )
