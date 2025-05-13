@@ -73,8 +73,8 @@ const BookClubDetails = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          book_id: 114, // Hardcoded book_id
-          user_id: 120, // Hardcoded user_id
+          book_id: 154, // Hardcoded book_id
+          user_id: 172, // Hardcoded user_id
           content: newReview.content,
           rating: newReview.rating,
         }),
@@ -110,9 +110,9 @@ const BookClubDetails = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          bookclub_id: 120,
+          bookclub_id: 156,
           
-          user_id: 122, // Hardcoded user_id
+          user_id: 171, 
           content: newSummary.content.trim(),
         }),
       });
@@ -121,7 +121,7 @@ const BookClubDetails = () => {
         const addedSummary = await response.json();
         // Fetch book and user details for the new summary
         const [bookResponse, userResponse] = await Promise.all([
-          fetch(`${BASE_URL}/books`), // Hardcoded book_id
+          fetch(`${BASE_URL}/books`), 
           fetch(`${BASE_URL}/users/`)
         ]);
         
