@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: flask-backend
+    runtime: python
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      cd ../frontend && npm install && npm run build
+    startCommand: gunicorn app:app
+    staticDir: frontend/build  # Serve React as static files
