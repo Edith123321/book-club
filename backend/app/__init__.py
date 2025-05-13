@@ -3,6 +3,7 @@ from .config import Config
 from .extensions import db, migrate, ma, cors, jwt 
 from flask import Flask, send_from_directory
 
+
 def create_app(config_class=Config):
     """Application factory function"""
     app = Flask(__name__, static_folder="../frontend/build")
