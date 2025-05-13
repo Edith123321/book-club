@@ -1,10 +1,11 @@
 from flask import Flask
 from .config import Config
-from .extensions import db, migrate, ma, cors, jwt  # ✅ Import shared extensions
+from .extensions import db, migrate, ma, cors, jwt 
+from flask import Flask, send_from_directory
 
 def create_app(config_class=Config):
     """Application factory function"""
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder="../frontend/build")
     app.config.from_object(config_class)
 
     # ✅ Initialize extensions with the app
@@ -60,4 +61,8 @@ def register_blueprints(app):
     @app.route('/api/health')
     def health_check():
         return {'status': 'healthy'}, 200
+    
+    @app.route("/")
+    def serve_react():
+         return send_from_directory(app.static_folder, "index.html")
     
