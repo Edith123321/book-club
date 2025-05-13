@@ -240,60 +240,47 @@ const makeApiCall = async (url, method = 'GET', body = null) => {
   const handleCreateAccountSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateCreateAccountForm();
-   
+    
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
-
-
+  
     setIsLoading(true);
-   
+  
     try {
-      // Register the user
+      const username = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`;
+  
       const registrationData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        email: newEmail.trim(),
-        password: newPassword
+        newEmail: newEmail.trim(),
+        newPassword: newPassword,
+        username: username
       };
-
-
+  
       const data = await makeApiCall('http://localhost:5000/auth/register', 'POST', registrationData);
-     
-      // Auto-login after registration
-      const loginData = await makeApiCall('http://localhost:5000/auth/login', 'POST', {
-        email: newEmail.trim(),
-        password: newPassword
-      });
-
-
-      localStorage.setItem('authToken', loginData.access_token);
-     
-      // Store user data (new users are not admins by default)
-      const userData = {
-        id: loginData.user_id,
-        username: loginData.username,
-        email: newEmail.trim(),
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        is_admin: false
-      };
-     
-      localStorage.setItem('userData', JSON.stringify(userData));
-     
-      // Trigger auth change event
-      window.dispatchEvent(new Event('authChange'));
-     
-      // Redirect regular users to home page
-      navigate('/');
+  
+      console.log("Registration successful:", data);
+  
+      // ✅ Save token to localStorage or session
+      localStorage.setItem("token", data.access_token);
+  
+      // Optional: Save user info too
+      localStorage.setItem("user", JSON.stringify(data.user));
+  
+      // ✅ Switch to sign-in tab
+      setActiveTab('signin'); // This triggers a re-render and switches the tab
+  
     } catch (error) {
-      console.error('Registration error:', error);
-      setErrors({ ...errors, apiError: error.message });
+      console.error("Registration error:", error);
+      setErrors({ form: error.message || "Registration failed" });
     } finally {
       setIsLoading(false);
     }
   };
+  
+  
 
 
   // Social login handlers

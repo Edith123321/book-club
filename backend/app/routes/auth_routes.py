@@ -1,17 +1,31 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 from app.models.user import User
-from app.extensions import db  # ✅ CORRECT
+from app.extensions import db
 from datetime import datetime
-from app.utils import validate_email, validate_password, validate_username
+import re
 from marshmallow import ValidationError
 from app.schemas.user_schema import user_create_schema
 
 auth_bp = Blueprint('auth', __name__)
 
-# ----------------------
-# Register Route
-# ----------------------
+def generate_valid_username(email, first_name, last_name):
+    """Generate a username that passes validation rules"""
+    # Use email prefix
+    username_base = email.split('@')[0]
+    username = re.sub(r'[^a-zA-Z0-9_]', '', username_base)
+
+    # Fallback if username is too short
+    if len(username) < 3:
+        name_combo = f"{first_name}_{last_name}".lower()
+        username = re.sub(r'[^a-z0-9_]', '', name_combo)
+
+    # Ensure minimum length
+    if len(username) < 3:
+        username += "_user"
+
+    return username[:50]
+
 @auth_bp.route('/register', methods=['POST'])
 def register():
     if not request.is_json:
@@ -19,60 +33,75 @@ def register():
 
     try:
         data = request.get_json()
+        print("Received data:", data)
 
-        # Map frontend fields to backend expectations
+        # Generate a valid username
+        username = data.get('username')
+        if not username or not re.match(r'^[a-zA-Z0-9_]+$', username):
+            new_email = data.get('newEmail')
+            first_name = data.get('firstName')
+            last_name = data.get('lastName')
+
+            if not all([new_email, first_name, last_name]):
+                return jsonify({"error": "Missing required fields"}), 400
+
+            username = generate_valid_username(new_email, first_name, last_name)
+
         registration_data = {
-            'username': f"{data.get('firstName', '').lower()}_{data.get('lastName', '').lower()}",
             'email': data.get('newEmail'),
             'password': data.get('newPassword'),
             'first_name': data.get('firstName'),
-            'last_name': data.get('lastName')
+            'last_name': data.get('lastName'),
+            'username': username
         }
 
-        required_fields = ['email', 'password', 'first_name', 'last_name']
-        if not all(registration_data[field] for field in required_fields):
-            return jsonify({
-                "error": "Missing fields",
-                "required": required_fields
-            }), 400
+        print("Processed registration data:", registration_data)
 
-        # Validate using schema (update your schema accordingly)
-        user_create_schema.load(registration_data)
+        # Validate input
+        validated_data = user_create_schema.load(registration_data)
+        print("Validation passed:", validated_data)
 
-        # Check if email already exists
-        if User.query.filter_by(email=registration_data['email']).first():
+        # Check if email or username already exist
+        if User.query.filter_by(email=validated_data['email']).first():
             return jsonify({"error": "Email already registered"}), 409
+        if User.query.filter_by(username=validated_data['username']).first():
+            return jsonify({"error": "Username already taken"}), 409
 
-        # Create user
+        # Create and save new user
         new_user = User(
-            username=registration_data['username'],
-            email=registration_data['email'],
-            password=registration_data['password'],
-            first_name=registration_data['first_name'],
-            last_name=registration_data['last_name']
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],  # Assumes hashing in model
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            created_at=datetime.utcnow(),
+            last_login=datetime.utcnow()
         )
 
         db.session.add(new_user)
         db.session.commit()
 
+        access_token = create_access_token(identity=str(new_user.id))
+
         return jsonify({
             "message": "User registered successfully",
-            "user_id": new_user.id,
-            "username": new_user.username
+            "user": {
+                "id": new_user.id,
+                "email": new_user.email,
+                "username": new_user.username
+            },
+            "access_token": access_token
         }), 201
 
     except ValidationError as ve:
-        return jsonify({"error": "Validation error", "messages": ve.messages}), 422
+        print("Validation error:", ve.messages)
+        return jsonify({"error": "Validation failed", "details": ve.messages}), 422
+
     except Exception as e:
         db.session.rollback()
-        return jsonify({
-            "error": "Registration failed",
-            "details": str(e)
-        }), 500 
+        print("Registration error:", str(e))
+        return jsonify({"error": "Registration failed", "details": str(e)}), 500
 
-# ----------------------
-# Login Route
-# ----------------------
 # ----------------------
 # Login Route
 # ----------------------

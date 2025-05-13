@@ -1,28 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiSearch, FiChevronUp, FiChevronDown, FiEdit, FiTrash2 } from 'react-icons/fi';
 
+
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({ key: 'username', direction: 'asc' });
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [errorMessage, setErrorMessage] = useState('');
-
   const [newUser, setNewUser] = useState({
-    name: '',
+    username: '',
     email: '',
-    role: 'Member',
-    status: 'Active'
+    is_admin: false,
+    is_active: true,
+    password: 'defaultPassword'
   });
+
 
   // Stats
   const [totalUsers, setTotalUsers] = useState(0);
   const [activeUsers, setActiveUsers] = useState(0);
   const [inactiveUsers, setInactiveUsers] = useState(0);
   const [newUsers, setNewUsers] = useState(0);
+
 
   // Fetch users from API
   useEffect(() => {
@@ -31,23 +33,27 @@ const AdminUsers = () => {
         const response = await fetch('http://localhost:5000/users/');
         if (!response.ok) throw new Error('Failed to fetch users');
         const data = await response.json();
-        
-        setUsers(data.users || data); // Handle both formats
-        calculateStats(data.users || data);
+       
+        // Handle both array response and paginated response
+        const usersData = Array.isArray(data) ? data : (data.users || []);
+        setUsers(usersData);
+        setFilteredUsers(sortUsers(usersData));
+        calculateStats(usersData);
       } catch (error) {
         console.error('Error fetching users:', error);
       }
     };
-    
+   
     fetchUsers();
   }, []);
+
 
   // Calculate statistics
   const calculateStats = (users) => {
     setTotalUsers(users.length);
     setActiveUsers(users.filter(user => user.is_active).length);
     setInactiveUsers(users.filter(user => !user.is_active).length);
-    
+   
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     setNewUsers(users.filter(user => {
@@ -56,15 +62,17 @@ const AdminUsers = () => {
     }).length);
   };
 
-  // Filter users based on search term
+
+  // Filter and sort users based on search term and sort config
   useEffect(() => {
-    const filtered = users.filter(user => 
+    const filtered = users.filter(user =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      (user.bio && user.bio.toLowerCase().includes(searchTerm.toLowerCase()))
     );
     setFilteredUsers(sortUsers(filtered));
   }, [searchTerm, users, sortConfig]);
+
 
   // Sort functionality
   const requestSort = (key) => {
@@ -75,11 +83,12 @@ const AdminUsers = () => {
     setSortConfig({ key, direction });
   };
 
+
   const sortUsers = (users) => {
     return [...users].sort((a, b) => {
-      // Handle nested properties and null values
       const aValue = getSortValue(a, sortConfig.key);
       const bValue = getSortValue(b, sortConfig.key);
+
 
       if (aValue < bValue) {
         return sortConfig.direction === 'asc' ? -1 : 1;
@@ -91,32 +100,39 @@ const AdminUsers = () => {
     });
   };
 
+
   const getSortValue = (user, key) => {
     switch(key) {
-      case 'name': 
-        return user.name || user.username || '';
-      case 'role':
-        return user.is_admin ? 'Admin' : 'Member';
-      case 'status':
-        return user.is_active ? 'Active' : 'Inactive';
-      case 'created':
+      case 'username':
+        return user.username.toLowerCase();
+      case 'email':
+        return user.email.toLowerCase();
+      case 'is_admin':
+        return user.is_admin ? 1 : 0;
+      case 'is_active':
+        return user.is_active ? 1 : 0;
+      case 'created_at':
         return new Date(user.created_at || user.date_joined);
-      case 'lastLogin':
+      case 'last_login':
         return user.last_login ? new Date(user.last_login) : new Date(0);
       default:
         return '';
     }
   };
 
+
   // Form handling
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    const inputValue = type === 'checkbox' ? checked : value;
+   
     if (showEditForm) {
-      setCurrentUser(prev => ({ ...prev, [name]: value }));
+      setCurrentUser(prev => ({ ...prev, [name]: inputValue }));
     } else {
-      setNewUser(prev => ({ ...prev, [name]: value }));
+      setNewUser(prev => ({ ...prev, [name]: inputValue }));
     }
   };
+
 
   // Add new user
   const handleAddUser = async () => {
@@ -126,117 +142,142 @@ const AdminUsers = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          username: newUser.name,
-          email: newUser.email,
-          is_admin: newUser.role === 'Admin',
-          is_active: newUser.status === 'Active',
-          password: 'defaultPassword' // In a real app, you'd generate or prompt for this
-        })
+        body: JSON.stringify(newUser)
       });
 
-      if (!response.ok) throw new Error('Failed to add user');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add user');
+      }
+
 
       const result = await response.json();
       setUsers(prev => [...prev, result]);
       setShowAddForm(false);
       setNewUser({
-        name: '',
+        username: '',
         email: '',
-        role: 'Member',
-        status: 'Active'
+        is_admin: false,
+        is_active: true,
+        password: 'defaultPassword'
       });
     } catch (error) {
       console.error('Error adding user:', error);
+      alert(error.message);
     }
   };
 
+
+  // Edit user
   const handleEditUser = async () => {
     try {
-      const token = localStorage.getItem('token'); // ✅ define token here
-  
-      if (!token) {
-        throw new Error('No authentication token found. Please log in again.');
-      }
-  
-      // Validate inputs before sending
-      if (!currentUser.username?.trim()) {
-        throw new Error('Username is required');
-      }
-      if (!currentUser.email?.trim()) {
-        throw new Error('Email is required');
-      }
-  
       const response = await fetch(`http://localhost:5000/users/${currentUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // ✅ token now defined
         },
         body: JSON.stringify({
-          username: currentUser.username.trim(),
-          email: currentUser.email.trim(),
-          is_admin: currentUser.role === 'Admin',
-          is_active: currentUser.status === 'Active',
-        }),
+          username: currentUser.username,
+          email: currentUser.email,
+          is_admin: currentUser.is_admin,
+          is_active: currentUser.is_active,
+          bio: currentUser.bio || ''
+        })
       });
-  
-      const data = await response.json();
-  
+
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to update user');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user');
       }
-  
-      setUsers(prev => prev.map(user => 
-        user.id === currentUser.id ? data.user : user
+
+
+      const result = await response.json();
+      setUsers(prev => prev.map(user =>
+        user.id === currentUser.id ? result : user
       ));
-  
       setShowEditForm(false);
-      setSuccessMessage('User updated successfully');
-      setTimeout(() => setSuccessMessage(''), 3000);
-  
     } catch (error) {
       console.error('Error updating user:', error);
-      setErrorMessage(error.message);
-      setTimeout(() => setErrorMessage(''), 5000);
+      alert(error.message);
     }
   };
-  
+
+
   // Delete user
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
-    
+   
     try {
       const response = await fetch(`http://localhost:5000/users/${id}`, {
         method: 'DELETE'
       });
 
-      if (!response.ok) throw new Error('Failed to delete user');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
+
 
       setUsers(prev => prev.filter(user => user.id !== id));
     } catch (error) {
       console.error('Error deleting user:', error);
+      alert(error.message);
     }
   };
+
+
+  // Toggle user status
+  const toggleUserStatus = async (user) => {
+    try {
+      const response = await fetch(`http://localhost:5000/users/${user.id}/${user.is_active ? 'deactivate' : 'activate'}`, {
+        method: 'PATCH'
+      });
+
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user status');
+      }
+
+
+      const updatedUser = await response.json();
+      setUsers(prev => prev.map(u =>
+        u.id === user.id ? updatedUser : u
+      ));
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      alert(error.message);
+    }
+  };
+
 
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'Never';
     const date = new Date(dateString);
-    return date.toLocaleDateString();
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
+
 
   return (
     <div className="admin-page">
       <div className="page-header">
         <h2>Users Management</h2>
-        <button 
+        <button
           className="add-btn"
           onClick={() => setShowAddForm(true)}
         >
           <FiPlus /> Add User
         </button>
       </div>
+
 
       {/* Stats Cards */}
       <div className="stats-grid">
@@ -258,6 +299,7 @@ const AdminUsers = () => {
         </div>
       </div>
 
+
       <div className="search-bar">
         <FiSearch className="search-icon" />
         <input
@@ -268,32 +310,29 @@ const AdminUsers = () => {
         />
       </div>
 
+
       <div className="data-table">
         <table>
           <thead>
             <tr>
-              <th onClick={() => requestSort('name')}>
-                User {sortConfig.key === 'name' && (
+              <th onClick={() => requestSort('username')}>
+                Username {sortConfig.key === 'username' && (
                   sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
                 )}
               </th>
-              <th onClick={() => requestSort('role')}>
-                Role {sortConfig.key === 'role' && (
+              <th>Email</th>
+              <th onClick={() => requestSort('is_admin')}>
+                Role {sortConfig.key === 'is_admin' && (
                   sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
                 )}
               </th>
-              <th onClick={() => requestSort('status')}>
-                Status {sortConfig.key === 'status' && (
+              <th onClick={() => requestSort('is_active')}>
+                Status {sortConfig.key === 'is_active' && (
                   sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
                 )}
               </th>
-              <th onClick={() => requestSort('created')}>
-                Created {sortConfig.key === 'created' && (
-                  sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
-                )}
-              </th>
-              <th onClick={() => requestSort('lastLogin')}>
-                Last Login {sortConfig.key === 'lastLogin' && (
+              <th onClick={() => requestSort('created_at')}>
+                Created {sortConfig.key === 'created_at' && (
                   sortConfig.direction === 'asc' ? <FiChevronUp /> : <FiChevronDown />
                 )}
               </th>
@@ -306,40 +345,39 @@ const AdminUsers = () => {
                 <tr key={user.id}>
                   <td>
                     <div className="user-info">
-                      <div>
-                        <div className="user-name">{user.name || user.username}</div>
-                        <div className="user-email">{user.email}</div>
-                      </div>
+                      <div className="user-name">{user.username}</div>
                     </div>
                   </td>
+                  <td className="user-email">{user.email}</td>
                   <td>
                     <span className={`role-badge ${user.is_admin ? 'admin' : 'member'}`}>
                       {user.is_admin ? 'Admin' : 'Member'}
                     </span>
                   </td>
                   <td>
-                    <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
+                    <span
+                      className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}
+                      onClick={() => toggleUserStatus(user)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       {user.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td>{formatDate(user.created_at || user.date_joined)}</td>
-                  <td>{formatDate(user.last_login)}</td>
+                  <td>{formatDate(user.created_at)}</td>
                   <td className="actions">
-                    <button 
+                    <button
                       className="action-btn edit"
                       onClick={() => {
                         setCurrentUser({
                           ...user,
-                          name: user.name || user.username,
-                          role: user.is_admin ? 'Admin' : 'Member',
-                          status: user.is_active ? 'Active' : 'Inactive'
+                          password: '' // Clear password for security
                         });
                         setShowEditForm(true);
                       }}
                     >
                       <FiEdit />
                     </button>
-                    <button 
+                    <button
                       className="action-btn delete"
                       onClick={() => handleDeleteUser(user.id)}
                     >
@@ -359,17 +397,18 @@ const AdminUsers = () => {
         </table>
       </div>
 
+
       {/* Add User Modal */}
       {showAddForm && (
         <div className="modal-overlay">
           <div className="modal">
             <h3>Add New User</h3>
             <div className="form-group">
-              <label>Name</label>
+              <label>Username</label>
               <input
                 type="text"
-                name="name"
-                value={newUser.name}
+                name="username"
+                value={newUser.username}
                 onChange={handleInputChange}
                 required
               />
@@ -385,39 +424,48 @@ const AdminUsers = () => {
               />
             </div>
             <div className="form-group">
-              <label>Role</label>
-              <select
-                name="role"
-                value={newUser.role}
+              <label>Password</label>
+              <input
+                type="password"
+                name="password"
+                value={newUser.password}
                 onChange={handleInputChange}
-              >
-                <option value="Member">Member</option>
-                <option value="Moderator">Moderator</option>
-                <option value="Admin">Admin</option>
-              </select>
+                required
+              />
             </div>
             <div className="form-group">
-              <label>Status</label>
-              <select
-                name="status"
-                value={newUser.status}
-                onChange={handleInputChange}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
+              <label>
+                <input
+                  type="checkbox"
+                  name="is_admin"
+                  checked={newUser.is_admin}
+                  onChange={handleInputChange}
+                />
+                Admin User
+              </label>
+            </div>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  name="is_active"
+                  checked={newUser.is_active}
+                  onChange={handleInputChange}
+                />
+                Active User
+              </label>
             </div>
             <div className="modal-actions">
-              <button 
+              <button
                 className="cancel-btn"
                 onClick={() => setShowAddForm(false)}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="submit-btn"
                 onClick={handleAddUser}
-                disabled={!newUser.name || !newUser.email}
+                disabled={!newUser.username || !newUser.email || !newUser.password}
               >
                 Add User
               </button>
@@ -426,17 +474,18 @@ const AdminUsers = () => {
         </div>
       )}
 
+
       {/* Edit User Modal */}
       {showEditForm && currentUser && (
         <div className="modal-overlay">
           <div className="modal">
             <h3>Edit User</h3>
             <div className="form-group">
-              <label>Name</label>
+              <label>Username</label>
               <input
                 type="text"
-                name="name"
-                value={currentUser.name}
+                name="username"
+                value={currentUser.username}
                 onChange={handleInputChange}
                 required
               />
@@ -452,39 +501,46 @@ const AdminUsers = () => {
               />
             </div>
             <div className="form-group">
-              <label>Role</label>
-              <select
-                name="role"
-                value={currentUser.role}
+              <label>Bio</label>
+              <textarea
+                name="bio"
+                value={currentUser.bio || ''}
                 onChange={handleInputChange}
-              >
-                <option value="Member">Member</option>
-                <option value="Moderator">Moderator</option>
-                <option value="Admin">Admin</option>
-              </select>
+              />
             </div>
             <div className="form-group">
-              <label>Status</label>
-              <select
-                name="status"
-                value={currentUser.status}
-                onChange={handleInputChange}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
+              <label>
+                <input
+                  type="checkbox"
+                  name="is_admin"
+                  checked={currentUser.is_admin}
+                  onChange={handleInputChange}
+                />
+                Admin User
+              </label>
+            </div>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  name="is_active"
+                  checked={currentUser.is_active}
+                  onChange={handleInputChange}
+                />
+                Active User
+              </label>
             </div>
             <div className="modal-actions">
-              <button 
+              <button
                 className="cancel-btn"
                 onClick={() => setShowEditForm(false)}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="submit-btn"
                 onClick={handleEditUser}
-                disabled={!currentUser.name || !currentUser.email}
+                disabled={!currentUser.username || !currentUser.email}
               >
                 Save Changes
               </button>
@@ -496,4 +552,6 @@ const AdminUsers = () => {
   );
 };
 
+
 export default AdminUsers;
+

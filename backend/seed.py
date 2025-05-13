@@ -194,9 +194,9 @@ def seed_users():
 
        ),
        User(
-           username='biographyreader',
-           email='bio@example.com',
-           password='lifestories7',
+           username='ediithgithinji',
+           email='ediith@gmail.com',
+           password='Edith123',
            created_at=datetime.now() - timedelta(days=20),
            last_login=datetime.now() - timedelta(hours=3),
            is_active=True,

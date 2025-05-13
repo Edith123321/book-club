@@ -36,34 +36,15 @@ class UserCreateSchema(BaseUserSchema):
 
     @post_load
     def make_user(self, data, **kwargs):
-        """Custom user creation with additional validation"""
-        # Manual validation as backup
-        if not validate_email(data['email']):
-            raise ValidationError("Invalid email format", "email")
-        if not validate_password(data['password']):
-            raise ValidationError("Password must be 8+ chars with letters and numbers", "password")
-        if not validate_username(data['username']):
-            raise ValidationError("Invalid username format", "username")
-
-        # Generate username if not provided (combine first and last name)
+        # Auto-generate username if not provided
         if 'username' not in data or not data['username']:
             data['username'] = f"{data['first_name'].lower()}_{data['last_name'].lower()}"
+    
+        # Clean username to remove invalid characters
+        data['username'] = re.sub(r'[^a-zA-Z0-9_]', '', data['username'])
+    
+        return data  # ✅ You MUST return the modified data
 
-        # Check for existing users
-        if User.query.filter_by(email=data['email']).first():
-            raise ValidationError("Email already registered", "email")
-        if User.query.filter_by(username=data['username']).first():
-            raise ValidationError("Username already taken", "username")
-
-        user = User(
-            username=data['username'],
-            email=data['email'],
-            first_name=data['first_name'],
-            last_name=data['last_name'],
-            is_admin=False
-        )
-        user.password = data['password']  # Triggers password hashing
-        return user
 
 class UserLoginSchema(Schema):
     email = fields.Email(required=True, validate=validate.Email())

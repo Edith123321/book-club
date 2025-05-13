@@ -80,7 +80,7 @@ const UserProfile = () => {
 
             const token = localStorage.getItem('authToken');
             if (!token) {
-                navigate('/login');
+                navigate('/');
                 return;
             }
 
@@ -166,12 +166,12 @@ const UserProfile = () => {
             </div>
 
             <div className="profile-tabs">
-                <button 
+                {/* <button 
                     className={`tab-btn ${activeTab === 'posts' ? 'active' : ''}`}
                     onClick={() => setActiveTab('posts')}
                 >
                     Posts
-                </button>
+                </button> */}
                 <button 
                     className={`tab-btn ${activeTab === 'followers' ? 'active' : ''}`}
                     onClick={() => setActiveTab('followers')}
@@ -187,19 +187,7 @@ const UserProfile = () => {
             </div>
 
             <div className="profile-content">
-                {activeTab === 'posts' && (
-                    <div className="posts-container">
-                        {profileUser.posts && profileUser.posts.length > 0 ? (
-                            profileUser.posts.map(post => (
-                                <div key={post.id} className="post-item">
-                                    {/* Post content */}
-                                </div>
-                            ))
-                        ) : (
-                            <p className="no-posts">No posts yet.</p>
-                        )}
-                    </div>
-                )}
+               
 
                 {activeTab === 'followers' && (
                     <div className="followers-container">

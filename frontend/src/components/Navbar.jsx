@@ -93,22 +93,22 @@ const Navbar = () => {
                   <FaUserCircle className="dropdown-icon" />
                   <span>My Profile</span>
                 </Link>
-                <Link 
+                {/* <Link 
                   to="/settings" 
                   className="dropdown-item"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <FaCog className="dropdown-icon" />
                   <span>Settings</span>
-                </Link>
-                <Link 
+                </Link> */}
+                {/* <Link 
                   to="/profile/edit" 
                   className="dropdown-item"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <FaPen className="dropdown-icon" />
                   <span>Edit Profile</span>
-                </Link>
+                </Link> */}
                 <button 
                   className="dropdown-item logout-button"
                   onClick={handleLogout}
