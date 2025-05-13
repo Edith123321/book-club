@@ -1,10 +1,19 @@
 services:
   - type: web
-    name: flask-backend
+    name: fullstack-app
     runtime: python
-    env: python
     buildCommand: |
-      pip install -r requirements.txt
-      cd ../frontend && npm install && npm run build
-    startCommand: gunicorn app:app
-    staticDir: frontend/build  # Serve React as static files
+      # Backend setup
+      cd backend && 
+      pip install -r requirements.txt &&
+      # Frontend setup
+      cd ../frontend &&
+      npm install &&
+      npm run build
+    startCommand: |
+      cd backend &&
+      gunicorn app:app --bind :$PORT
+    staticDir: frontend/build
+    envVars:
+      - key: FLASK_ENV
+        value: production
