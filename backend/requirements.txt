@@ -22,3 +22,4 @@ Werkzeug==3.0.6
 zipp==3.20.2
 gunicorn
 flask_jwt_extended
+marshmallow-SQLAlchemy
